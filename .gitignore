@@ -1,0 +1,27 @@
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Reference source (original Next.js modules — not shipped)
+.reference/
+
+# Validation screenshots & reports (large, not part of the site)
+validate-*.png
+validation-*.png
+validation-*.pdf
+
+# Node / npm (not used, but just in case)
+node_modules/
+package-lock.json
+
+# Logs
+*.log

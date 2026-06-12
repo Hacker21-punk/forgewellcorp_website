@@ -1,0 +1,14 @@
+{
+  "name": "Forgewell Corporation",
+  "short_name": "Forgewell",
+  "description": "Crafting the Next level of Industrial & Defense Solutions",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#08080c",
+  "theme_color": "#0f1e3a",
+  "icons": [
+    { "src": "assets/media/logo-2.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
