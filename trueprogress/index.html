@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Trueprogress by Forgewell Corporation</title>
+  <meta name="description" content="Trueprogress Dashboard" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  <meta name="theme-color" content="#14124c" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-text-size-adjust: 100%;
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: rgba(0, 0, 0, 0.87);
+      background-color: #fafbfb;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: inherit;
+    }
+
+    /* ===== Layout ===== */
+    .dashboard-wrapper {
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .dashboard-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      overflow: hidden;
+      background-color: #fafbfb;
+      padding: 1.5rem;
+    }
+
+    .dashboard-container {
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 1600px;
+    }
+
+    /* ===== Top Header Row ===== */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-link {
+      display: inline-block;
+      text-decoration: none;
+      color: #14124c;
+    }
+
+    .logo-wrapper {
+      display: inline-block;
+      overflow: hidden;
+      position: relative;
+      max-width: 100%;
+    }
+
+    .logo-sizer {
+      display: block;
+      width: 220px;
+      height: 40px;
+      max-width: 100%;
+      background: none;
+      opacity: 1;
+      border: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .logo-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      box-sizing: border-box;
+      padding: 0;
+      border: none;
+      margin: auto;
+      display: block;
+      width: 0;
+      height: 0;
+      min-width: 100%;
+      max-width: 100%;
+      min-height: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Profile Button */
+    .profile-btn-wrapper {
+      background-color: #d1fae5; /* green-100 / green-200 */
+      border: 1px solid #a7f3d0;
+      border-radius: 9999px;
+      padding: 0.25rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .profile-btn-wrapper:hover {
+      background-color: #a7f3d0;
+    }
+
+    .profile-avatar-placeholder {
+      width: 1.5rem;
+      height: 1.5rem;
+      background-color: #10b981;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .profile-name {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #064e3b;
+    }
+
+    /* ===== Breadcrumbs ===== */
+    .breadcrumb-nav {
+      display: flex;
+      padding: 0.75rem 1.25rem;
+      color: #374151; /* gray-700 */
+      border: 1px solid #e5e7eb; /* gray-200 */
+      border-radius: 0.5rem;
+      background-color: #ffffff;
+      margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb-list {
+      display: inline-flex;
+      align-items: center;
+      list-style: none;
+      gap: 0.75rem;
+    }
+
+    .breadcrumb-item {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .breadcrumb-item svg {
+      width: 1rem;
+      height: 1rem;
+      margin-right: 0.5rem;
+    }
+
+    /* ===== Data Card & Table ===== */
+    .table-card {
+      background-color: #ffffff;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .data-table th {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.875rem;
+      line-height: 1.5rem;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(224, 224, 224, 1);
+      color: #777e89;
+      background-color: #ffffff;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    .data-table th .header-content {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .data-table th svg {
+      width: 0.75rem;
+      height: 0.75rem;
+      margin-left: 0.5rem;
+      color: #9ca3af;
+    }
+
+    .data-table td {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(224, 224, 224, 1);
+      color: rgba(0, 0, 0, 0.87);
+    }
+
+    .data-table tr {
+      transition: background-color 0.2s ease;
+    }
+
+    .data-table tr:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    /* Status Badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-badge.active {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .footer-text {
+      color: #4b5563; /* gray-600 */
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <main class="dashboard-content">
+      <div class="dashboard-container">
+        <!-- Top Header Row -->
+        <header class="header-row">
+          <a href="index.html" class="logo-link">
+            <span class="logo-wrapper">
+              <span class="logo-sizer">
+                <img
+                  class="logo-img"
+                  alt="Trueprogress"
+                  src="assets/trueprogress_logo.png"
+                />
+              </span>
+            </span>
+          </a>
+
+          <div class="profile-btn-wrapper" id="profileMenuBtn">
+            <div class="profile-avatar-placeholder">A</div>
+            <span class="profile-name">Admin</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </header>
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+          <ul class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+              </svg>
+              Home
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Table Card -->
+        <div class="table-card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>
+                    <div class="header-content">
+                      Name
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content">
+                      Department
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content">
+                      Video Count
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content">
+                      Survey Length
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th>Created On</th>
+                  <th>
+                    <div class="header-content">
+                      Status
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
+                      </svg>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Data populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p class="footer-text">© 2023 Forgewell Corporation</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Demo Survey Data from original __NEXT_DATA__
+    const surveys = [
+      { name: "Sachin to Valsad", department: "IRCON Mumbai", videoCount: 3, length: "55.5 km", createdOn: "2022-01-11", status: "active" },
+      { name: "Valsad to Bordi", department: "IRCON Mumbai", videoCount: 3, length: "55.1 km", createdOn: "2022-01-11", status: "active" },
+      { name: "Bordi to Vaitarna", department: "IRCON Mumbai", videoCount: 3, length: "75.5 km", createdOn: "2022-01-11", status: "active" },
+      { name: "Bairabi Section", department: "Northern Frontier Railway, Mizoram", videoCount: 4, length: "18.3 km", createdOn: "2022-05-23", status: "active" },
+      { name: "Barkhera-Budni Third Line", department: "Rail Vikas Nigam Limited", videoCount: 5, length: "26.6 km", createdOn: "2021-11-18", status: "active" },
+      { name: "Salhana to Pipariya Kalan", department: "IRCON", videoCount: 1, length: "12 km", createdOn: "2022-05-26", status: "active" },
+      { name: "Indore to Budni", department: "Rail Vikas Nigam Limited", videoCount: 1, length: "199 km", createdOn: "2023-04-07", status: "active" }
+    ];
+
+    const tableBody = document.getElementById('tableBody');
+    surveys.forEach(survey => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${survey.name}</td>
+        <td>${survey.department}</td>
+        <td>${survey.videoCount}</td>
+        <td>${survey.length}</td>
+        <td>${survey.createdOn}</td>
+        <td><span class="status-badge ${survey.status}">${survey.status}</span></td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    // Profile Click - Logout option
+    document.getElementById('profileMenuBtn').addEventListener('click', () => {
+      if (confirm('Do you want to log out?')) {
+        window.location.href = 'login.html';
+      }
+    });
+  </script>
+</body>
+</html>
