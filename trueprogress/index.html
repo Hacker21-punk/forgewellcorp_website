@@ -174,9 +174,9 @@
           // If user is admin, allow all
           if (user.admin === "true") return true;
           // If user has wildcard access "*", allow all
-          if (user.survey && user.survey.includes('*')) return true;
+          if (user.survey && user.survey.map(s => s.trim()).includes('*')) return true;
           // Otherwise check if the survey name is in the user's allowed list
-          return user.survey && user.survey.includes(survey.name);
+          return user.survey && user.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
         });
 
         if (allowedSurveys.length === 0) {
