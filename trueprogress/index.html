@@ -258,41 +258,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Video Viewer -->
-  <div class="modal-overlay" id="videoModal">
-    <div class="modal-container video-modal-container">
-      <div class="modal-header">
-        <h3 class="modal-title" id="videoModalTitle">Survey Videos</h3>
-        <button class="modal-close-btn" onclick="closeVideoModal()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="video-layout">
-          <!-- Video Player Column -->
-          <div class="video-player-wrapper">
-            <div>
-              <label class="video-select-title">Select Survey Run</label>
-              <select id="videoSelect" class="video-selector" onchange="playSelectedVideo()"></select>
-            </div>
-            <video id="mainVideoPlayer" controls></video>
-          </div>
-          <!-- Landmarks Column -->
-          <div>
-            <div class="landmarks-header">Key Landmarks (Jump to time)</div>
-            <div class="landmarks-wrapper">
-              <ul class="landmarks-list" id="landmarksList">
-                <!-- Landmark items -->
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-modal-cancel" onclick="closeVideoModal()">Close</button>
-      </div>
-    </div>
-  </div>
+
 
   <script>
     let surveysList = [];
@@ -400,7 +366,7 @@
         const row = document.createElement('tr');
         row.id = `survey-row-${survey.id}`;
         
-        const nameCell = `<td><span class="survey-link-name" onclick="openVideoViewer('${survey.id}', '${escapeHtml(survey.name)}')">${escapeHtml(survey.name)}</span></td>`;
+        const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name)}">${escapeHtml(survey.name)}</a></td>`;
         const deptCell = `<td>${escapeHtml(survey.department)}</td>`;
         const lengthCell = `<td>${escapeHtml(survey.survey_length || 'N/A')}</td>`;
         const videoCell = `<td>${survey.video_count || survey.total_surveys || 0}</td>`;
@@ -595,94 +561,7 @@
       usersModal.classList.remove('show');
     }
 
-    // Modal Control: Video Modal & Player
-    const videoModal = document.getElementById('videoModal');
-    let activeSurveyVideos = [];
 
-    function openVideoViewer(surveyId, surveyName) {
-      document.getElementById('videoModalTitle').innerText = `${surveyName} - Videos`;
-      
-      // Filter videos from allVideos that belong to this surveyId
-      activeSurveyVideos = allVideos.filter(v => v.survey === surveyId);
-
-      const videoSelect = document.getElementById('videoSelect');
-      videoSelect.innerHTML = '';
-
-      if (activeSurveyVideos.length === 0) {
-        videoSelect.innerHTML = '<option value="">No videos found for this survey</option>';
-        document.getElementById('mainVideoPlayer').src = '';
-        document.getElementById('landmarksList').innerHTML = '<li style="padding: 1rem; color: #9ca3af; text-align: center;">No landmarks available</li>';
-        videoModal.classList.add('show');
-        return;
-      }
-
-      activeSurveyVideos.forEach((v, index) => {
-        const opt = document.createElement('option');
-        opt.value = index;
-        
-        // Extract a pretty run name / date from S3 URL
-        let runName = `Run ${index + 1} (${v.createdAt || 'Unknown Date'})`;
-        try {
-          const parts = v.videoURL.split('/');
-          const filename = parts[parts.length - 1];
-          runName = filename.replace('.mp4', '').substring(0, 30) + ` (${v.createdAt})`;
-        } catch (e) {}
-
-        opt.innerText = runName;
-        videoSelect.appendChild(opt);
-      });
-
-      videoModal.classList.add('show');
-      playSelectedVideo();
-    }
-
-    function playSelectedVideo() {
-      const select = document.getElementById('videoSelect');
-      if (!select.value) return;
-
-      const videoIdx = select.value;
-      const videoObj = activeSurveyVideos[videoIdx];
-      const videoPlayer = document.getElementById('mainVideoPlayer');
-
-      videoPlayer.src = videoObj.videoURL;
-      videoPlayer.load();
-
-      // Populate Landmarks
-      const landmarksList = document.getElementById('landmarksList');
-      landmarksList.innerHTML = '';
-
-      if (!videoObj.landmarks || videoObj.landmarks.length === 0) {
-        landmarksList.innerHTML = '<li style="padding: 1rem; color: #9ca3af; text-align: center;">No landmarks available for this run</li>';
-        return;
-      }
-
-      videoObj.landmarks.forEach(lm => {
-        const li = document.createElement('li');
-        li.className = 'landmark-item';
-        
-        // Format time code (seconds -> MM:SS)
-        const totalSecs = Math.floor(lm.time);
-        const mins = Math.floor(totalSecs / 60);
-        const secs = totalSecs % 60;
-        const timeCode = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-
-        li.innerHTML = `
-          <span class="landmark-name">${escapeHtml(lm.display || lm.name)}</span>
-          <span class="landmark-time">${timeCode}</span>
-        `;
-        li.onclick = () => {
-          videoPlayer.currentTime = lm.time;
-          videoPlayer.play();
-        };
-        landmarksList.appendChild(li);
-      });
-    }
-
-    function closeVideoModal() {
-      document.getElementById('mainVideoPlayer').pause();
-      document.getElementById('mainVideoPlayer').src = '';
-      videoModal.classList.remove('show');
-    }
 
     // Backup Generation (JSON Download)
     document.getElementById('createBackupBtn').addEventListener('click', () => {

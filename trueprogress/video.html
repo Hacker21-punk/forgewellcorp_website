@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Trueprogress by Forgewell Corporation</title>
+  <meta name="description" content="Trueprogress - Video Viewer" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  <meta name="theme-color" content="#14124c" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/index.css" />
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <main class="dashboard-content">
+      <div class="dashboard-container">
+        <!-- Top Header Row -->
+        <header class="header-row">
+          <a href="https://forgewellcorp-website-dnhu.vercel.app/" class="logo-link">
+            <span class="logo-wrapper">
+              <span class="logo-sizer">
+                <img
+                  class="logo-img"
+                  alt="Trueprogress"
+                  src="assets/trueprogress_logo.png"
+                />
+              </span>
+            </span>
+          </a>
+
+          <!-- Profile Menu Container -->
+          <div class="profile-menu-container">
+            <div class="profile-btn-wrapper" id="profileMenuBtn">
+              <div class="profile-avatar-placeholder" id="profileInitial">A</div>
+              <span class="profile-name" id="profileName">Admin</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+            <!-- Profile Dropdown Card -->
+            <div class="profile-dropdown" id="profileDropdown">
+              <div class="profile-dropdown-name" id="dropdownName">Admin User</div>
+              <div class="profile-dropdown-role" id="dropdownRole">User</div>
+              <div class="profile-dropdown-detail">
+                <span class="detail-label">Phone</span>
+                <span class="detail-value" id="dropdownPhone">N/A</span>
+              </div>
+              <div class="profile-dropdown-detail">
+                <span class="detail-label">Email</span>
+                <span class="detail-value" id="dropdownEmail">N/A</span>
+              </div>
+
+              <button class="profile-dropdown-logout-btn" id="logoutBtn">
+                Logout
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+          <ul class="breadcrumb-list">
+            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item"><a id="breadcrumbSurveyLink" href="#">Survey Name</a></li>
+            <li class="breadcrumb-item" id="breadcrumbVideoName">Video Name</li>
+          </ul>
+        </nav>
+
+        <!-- Video Top Controls -->
+        <div class="video-top-controls">
+          <!-- File Upload -->
+          <div class="search-select-wrapper">
+            <span class="search-select-label">Upload LandMarks File</span>
+            <div class="file-upload-container">
+              <label class="file-input-wrapper" id="fileInputLabel">
+                Choose File
+                <input type="file" id="landmarksFileInput" accept=".csv,.json" onchange="handleFileChange(this)" />
+              </label>
+              <button class="btn-upload-submit" onclick="uploadLandmarksFile()">Upload</button>
+            </div>
+          </div>
+
+          <!-- Landmarks Dropdown -->
+          <div class="search-select-wrapper">
+            <span class="search-select-label">Landmarks</span>
+            <select id="landmarksSelect" class="search-select" onchange="jumpToLandmarkSelect(this)">
+              <option value="">Search for landmarks</option>
+            </select>
+          </div>
+
+          <!-- KM Dropdown -->
+          <div class="search-select-wrapper">
+            <span class="search-select-label">KM</span>
+            <select id="kmSelect" class="search-select" onchange="jumpToKmSelect(this)">
+              <option value="">Search for KM</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Heading -->
+        <h2 class="video-heading-title" id="videoHeadingTitle">Film</h2>
+
+        <!-- Custom Video Player Wrapper -->
+        <div class="video-player-container">
+          <div class="custom-video-wrapper">
+            <video id="videoPlayer" ontimeupdate="updateProgress()" onloadedmetadata="initializePlayer()"></video>
+          </div>
+
+          <!-- Custom Player Controls Bar -->
+          <div class="player-controls-container">
+            <!-- Progress Bar -->
+            <div class="progress-bar-wrapper">
+              <input type="range" id="progressBar" class="player-progress-bar" value="0" min="0" step="0.1" oninput="seekVideo(this)" />
+            </div>
+
+            <!-- Controls Row -->
+            <div class="player-time-controls">
+              <!-- Left: Time Display & Speed selector -->
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <span class="time-display" id="timeDisplay">0:00 / 0:00 x 1</span>
+                <select id="speedSelector" class="search-select" style="width: 70px; padding: 0.25rem;" onchange="changePlaybackSpeed(this)">
+                  <option value="0.5">x0.5</option>
+                  <option value="1" selected>x1</option>
+                  <option value="1.5">x1.5</option>
+                  <option value="2">x2</option>
+                </select>
+              </div>
+
+              <!-- Center: Action buttons -->
+              <div class="player-btn-group">
+                <!-- Seek Back -->
+                <button class="player-icon-btn" onclick="seekRelative(-10)" title="Rewind 10s">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+                </button>
+                <!-- Play / Pause -->
+                <button class="player-icon-btn" id="playPauseBtn" onclick="togglePlayPause()" style="background-color: #2563eb; color: white; border-radius: 9999px; width: 2.25rem; height: 2.25rem;">
+                  <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </button>
+                <!-- Seek Forward -->
+                <button class="player-icon-btn" onclick="seekRelative(10)" title="Forward 10s">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+                </button>
+              </div>
+
+              <!-- Right: Fullscreen, Download, Volume controls -->
+              <div class="player-btn-group">
+                <!-- Volume Slider -->
+                <div class="volume-slider-wrapper">
+                  <button class="player-icon-btn" id="muteBtn" onclick="toggleMute()">
+                    <svg id="volumeOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <svg id="volumeMuteIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                  </button>
+                  <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="1" oninput="changeVolume(this)" />
+                </div>
+                <!-- Download Video -->
+                <button class="player-icon-btn" onclick="downloadVideoFile()" title="Download Video">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+                <!-- Fullscreen -->
+                <button class="player-icon-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Breakpoint Form -->
+        <div class="breakpoint-form-card" id="adminBreakpointPanel" style="display: none;">
+          <h3 class="video-heading-title" style="font-size: 1.125rem; margin-bottom: 1rem;">Add Landmark / Breakpoint</h3>
+          <form onsubmit="return handleAddBreakpoint(event)">
+            <div class="breakpoint-grid">
+              <div class="search-select-wrapper">
+                <span class="search-select-label">Landmark Name</span>
+                <input type="text" id="breakpointNameInput" class="form-input" placeholder="Enter landmark name..." required />
+              </div>
+              <div class="search-select-wrapper">
+                <span class="search-select-label">Time (Auto)</span>
+                <input type="text" id="breakpointTimeInput" class="form-input" value="0:00" readonly style="background-color: #f3f4f6;" />
+              </div>
+              <div class="search-select-wrapper">
+                <span class="search-select-label">KM Number</span>
+                <input type="text" id="breakpointKmInput" class="form-input" placeholder="KM Number" required />
+              </div>
+            </div>
+            <button type="submit" class="btn-breakpoint-add">Add Breakpoint</button>
+          </form>
+
+          <div class="breakpoints-footer">
+            <span class="total-landmarks-label" id="totalLandmarksCount">Total Landmarks: 0</span>
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="btn-csv-export" onclick="exportLandmarksCsv()">Export CSV</button>
+              <button class="btn-delete-all" onclick="deleteAllLandmarks()">Delete ALL</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p class="footer-text">© 2023 Forgewell Corporation</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let videoId = null;
+    let surveyId = null;
+    let surveyName = '';
+    let videoNames = '';
+    let currentUser = null;
+    let videoObject = null;
+    let landmarks = [];
+
+    // URL Query Params
+    const urlParams = new URLSearchParams(window.location.search);
+    videoId = urlParams.get('id');
+    surveyId = urlParams.get('survey');
+    surveyName = urlParams.get('surveyName');
+    videoNames = urlParams.get('videoNames');
+
+    if (!videoId || !surveyId || !surveyName || !videoNames) {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('breadcrumbSurveyLink').innerText = surveyName;
+    document.getElementById('breadcrumbSurveyLink').href = `survey.html?id=${surveyId}&name=${encodeURIComponent(surveyName)}`;
+    document.getElementById('breadcrumbVideoName').innerText = videoNames;
+    document.getElementById('videoHeadingTitle').innerText = videoNames;
+
+    // Session verification
+    const userSession = sessionStorage.getItem('loggedInUser');
+    if (!userSession) {
+      window.location.href = 'login.html';
+    } else {
+      currentUser = JSON.parse(userSession);
+      document.getElementById('profileName').innerText = currentUser.name;
+      document.getElementById('profileInitial').innerText = currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('dropdownName').innerText = currentUser.name;
+      document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
+      document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
+
+      if (currentUser.admin === "true") {
+        document.getElementById('dropdownRole').innerText = "Admin";
+        document.getElementById('adminBreakpointPanel').style.display = "block";
+      } else {
+        document.getElementById('dropdownRole').innerText = "User";
+      }
+
+      loadVideoData();
+    }
+
+    async function loadVideoData() {
+      try {
+        const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
+        if (!response.ok) throw new Error('Failed to load videos data');
+        const videos = await response.json();
+
+        // Check local storage updates
+        const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+
+        // Check edited first, then custom, then default
+        let video = editedVideos.find(e => e.id === videoId);
+        if (!video) video = customVideos.find(v => v.id === videoId);
+        if (!video) video = videos.find(v => v.id === videoId);
+
+        if (!video) {
+          alert('Video not found.');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        videoObject = video;
+        document.getElementById('videoPlayer').src = videoObject.videoURL;
+
+        // Load custom landmarks overrides if any
+        const key = `landmarks_${videoId}`;
+        const overrides = localStorage.getItem(key);
+        if (overrides) {
+          landmarks = JSON.parse(overrides);
+        } else {
+          landmarks = videoObject.landmarks || [];
+        }
+
+        updateLandmarksUI();
+      } catch (e) {
+        console.error(e);
+        alert('Error loading video information.');
+      }
+    }
+
+    // Dropdowns & Total Count updates
+    function updateLandmarksUI() {
+      // Sort landmarks by time
+      landmarks.sort((a, b) => a.time - b.time);
+
+      // Save to localStorage
+      localStorage.setItem(`landmarks_${videoId}`, JSON.stringify(landmarks));
+
+      // Update dropdown selects
+      const landmarksSelect = document.getElementById('landmarksSelect');
+      const kmSelect = document.getElementById('kmSelect');
+      
+      landmarksSelect.innerHTML = '<option value="">Search for landmarks</option>';
+      kmSelect.innerHTML = '<option value="">Search for KM</option>';
+
+      landmarks.forEach((lm, idx) => {
+        // Landmarks
+        const display = lm.display || lm.name || `Landmark ${idx + 1}`;
+        const totalSecs = Math.floor(lm.time);
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        const timeCode = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        const opt1 = document.createElement('option');
+        opt1.value = lm.time;
+        opt1.innerText = `${display} (${timeCode})`;
+        landmarksSelect.appendChild(opt1);
+
+        // KM
+        if (lm.km) {
+          const opt2 = document.createElement('option');
+          opt2.value = lm.time;
+          opt2.innerText = `KM ${lm.km} (${timeCode})`;
+          kmSelect.appendChild(opt2);
+        }
+      });
+
+      document.getElementById('totalLandmarksCount').innerText = `Total Landmarks: ${landmarks.length}`;
+    }
+
+    // Jump by dropdown selection
+    function jumpToLandmarkSelect(sel) {
+      if (sel.value) {
+        seekToTime(parseFloat(sel.value));
+      }
+    }
+
+    function jumpToKmSelect(sel) {
+      if (sel.value) {
+        seekToTime(parseFloat(sel.value));
+      }
+    }
+
+    function seekToTime(time) {
+      const player = document.getElementById('videoPlayer');
+      player.currentTime = time;
+      player.play();
+      updatePlayIcons(true);
+    }
+
+    // Video Player controls
+    const player = document.getElementById('videoPlayer');
+    const progressBar = document.getElementById('progressBar');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+
+    function initializePlayer() {
+      progressBar.max = player.duration;
+      updateProgress();
+    }
+
+    function togglePlayPause() {
+      if (player.paused || player.ended) {
+        player.play();
+        updatePlayIcons(true);
+      } else {
+        player.pause();
+        updatePlayIcons(false);
+      }
+    }
+
+    function updatePlayIcons(isPlaying) {
+      if (isPlaying) {
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+      } else {
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+      }
+    }
+
+    function updateProgress() {
+      progressBar.value = player.currentTime;
+      
+      const curTotalSecs = Math.floor(player.currentTime);
+      const curMins = Math.floor(curTotalSecs / 60);
+      const curSecs = curTotalSecs % 60;
+
+      const durTotalSecs = isNaN(player.duration) ? 0 : Math.floor(player.duration);
+      const durMins = Math.floor(durTotalSecs / 60);
+      const durSecs = durTotalSecs % 60;
+
+      const timeString = `${curMins}:${curSecs.toString().padStart(2, '0')} / ${durMins}:${durSecs.toString().padStart(2, '0')}`;
+      const speed = player.playbackRate;
+
+      timeDisplay.innerText = `${timeString} x ${speed}`;
+
+      // Update admin breakpoint current time field
+      const currentFormattedTime = `${curMins}:${curSecs.toString().padStart(2, '0')}`;
+      document.getElementById('breakpointTimeInput').value = currentFormattedTime;
+    }
+
+    function seekVideo(slider) {
+      player.currentTime = parseFloat(slider.value);
+    }
+
+    function seekRelative(secs) {
+      player.currentTime = Math.max(0, Math.min(player.duration, player.currentTime + secs));
+    }
+
+    function changePlaybackSpeed(sel) {
+      player.playbackRate = parseFloat(sel.value);
+      updateProgress();
+    }
+
+    function changeVolume(slider) {
+      player.volume = parseFloat(slider.value);
+      const muteOn = document.getElementById('volumeOnIcon');
+      const muteOff = document.getElementById('volumeMuteIcon');
+      
+      if (player.volume === 0) {
+        muteOn.style.display = 'none';
+        muteOff.style.display = 'block';
+      } else {
+        muteOn.style.display = 'block';
+        muteOff.style.display = 'none';
+      }
+    }
+
+    function toggleMute() {
+      player.muted = !player.muted;
+      const muteOn = document.getElementById('volumeOnIcon');
+      const muteOff = document.getElementById('volumeMuteIcon');
+      
+      if (player.muted) {
+        muteOn.style.display = 'none';
+        muteOff.style.display = 'block';
+      } else {
+        muteOn.style.display = 'block';
+        muteOff.style.display = 'none';
+      }
+    }
+
+    function toggleFullscreen() {
+      if (player.requestFullscreen) {
+        player.requestFullscreen();
+      } else if (player.webkitRequestFullscreen) {
+        player.webkitRequestFullscreen();
+      } else if (player.msRequestFullscreen) {
+        player.msRequestFullscreen();
+      }
+    }
+
+    function downloadVideoFile() {
+      if (videoObject && videoObject.videoURL) {
+        window.open(videoObject.videoURL, '_blank');
+      }
+    }
+
+    // Add Landmark Breakpoint
+    function handleAddBreakpoint(event) {
+      event.preventDefault();
+      const name = document.getElementById('breakpointNameInput').value;
+      const km = document.getElementById('breakpointKmInput').value;
+      const time = player.currentTime;
+
+      const newLm = {
+        name,
+        display: name,
+        time,
+        km,
+        videoId
+      };
+
+      landmarks.push(newLm);
+      updateLandmarksUI();
+
+      // Reset form fields
+      document.getElementById('breakpointNameInput').value = '';
+      document.getElementById('breakpointKmInput').value = '';
+    }
+
+    function deleteAllLandmarks() {
+      if (confirm('Are you sure you want to delete all landmarks for this video run?')) {
+        landmarks = [];
+        updateLandmarksUI();
+      }
+    }
+
+    function exportLandmarksCsv() {
+      if (landmarks.length === 0) {
+        alert('No landmarks to export.');
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,Name,KM,Time (seconds),Time (formatted)\n";
+      landmarks.forEach(lm => {
+        const display = lm.display || lm.name;
+        const totalSecs = Math.floor(lm.time);
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        const timeCode = `${mins}:${secs.toString().padStart(2, '0')}`;
+        
+        csvContent += `"${display.replace(/"/g, '""')}","${(lm.km || '').replace(/"/g, '""')}",${lm.time},"${timeCode}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `landmarks_${videoNames.replace(/\s+/g, '_')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    // File input selection label toggle
+    function handleFileChange(input) {
+      const label = document.getElementById('fileInputLabel');
+      if (input.files && input.files[0]) {
+        label.innerText = input.files[0].name;
+      } else {
+        label.innerText = 'Choose File';
+      }
+    }
+
+    // Upload CSV/JSON landmarks list
+    function uploadLandmarksFile() {
+      const fileInput = document.getElementById('landmarksFileInput');
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert('Please choose a file first.');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const text = e.target.result;
+        try {
+          if (file.name.endsWith('.json')) {
+            const parsed = JSON.parse(text);
+            if (Array.isArray(parsed)) {
+              landmarks = parsed.map(item => ({
+                name: item.name || item.display || 'Landmark',
+                display: item.display || item.name || 'Landmark',
+                time: parseFloat(item.time) || 0,
+                km: item.km || '',
+                videoId
+              }));
+              updateLandmarksUI();
+              alert('JSON landmarks loaded successfully.');
+            } else {
+              alert('JSON file must contain an array of landmarks.');
+            }
+          } else if (file.name.endsWith('.csv')) {
+            // Simple CSV parsing
+            const rows = text.split('\n');
+            const newLandmarks = [];
+            
+            // Assume format: Name, KM, Time
+            for (let i = 1; i < rows.length; i++) {
+              const row = rows[i].trim();
+              if (!row) continue;
+              
+              // Basic split (splits by comma, handles simple quotes if needed)
+              const cols = row.split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
+              if (cols.length >= 3) {
+                newLandmarks.push({
+                  name: cols[0] || 'Landmark',
+                  display: cols[0] || 'Landmark',
+                  km: cols[1] || '',
+                  time: parseFloat(cols[2]) || 0,
+                  videoId
+                });
+              }
+            }
+            if (newLandmarks.length > 0) {
+              landmarks = newLandmarks;
+              updateLandmarksUI();
+              alert(`${newLandmarks.length} CSV landmarks loaded successfully.`);
+            } else {
+              alert('Could not find valid landmark records in CSV.');
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Failed to parse file: ' + error.message);
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    // Dropdown toggle logic
+    const profileMenuBtn = document.getElementById('profileMenuBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    profileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
+        profileDropdown.classList.remove('show');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (confirm('Do you want to log out?')) {
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

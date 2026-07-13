@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Trueprogress by Forgewell Corporation</title>
+  <meta name="description" content="Trueprogress - Survey Videos" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  <meta name="theme-color" content="#14124c" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/index.css" />
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <main class="dashboard-content">
+      <div class="dashboard-container">
+        <!-- Top Header Row -->
+        <header class="header-row">
+          <a href="https://forgewellcorp-website-dnhu.vercel.app/" class="logo-link">
+            <span class="logo-wrapper">
+              <span class="logo-sizer">
+                <img
+                  class="logo-img"
+                  alt="Trueprogress"
+                  src="assets/trueprogress_logo.png"
+                />
+              </span>
+            </span>
+          </a>
+
+          <!-- Profile Menu Container -->
+          <div class="profile-menu-container">
+            <div class="profile-btn-wrapper" id="profileMenuBtn">
+              <div class="profile-avatar-placeholder" id="profileInitial">A</div>
+              <span class="profile-name" id="profileName">Admin</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+            <!-- Profile Dropdown Card -->
+            <div class="profile-dropdown" id="profileDropdown">
+              <div class="profile-dropdown-name" id="dropdownName">Admin User</div>
+              <div class="profile-dropdown-role" id="dropdownRole">User</div>
+              <div class="profile-dropdown-detail">
+                <span class="detail-label">Phone</span>
+                <span class="detail-value" id="dropdownPhone">N/A</span>
+              </div>
+              <div class="profile-dropdown-detail">
+                <span class="detail-label">Email</span>
+                <span class="detail-value" id="dropdownEmail">N/A</span>
+              </div>
+
+              <button class="profile-dropdown-logout-btn" id="logoutBtn">
+                Logout
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+          <ul class="breadcrumb-list">
+            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li class="breadcrumb-item" id="breadcrumbSurveyName">Survey Name</li>
+          </ul>
+        </nav>
+
+        <!-- Action row above table -->
+        <div class="table-action-row" id="tableActionControls" style="display: none;">
+          <!-- Toggled dynamically -->
+        </div>
+
+        <!-- Table Card -->
+        <div class="table-card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" /></th>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Survey Date</th>
+                </tr>
+              </thead>
+              <tbody id="videoTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Watch Footer -->
+        <div class="watch-footer-row">
+          <button class="btn-watch disabled" id="watchBtn" onclick="watchSelectedVideos()" disabled>Watch</button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p class="footer-text">© 2023 Forgewell Corporation</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Add / Edit Video -->
+  <div class="modal-overlay" id="videoDetailModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="videoModalTitle">Add a video</h3>
+        <button class="modal-close-btn" onclick="closeVideoModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="videoForm" onsubmit="return handleSaveVideo(event)">
+        <input type="hidden" id="editVideoId" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Video Name</label>
+            <input type="text" id="videoNameInput" class="form-input" placeholder="Enter video name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Video URL</label>
+            <input type="url" id="videoUrlInput" class="form-input" placeholder="https://forgewell.s3.ap-south-1.amazonaws.com/..." required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Survey Date</label>
+            <input type="date" id="videoDateInput" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div class="form-radio-group">
+              <label class="form-radio-label">
+                <input type="radio" name="videoStatus" value="active" checked class="form-radio-input" /> ACTIVE
+              </label>
+              <label class="form-radio-label">
+                <input type="radio" name="videoStatus" value="inactive" class="form-radio-input" /> INACTIVE
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeVideoModal()">Cancel</button>
+          <button type="submit" class="btn-modal-submit" id="saveVideoBtn">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let surveyId = null;
+    let surveyName = '';
+    let currentUser = null;
+    let surveyVideos = [];
+
+    // URL Param parsing
+    const urlParams = new URLSearchParams(window.location.search);
+    surveyId = urlParams.get('id');
+    surveyName = urlParams.get('name');
+
+    if (!surveyId || !surveyName) {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('breadcrumbSurveyName').innerText = surveyName;
+
+    // Session check
+    const userSession = sessionStorage.getItem('loggedInUser');
+    if (!userSession) {
+      window.location.href = 'login.html';
+    } else {
+      currentUser = JSON.parse(userSession);
+      document.getElementById('profileName').innerText = currentUser.name;
+      document.getElementById('profileInitial').innerText = currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('dropdownName').innerText = currentUser.name;
+      document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
+      document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
+
+      if (currentUser.admin === "true") {
+        document.getElementById('dropdownRole').innerText = "Admin";
+      } else {
+        document.getElementById('dropdownRole').innerText = "User";
+      }
+
+      loadPageData();
+    }
+
+    async function loadPageData() {
+      await fetchVideos();
+      renderActionRow();
+    }
+
+    async function fetchVideos() {
+      try {
+        const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
+        if (!response.ok) throw new Error('Failed to load videos');
+        const defaultVideos = await response.json();
+
+        // Load custom overrides from localStorage
+        const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        const deletedVideos = JSON.parse(localStorage.getItem('deleted_videos') || '[]');
+        const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+
+        // Filter default videos belonging to this survey
+        let filtered = defaultVideos.filter(v => v.survey === surveyId && !deletedVideos.includes(v.id));
+
+        // Apply edits
+        filtered = filtered.map(v => {
+          const edited = editedVideos.find(e => e.id === v.id);
+          return edited ? { ...v, ...edited } : v;
+        });
+
+        // Add custom new ones
+        const customForSurvey = customVideos.filter(v => v.survey === surveyId);
+        surveyVideos = [...filtered, ...customForSurvey];
+
+        renderTable();
+      } catch (e) {
+        console.error(e);
+        alert('Error loading videos list.');
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('videoTableBody');
+      tbody.innerHTML = '';
+
+      if (surveyVideos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 2rem;">No videos found for this survey.</td></tr>`;
+        return;
+      }
+
+      surveyVideos.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.id = `video-row-${v.id}`;
+        
+        let displayDate = v.createdAt || 'N/A';
+        try {
+          const d = new Date(displayDate);
+          if (!isNaN(d.getTime())) {
+            displayDate = d.toDateString(); // Formats as Sat Apr 15 2023
+          }
+        } catch(e) {}
+
+        tr.innerHTML = `
+          <td><input type="checkbox" value="${v.id}" class="video-row-checkbox" onchange="handleCheckboxChange()" /></td>
+          <td><strong>${escapeHtml(v.name || 'Film')}</strong></td>
+          <td>${escapeHtml(v.status || 'active')}</td>
+          <td>${displayDate}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      handleCheckboxChange();
+    }
+
+    // Toggle row selections and action buttons
+    function handleCheckboxChange() {
+      const checkboxes = document.querySelectorAll('.video-row-checkbox');
+      const checkedBoxes = Array.from(checkboxes).filter(c => c.checked);
+      
+      const watchBtn = document.getElementById('watchBtn');
+
+      // Highlight selected rows
+      checkboxes.forEach(c => {
+        const row = document.getElementById(`video-row-${c.value}`);
+        if (row) {
+          if (c.checked) {
+            row.classList.add('selected');
+          } else {
+            row.classList.remove('selected');
+          }
+        }
+      });
+
+      if (checkedBoxes.length > 0) {
+        watchBtn.classList.remove('disabled');
+        watchBtn.classList.add('active');
+        watchBtn.disabled = false;
+      } else {
+        watchBtn.classList.add('disabled');
+        watchBtn.classList.remove('active');
+        watchBtn.disabled = true;
+      }
+
+      renderActionRow(checkedBoxes.length);
+    }
+
+    function toggleSelectAll(selectAll) {
+      const checkboxes = document.querySelectorAll('.video-row-checkbox');
+      checkboxes.forEach(c => {
+        c.checked = selectAll.checked;
+      });
+      handleCheckboxChange();
+    }
+
+    // Render "Add a video" or "Edit"/"Delete" action controls above the table
+    function renderActionRow(checkedCount = 0) {
+      const actionContainer = document.getElementById('tableActionControls');
+      actionContainer.innerHTML = '';
+      
+      if (currentUser.admin !== "true") {
+        actionContainer.style.display = "none";
+        return;
+      }
+      actionContainer.style.display = "flex";
+
+      if (checkedCount === 0) {
+        actionContainer.innerHTML = `<button class="btn-action-normal" onclick="openAddVideoModal()">Add a video</button>`;
+      } else if (checkedCount === 1) {
+        const selectedId = Array.from(document.querySelectorAll('.video-row-checkbox')).find(c => c.checked).value;
+        actionContainer.innerHTML = `
+          <button class="btn-action-normal" onclick="openEditVideoModal('${selectedId}')">Edit</button>
+          <button class="btn-action-delete" onclick="handleDeleteVideos()">Delete</button>
+        `;
+      } else {
+        actionContainer.innerHTML = `
+          <button class="btn-action-delete" onclick="handleDeleteVideos()">Delete</button>
+        `;
+      }
+    }
+
+    // Modal Control: Add/Edit Video
+    const videoDetailModal = document.getElementById('videoDetailModal');
+
+    function openAddVideoModal() {
+      document.getElementById('videoModalTitle').innerText = "Add a video";
+      document.getElementById('editVideoId').value = "";
+      document.getElementById('videoForm').reset();
+      document.getElementById('saveVideoBtn').innerText = "Create";
+      
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('videoDateInput').value = today;
+      videoDetailModal.classList.add('show');
+    }
+
+    function openEditVideoModal(id) {
+      const video = surveyVideos.find(v => v.id === id);
+      if (!video) return;
+
+      document.getElementById('videoModalTitle').innerText = "Edit video details";
+      document.getElementById('editVideoId').value = video.id;
+      document.getElementById('videoNameInput').value = video.name || 'Film';
+      document.getElementById('videoUrlInput').value = video.videoURL || '';
+      
+      let dateVal = video.createdAt || '';
+      try {
+        const d = new Date(dateVal);
+        if (!isNaN(d.getTime())) {
+          dateVal = d.toISOString().split('T')[0];
+        }
+      } catch(e) {}
+      document.getElementById('videoDateInput').value = dateVal;
+
+      const radios = document.getElementsByName('videoStatus');
+      for (let r of radios) {
+        if (r.value === (video.status || 'active')) {
+          r.checked = true;
+        }
+      }
+
+      document.getElementById('saveVideoBtn').innerText = "Save";
+      videoDetailModal.classList.add('show');
+    }
+
+    function closeVideoModal() {
+      videoDetailModal.classList.remove('show');
+    }
+
+    function handleSaveVideo(event) {
+      event.preventDefault();
+      const id = document.getElementById('editVideoId').value;
+      const name = document.getElementById('videoNameInput').value;
+      const videoURL = document.getElementById('videoUrlInput').value;
+      const createdAt = document.getElementById('videoDateInput').value;
+      
+      const radios = document.getElementsByName('videoStatus');
+      let status = 'active';
+      for (let r of radios) {
+        if (r.checked) status = r.value;
+      }
+
+      if (id) {
+        // Edit
+        let edited = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+        const idx = edited.findIndex(e => e.id === id);
+        const update = { id, name, videoURL, createdAt, status };
+        if (idx > -1) edited[idx] = update;
+        else edited.push(update);
+        localStorage.setItem('edited_videos', JSON.stringify(edited));
+      } else {
+        // Create
+        const newVideo = {
+          id: 'vid-' + Math.random().toString(36).substring(2, 10),
+          survey: surveyId,
+          name,
+          videoURL,
+          createdAt,
+          status,
+          landmarks: []
+        };
+        let custom = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        custom.push(newVideo);
+        localStorage.setItem('custom_videos', JSON.stringify(custom));
+      }
+
+      closeVideoModal();
+      fetchVideos();
+    }
+
+    function handleDeleteVideos() {
+      const checkedBoxes = Array.from(document.querySelectorAll('.video-row-checkbox')).filter(c => c.checked);
+      if (checkedBoxes.length === 0) return;
+
+      if (confirm(`Are you sure you want to delete the selected ${checkedBoxes.length} video(s)?`)) {
+        let deleted = JSON.parse(localStorage.getItem('deleted_videos') || '[]');
+        let custom = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+
+        checkedBoxes.forEach(cb => {
+          const id = cb.value;
+          if (id.startsWith('vid-')) {
+            custom = custom.filter(v => v.id !== id);
+          } else {
+            deleted.push(id);
+          }
+        });
+
+        localStorage.setItem('deleted_videos', JSON.stringify(deleted));
+        localStorage.setItem('custom_videos', JSON.stringify(custom));
+        
+        fetchVideos();
+      }
+    }
+
+    // Go to Watch Page
+    function watchSelectedVideos() {
+      const checkedBoxes = Array.from(document.querySelectorAll('.video-row-checkbox')).filter(c => c.checked);
+      if (checkedBoxes.length === 0) return;
+
+      const videoIds = checkedBoxes.map(c => c.value).join(',');
+      const selectedObj = surveyVideos.find(v => v.id === checkedBoxes[0].value);
+      const videoName = selectedObj ? selectedObj.name : 'Film';
+
+      // Navigate to video page
+      window.location.href = `video.html?id=${checkedBoxes[0].value}&survey=${surveyId}&surveyName=${encodeURIComponent(surveyName)}&videoNames=${encodeURIComponent(videoName)}`;
+    }
+
+    // Dropdown toggle logic
+    const profileMenuBtn = document.getElementById('profileMenuBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    profileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
+        profileDropdown.classList.remove('show');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (confirm('Do you want to log out?')) {
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
