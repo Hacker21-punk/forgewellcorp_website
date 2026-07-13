@@ -30,12 +30,36 @@
             </span>
           </a>
 
-          <div class="profile-btn-wrapper" id="profileMenuBtn">
-            <div class="profile-avatar-placeholder" id="profileInitial">A</div>
-            <span class="profile-name" id="profileName">Admin</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+          <!-- Profile Menu Container -->
+          <div class="profile-menu-container">
+            <div class="profile-btn-wrapper" id="profileMenuBtn">
+              <div class="profile-avatar-placeholder" id="profileInitial">A</div>
+              <span class="profile-name" id="profileName">Admin</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+            <!-- Profile Dropdown Card -->
+            <div class="profile-dropdown" id="profileDropdown">
+              <div class="profile-dropdown-name" id="dropdownName">Admin User</div>
+              <div class="profile-dropdown-detail">
+                <span class="detail-label">Phone</span>
+                <span class="detail-value" id="dropdownPhone">N/A</span>
+              </div>
+              <div class="profile-dropdown-detail">
+                <span class="detail-label">Email</span>
+                <span class="detail-value" id="dropdownEmail">N/A</span>
+              </div>
+              <button class="profile-dropdown-logout-btn" id="logoutBtn">
+                Logout
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -127,6 +151,11 @@
       document.getElementById('profileName').innerText = user.name;
       document.getElementById('profileInitial').innerText = user.name.charAt(0).toUpperCase();
 
+      // Update Dropdown details
+      document.getElementById('dropdownName').innerText = user.name;
+      document.getElementById('dropdownPhone').innerText = user.phoneNumber || 'N/A';
+      document.getElementById('dropdownEmail').innerText = user.email || 'N/A';
+
       // Fetch and display surveys
       loadSurveys(user);
     }
@@ -142,6 +171,8 @@
 
         // Filter surveys based on user access
         const allowedSurveys = surveys.filter(survey => {
+          // If user is admin, allow all
+          if (user.admin === "true") return true;
           // If user has wildcard access "*", allow all
           if (user.survey && user.survey.includes('*')) return true;
           // Otherwise check if the survey name is in the user's allowed list
@@ -172,8 +203,24 @@
       }
     }
 
-    // Profile Click - Logout option
-    document.getElementById('profileMenuBtn').addEventListener('click', () => {
+    // Dropdown toggle logic
+    const profileMenuBtn = document.getElementById('profileMenuBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    profileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('show');
+    });
+
+    // Close dropdown on click outside
+    document.addEventListener('click', (e) => {
+      if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
+        profileDropdown.classList.remove('show');
+      }
+    });
+
+    // Handle logout button click
+    document.getElementById('logoutBtn').addEventListener('click', () => {
       if (confirm('Do you want to log out?')) {
         sessionStorage.clear();
         window.location.href = 'login.html';
