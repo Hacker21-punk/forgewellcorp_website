@@ -42,12 +42,12 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; img-src 'self' data: https://ik.imagekit.io; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-Ep2zQ15UxNPrILY3+LLYhYyyp+r74mZH28fFmBlFtlA=' 'sha256-aW6RsS/l+JLkaEYlCzYh5kl4gFyTv8zZX0QtyV2/G6Y='; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; block-all-mixed-content"
+          "value": "default-src 'self'; img-src 'self' data: https://ik.imagekit.io; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-Ep2zQ15UxNPrILY3+LLYhYyyp+r74mZH28fFmBlFtlA=' 'sha256-aW6RsS/l+JLkaEYlCzYh5kl4gFyTv8zZX0QtyV2/G6Y=' 'sha256-X7Ht1/71y200LfFT3nJ4THTeq26yGBDmTtNrHCbS4DM='; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; block-all-mixed-content"
         }
       ]
     },
     {
-      "source": "/(index|login|404|sw.js)",
+      "source": "/(index|login|reset-password|404|sw.js)",
       "headers": [
         {
           "key": "Cache-Control",
