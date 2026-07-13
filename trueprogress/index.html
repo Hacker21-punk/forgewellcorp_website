@@ -43,6 +43,7 @@
             <!-- Profile Dropdown Card -->
             <div class="profile-dropdown" id="profileDropdown">
               <div class="profile-dropdown-name" id="dropdownName">Admin User</div>
+              <div class="profile-dropdown-role" id="dropdownRole">User</div>
               <div class="profile-dropdown-detail">
                 <span class="detail-label">Phone</span>
                 <span class="detail-value" id="dropdownPhone">N/A</span>
@@ -51,6 +52,28 @@
                 <span class="detail-label">Email</span>
                 <span class="detail-value" id="dropdownEmail">N/A</span>
               </div>
+              
+              <!-- Admin specific options -->
+              <div id="adminDropdownOptions" style="display: none;">
+                <button class="profile-dropdown-action-btn" id="allUsersBtn">
+                  All Users
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                </button>
+                <button class="profile-dropdown-action-btn" id="createBackupBtn">
+                  Create Backup
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </button>
+              </div>
+
               <button class="profile-dropdown-logout-btn" id="logoutBtn">
                 Logout
                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -74,6 +97,11 @@
             </li>
           </ul>
         </nav>
+
+        <!-- Create Survey Button (Visible only to Admin) -->
+        <div id="adminControls" style="display: none;">
+          <button class="btn-create-survey" id="openCreateSurveyModalBtn">Create a survey</button>
+        </div>
 
         <!-- Table Card -->
         <div class="table-card">
@@ -99,6 +127,14 @@
                   </th>
                   <th>
                     <div class="header-content">
+                      Survey Length
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content">
                       Video Count
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
@@ -107,7 +143,7 @@
                   </th>
                   <th>
                     <div class="header-content">
-                      Survey Length
+                      User Count
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
                       </svg>
@@ -122,10 +158,11 @@
                       </svg>
                     </div>
                   </th>
+                  <th id="actionHeader" style="display: none;">Action</th>
                 </tr>
               </thead>
               <tbody id="tableBody">
-                <!-- Dynamically populated from surveys.json -->
+                <!-- Dynamically populated -->
               </tbody>
             </table>
           </div>
@@ -139,69 +176,524 @@
     </main>
   </div>
 
+  <!-- MODAL: Create / Edit Survey -->
+  <div class="modal-overlay" id="surveyModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Create a survey</h3>
+        <button class="modal-close-btn" onclick="closeSurveyModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="surveyForm" onsubmit="return handleSaveSurvey(event)">
+        <input type="hidden" id="editSurveyId" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Survey Name</label>
+            <input type="text" id="surveyNameInput" class="form-input" placeholder="Enter your Survey Name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department Name</label>
+            <input type="text" id="surveyDeptInput" class="form-input" placeholder="Enter your Department Name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Survey Length</label>
+            <input type="text" id="surveyLengthInput" class="form-input" placeholder="Enter your Survey Length" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Created At</label>
+            <input type="date" id="surveyDateInput" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div class="form-radio-group">
+              <label class="form-radio-label">
+                <input type="radio" name="surveyStatus" value="active" checked class="form-radio-input" /> ACTIVE
+              </label>
+              <label class="form-radio-label">
+                <input type="radio" name="surveyStatus" value="inactive" class="form-radio-input" /> INACTIVE
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeSurveyModal()">Cancel</button>
+          <button type="submit" class="btn-modal-submit" id="saveSurveyBtn">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: All Users -->
+  <div class="modal-overlay" id="usersModal">
+    <div class="modal-container" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title">All Users</h3>
+        <button class="modal-close-btn" onclick="closeUsersModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 1rem;">
+        <div style="overflow-x: auto;">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Organization</th>
+                <th>Department</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeUsersModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Video Viewer -->
+  <div class="modal-overlay" id="videoModal">
+    <div class="modal-container video-modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="videoModalTitle">Survey Videos</h3>
+        <button class="modal-close-btn" onclick="closeVideoModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="video-layout">
+          <!-- Video Player Column -->
+          <div class="video-player-wrapper">
+            <div>
+              <label class="video-select-title">Select Survey Run</label>
+              <select id="videoSelect" class="video-selector" onchange="playSelectedVideo()"></select>
+            </div>
+            <video id="mainVideoPlayer" controls></video>
+          </div>
+          <!-- Landmarks Column -->
+          <div>
+            <div class="landmarks-header">Key Landmarks (Jump to time)</div>
+            <div class="landmarks-wrapper">
+              <ul class="landmarks-list" id="landmarksList">
+                <!-- Landmark items -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeVideoModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    let surveysList = [];
+    let currentUser = null;
+    let allVideos = [];
+
     // Verify session
     const userSession = sessionStorage.getItem('loggedInUser');
     if (!userSession) {
       window.location.href = 'login.html';
     } else {
-      const user = JSON.parse(userSession);
+      currentUser = JSON.parse(userSession);
       
       // Update UI Header details
-      document.getElementById('profileName').innerText = user.name;
-      document.getElementById('profileInitial').innerText = user.name.charAt(0).toUpperCase();
+      document.getElementById('profileName').innerText = currentUser.name;
+      document.getElementById('profileInitial').innerText = currentUser.name.charAt(0).toUpperCase();
 
       // Update Dropdown details
-      document.getElementById('dropdownName').innerText = user.name;
-      document.getElementById('dropdownPhone').innerText = user.phoneNumber || 'N/A';
-      document.getElementById('dropdownEmail').innerText = user.email || 'N/A';
+      document.getElementById('dropdownName').innerText = currentUser.name;
+      document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
+      document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
 
-      // Fetch and display surveys
-      loadSurveys(user);
+      if (currentUser.admin === "true") {
+        document.getElementById('dropdownRole').innerText = "Admin";
+        document.getElementById('adminDropdownOptions').style.display = "block";
+        document.getElementById('adminControls').style.display = "block";
+        document.getElementById('actionHeader').style.display = "table-cell";
+      } else {
+        document.getElementById('dropdownRole').innerText = "User";
+      }
+
+      // Initialize App
+      initializeApp();
     }
 
-    async function loadSurveys(user) {
+    async function initializeApp() {
+      await fetchSurveys();
+      await fetchVideos();
+    }
+
+    // Fetch surveys from surveys.json and local storage overrides
+    async function fetchSurveys() {
       try {
         const response = await fetch('backup%20details%20of%20trueprogress/surveys.json');
         if (!response.ok) throw new Error('Failed to load surveys data');
-        const surveys = await response.json();
+        const defaultSurveys = await response.json();
 
-        const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = '';
+        // Get custom surveys from localStorage
+        const customSurveysStr = localStorage.getItem('custom_surveys');
+        const deletedSurveysStr = localStorage.getItem('deleted_surveys');
 
-        // Filter surveys based on user access
-        const allowedSurveys = surveys.filter(survey => {
-          // If user is admin, allow all
-          if (user.admin === "true") return true;
-          // If user has wildcard access "*", allow all
-          if (user.survey && user.survey.map(s => s.trim()).includes('*')) return true;
-          // Otherwise check if the survey name is in the user's allowed list
-          return user.survey && user.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
+        const customSurveys = customSurveysStr ? JSON.parse(customSurveysStr) : [];
+        const deletedSurveys = deletedSurveysStr ? JSON.parse(deletedSurveysStr) : [];
+
+        // Apply edits / deletions to default list
+        const editedSurveysStr = localStorage.getItem('edited_surveys');
+        const editedSurveys = editedSurveysStr ? JSON.parse(editedSurveysStr) : [];
+
+        surveysList = defaultSurveys.filter(s => !deletedSurveys.includes(s.id));
+
+        // Merge edited details
+        surveysList = surveysList.map(s => {
+          const edited = editedSurveys.find(e => e.id === s.id);
+          return edited ? { ...s, ...edited } : s;
         });
 
-        if (allowedSurveys.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
-          return;
+        // Add completely new custom ones
+        surveysList = [...surveysList, ...customSurveys];
+
+        renderSurveysTable();
+      } catch (error) {
+        console.error(error);
+        alert('Error fetching surveys database.');
+      }
+    }
+
+    // Fetch videos list
+    async function fetchVideos() {
+      try {
+        const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
+        if (!response.ok) throw new Error('Failed to load videos data');
+        allVideos = await response.json();
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      }
+    }
+
+    function renderSurveysTable() {
+      const tableBody = document.getElementById('tableBody');
+      tableBody.innerHTML = '';
+
+      // Filter surveys based on user access
+      const allowedSurveys = surveysList.filter(survey => {
+        if (currentUser.admin === "true") return true;
+        if (currentUser.survey && currentUser.survey.map(s => s.trim()).includes('*')) return true;
+        return currentUser.survey && currentUser.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
+      });
+
+      if (allowedSurveys.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="${currentUser.admin === 'true' ? '8' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
+        return;
+      }
+
+      allowedSurveys.forEach(survey => {
+        const row = document.createElement('tr');
+        row.id = `survey-row-${survey.id}`;
+        
+        const nameCell = `<td><span class="survey-link-name" onclick="openVideoViewer('${survey.id}', '${escapeHtml(survey.name)}')">${escapeHtml(survey.name)}</span></td>`;
+        const deptCell = `<td>${escapeHtml(survey.department)}</td>`;
+        const lengthCell = `<td>${escapeHtml(survey.survey_length || 'N/A')}</td>`;
+        const videoCell = `<td>${survey.video_count || survey.total_surveys || 0}</td>`;
+        const userCell = `<td>${survey.user_count ? survey.user_count.length + ' Users' : 'N/A'}</td>`;
+        
+        // Format Created On date
+        let createdOn = survey.createdAt || 'N/A';
+        if (typeof createdOn === 'object' && createdOn.seconds) {
+          const date = new Date(createdOn.seconds * 1000);
+          createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+        }
+        const dateCell = `<td>${createdOn}</td>`;
+        const statusCell = `<td><span class="status-badge ${survey.status}">${survey.status}</span></td>`;
+
+        let actionCell = '';
+        if (currentUser.admin === "true") {
+          actionCell = `
+            <td>
+              <div class="action-btn-group">
+                <button class="action-icon-btn edit" onclick="openEditSurveyModal('${survey.id}')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button class="action-icon-btn delete" onclick="handleDeleteSurvey('${survey.id}')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          `;
         }
 
-        allowedSurveys.forEach(survey => {
+        row.innerHTML = nameCell + deptCell + lengthCell + videoCell + userCell + dateCell + statusCell + actionCell;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Modal Control: Create / Edit
+    const surveyModal = document.getElementById('surveyModal');
+    const openCreateSurveyModalBtn = document.getElementById('openCreateSurveyModalBtn');
+
+    if (openCreateSurveyModalBtn) {
+      openCreateSurveyModalBtn.addEventListener('click', () => {
+        document.getElementById('modalTitle').innerText = "Create a survey";
+        document.getElementById('editSurveyId').value = "";
+        document.getElementById('surveyForm').reset();
+        document.getElementById('saveSurveyBtn').innerText = "Create";
+        
+        // Default today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('surveyDateInput').value = today;
+
+        surveyModal.classList.add('show');
+      });
+    }
+
+    function closeSurveyModal() {
+      surveyModal.classList.remove('show');
+    }
+
+    function openEditSurveyModal(id) {
+      const survey = surveysList.find(s => s.id === id);
+      if (!survey) return;
+
+      document.getElementById('modalTitle').innerText = "Edit survey";
+      document.getElementById('editSurveyId').value = survey.id;
+      document.getElementById('surveyNameInput').value = survey.name;
+      document.getElementById('surveyDeptInput').value = survey.department;
+      document.getElementById('surveyLengthInput').value = survey.survey_length || '';
+      document.getElementById('saveSurveyBtn').innerText = "Save";
+
+      let createdOn = survey.createdAt || '';
+      if (createdOn && typeof createdOn === 'object' && createdOn.seconds) {
+        const date = new Date(createdOn.seconds * 1000);
+        createdOn = date.toISOString().split('T')[0];
+      }
+      document.getElementById('surveyDateInput').value = createdOn;
+
+      const radios = document.getElementsByName('surveyStatus');
+      for (let radio of radios) {
+        if (radio.value === survey.status) {
+          radio.checked = true;
+        }
+      }
+
+      surveyModal.classList.add('show');
+    }
+
+    function handleSaveSurvey(event) {
+      event.preventDefault();
+      const id = document.getElementById('editSurveyId').value;
+      const name = document.getElementById('surveyNameInput').value;
+      const department = document.getElementById('surveyDeptInput').value;
+      const survey_length = document.getElementById('surveyLengthInput').value;
+      const createdAt = document.getElementById('surveyDateInput').value;
+      
+      const radios = document.getElementsByName('surveyStatus');
+      let status = 'active';
+      for (let r of radios) {
+        if (r.checked) status = r.value;
+      }
+
+      if (id) {
+        // Edit Survey
+        let editedSurveys = JSON.parse(localStorage.getItem('edited_surveys') || '[]');
+        const existingIdx = editedSurveys.findIndex(e => e.id === id);
+        
+        const surveyUpdate = { id, name, department, survey_length, createdAt, status };
+        if (existingIdx > -1) {
+          editedSurveys[existingIdx] = surveyUpdate;
+        } else {
+          editedSurveys.push(surveyUpdate);
+        }
+        localStorage.setItem('edited_surveys', JSON.stringify(editedSurveys));
+      } else {
+        // Create Survey
+        const newSurvey = {
+          id: 'custom-' + Math.random().toString(36).substring(2, 10),
+          name,
+          department,
+          survey_length,
+          createdAt,
+          status,
+          video_count: 0,
+          user_count: []
+        };
+        let customSurveys = JSON.parse(localStorage.getItem('custom_surveys') || '[]');
+        customSurveys.push(newSurvey);
+        localStorage.setItem('custom_surveys', JSON.stringify(customSurveys));
+      }
+
+      closeSurveyModal();
+      fetchSurveys();
+    }
+
+    function handleDeleteSurvey(id) {
+      if (confirm('Are you sure you want to delete this survey?')) {
+        let deletedSurveys = JSON.parse(localStorage.getItem('deleted_surveys') || '[]');
+        
+        if (id.startsWith('custom-')) {
+          let customSurveys = JSON.parse(localStorage.getItem('custom_surveys') || '[]');
+          customSurveys = customSurveys.filter(s => s.id !== id);
+          localStorage.setItem('custom_surveys', JSON.stringify(customSurveys));
+        } else {
+          deletedSurveys.push(id);
+          localStorage.setItem('deleted_surveys', JSON.stringify(deletedSurveys));
+        }
+
+        fetchSurveys();
+      }
+    }
+
+    // Modal Control: All Users
+    const usersModal = document.getElementById('usersModal');
+    
+    document.getElementById('allUsersBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('backup%20details%20of%20trueprogress/users.json');
+        if (!response.ok) throw new Error('Failed to fetch users list');
+        const users = await response.json();
+
+        const tableBody = document.getElementById('usersTableBody');
+        tableBody.innerHTML = '';
+
+        users.forEach(user => {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td><strong>${survey.name}</strong></td>
-            <td>${survey.department}</td>
-            <td>${survey.video_count || survey.total_surveys || 0}</td>
-            <td>${survey.survey_length || 'N/A'}</td>
-            <td>${survey.createdAt}</td>
-            <td><span class="status-badge ${survey.status}">${survey.status}</span></td>
+            <td><strong>${escapeHtml(user.name || 'N/A')}</strong></td>
+            <td>${escapeHtml(user.email || 'N/A')}</td>
+            <td>${escapeHtml(user.phoneNumber || 'N/A')}</td>
+            <td>${escapeHtml(user.organization || 'N/A')}</td>
+            <td>${escapeHtml(user.department || 'N/A')}</td>
+            <td><span style="font-weight: 700; color: ${user.admin === 'true' ? '#b45309' : '#047857'}">${user.admin === 'true' ? 'Admin' : 'User'}</span></td>
           `;
           tableBody.appendChild(row);
         });
+
+        usersModal.classList.add('show');
       } catch (error) {
         console.error(error);
-        const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 2rem;">Error loading surveys data.</td></tr>`;
+        alert('Error loading users list.');
       }
+    });
+
+    function closeUsersModal() {
+      usersModal.classList.remove('show');
     }
+
+    // Modal Control: Video Modal & Player
+    const videoModal = document.getElementById('videoModal');
+    let activeSurveyVideos = [];
+
+    function openVideoViewer(surveyId, surveyName) {
+      document.getElementById('videoModalTitle').innerText = `${surveyName} - Videos`;
+      
+      // Filter videos from allVideos that belong to this surveyId
+      activeSurveyVideos = allVideos.filter(v => v.survey === surveyId);
+
+      const videoSelect = document.getElementById('videoSelect');
+      videoSelect.innerHTML = '';
+
+      if (activeSurveyVideos.length === 0) {
+        videoSelect.innerHTML = '<option value="">No videos found for this survey</option>';
+        document.getElementById('mainVideoPlayer').src = '';
+        document.getElementById('landmarksList').innerHTML = '<li style="padding: 1rem; color: #9ca3af; text-align: center;">No landmarks available</li>';
+        videoModal.classList.add('show');
+        return;
+      }
+
+      activeSurveyVideos.forEach((v, index) => {
+        const opt = document.createElement('option');
+        opt.value = index;
+        
+        // Extract a pretty run name / date from S3 URL
+        let runName = `Run ${index + 1} (${v.createdAt || 'Unknown Date'})`;
+        try {
+          const parts = v.videoURL.split('/');
+          const filename = parts[parts.length - 1];
+          runName = filename.replace('.mp4', '').substring(0, 30) + ` (${v.createdAt})`;
+        } catch (e) {}
+
+        opt.innerText = runName;
+        videoSelect.appendChild(opt);
+      });
+
+      videoModal.classList.add('show');
+      playSelectedVideo();
+    }
+
+    function playSelectedVideo() {
+      const select = document.getElementById('videoSelect');
+      if (!select.value) return;
+
+      const videoIdx = select.value;
+      const videoObj = activeSurveyVideos[videoIdx];
+      const videoPlayer = document.getElementById('mainVideoPlayer');
+
+      videoPlayer.src = videoObj.videoURL;
+      videoPlayer.load();
+
+      // Populate Landmarks
+      const landmarksList = document.getElementById('landmarksList');
+      landmarksList.innerHTML = '';
+
+      if (!videoObj.landmarks || videoObj.landmarks.length === 0) {
+        landmarksList.innerHTML = '<li style="padding: 1rem; color: #9ca3af; text-align: center;">No landmarks available for this run</li>';
+        return;
+      }
+
+      videoObj.landmarks.forEach(lm => {
+        const li = document.createElement('li');
+        li.className = 'landmark-item';
+        
+        // Format time code (seconds -> MM:SS)
+        const totalSecs = Math.floor(lm.time);
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        const timeCode = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        li.innerHTML = `
+          <span class="landmark-name">${escapeHtml(lm.display || lm.name)}</span>
+          <span class="landmark-time">${timeCode}</span>
+        `;
+        li.onclick = () => {
+          videoPlayer.currentTime = lm.time;
+          videoPlayer.play();
+        };
+        landmarksList.appendChild(li);
+      });
+    }
+
+    function closeVideoModal() {
+      document.getElementById('mainVideoPlayer').pause();
+      document.getElementById('mainVideoPlayer').src = '';
+      videoModal.classList.remove('show');
+    }
+
+    // Backup Generation (JSON Download)
+    document.getElementById('createBackupBtn').addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(surveysList, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `surveys_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
 
     // Dropdown toggle logic
     const profileMenuBtn = document.getElementById('profileMenuBtn');
@@ -226,6 +718,12 @@
         window.location.href = 'login.html';
       }
     });
+
+    // Helpers
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
   </script>
 </body>
 </html>
