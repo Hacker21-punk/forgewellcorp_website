@@ -243,9 +243,14 @@
         
         let displayDate = v.createdAt || 'N/A';
         try {
-          const d = new Date(displayDate);
-          if (!isNaN(d.getTime())) {
-            displayDate = d.toDateString(); // Formats as Sat Apr 15 2023
+          if (typeof displayDate === 'number') {
+            const d = new Date(displayDate);
+            displayDate = d.toDateString();
+          } else if (typeof displayDate === 'string' && displayDate !== 'N/A') {
+            const d = new Date(displayDate + (displayDate.includes('T') ? '' : 'T00:00:00'));
+            if (!isNaN(d.getTime())) {
+              displayDate = d.toDateString();
+            }
           }
         } catch(e) {}
 

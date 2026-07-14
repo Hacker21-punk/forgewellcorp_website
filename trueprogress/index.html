@@ -297,6 +297,7 @@
     async function initializeApp() {
       await fetchSurveys();
       await fetchVideos();
+      renderSurveysTable();
     }
 
     // Fetch surveys from surveys.json and local storage overrides
@@ -327,8 +328,6 @@
 
         // Add completely new custom ones
         surveysList = [...surveysList, ...customSurveys];
-
-        renderSurveysTable();
       } catch (error) {
         console.error(error);
         alert('Error fetching surveys database.');
@@ -369,14 +368,35 @@
         const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name)}">${escapeHtml(survey.name)}</a></td>`;
         const deptCell = `<td>${escapeHtml(survey.department)}</td>`;
         const lengthCell = `<td>${escapeHtml(survey.survey_length || 'N/A')}</td>`;
-        const videoCell = `<td>${survey.video_count || survey.total_surveys || 0}</td>`;
-        const userCell = `<td>${survey.user_count ? survey.user_count.length + ' Users' : 'N/A'}</td>`;
+
+        // Dynamically compute video count from allVideos
+        const matchingVideos = allVideos.filter(v => v.survey === survey.id);
+        const videoCount = survey.video_count || matchingVideos.length || survey.total_surveys || 0;
+        const videoCell = `<td>${videoCount}</td>`;
+
+        // User count - use the user_count array if present, otherwise count from matching videos
+        let userCountDisplay = 'N/A';
+        if (survey.user_count && Array.isArray(survey.user_count) && survey.user_count.length > 0) {
+          userCountDisplay = survey.user_count.length + ' Users';
+        }
+        const userCell = `<td>${userCountDisplay}</td>`;
         
-        // Format Created On date
+        // Format Created On date to M/D/YYYY
         let createdOn = survey.createdAt || 'N/A';
-        if (typeof createdOn === 'object' && createdOn.seconds) {
+        if (typeof createdOn === 'number') {
+          // Unix timestamp in milliseconds
+          const date = new Date(createdOn);
+          createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+        } else if (typeof createdOn === 'object' && createdOn.seconds) {
+          // Firestore timestamp
           const date = new Date(createdOn.seconds * 1000);
           createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+        } else if (typeof createdOn === 'string' && createdOn !== 'N/A') {
+          // ISO date string like "2022-01-11"
+          const date = new Date(createdOn + 'T00:00:00');
+          if (!isNaN(date.getTime())) {
+            createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+          }
         }
         const dateCell = `<td>${createdOn}</td>`;
         const statusCell = `<td><span class="status-badge ${survey.status}">${survey.status}</span></td>`;

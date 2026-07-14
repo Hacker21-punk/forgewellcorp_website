@@ -111,7 +111,7 @@
         <!-- Custom Video Player Wrapper -->
         <div class="video-player-container">
           <div class="custom-video-wrapper">
-            <video id="videoPlayer" ontimeupdate="updateProgress()" onloadedmetadata="initializePlayer()"></video>
+            <video id="videoPlayer" ontimeupdate="updateProgress()" onloadedmetadata="initializePlayer()" preload="auto"></video>
           </div>
 
           <!-- Custom Player Controls Bar -->
@@ -281,7 +281,16 @@
         }
 
         videoObject = video;
-        document.getElementById('videoPlayer').src = videoObject.videoURL;
+        const videoEl = document.getElementById('videoPlayer');
+        videoEl.src = videoObject.videoURL;
+        videoEl.load();
+        
+        // Add error handler for debugging
+        videoEl.addEventListener('error', function() {
+          const err = videoEl.error;
+          console.error('Video load error:', err ? err.message : 'Unknown error', 'Code:', err ? err.code : '');
+          console.log('Attempted URL:', videoObject.videoURL);
+        });
 
         // Load custom landmarks overrides if any
         const key = `landmarks_${videoId}`;
