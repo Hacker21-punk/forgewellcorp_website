@@ -247,7 +247,7 @@ a {
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
+  /* text-transform removed to match original site (lowercase) */
 }
 
 .status-badge.active {

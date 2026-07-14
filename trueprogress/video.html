@@ -68,9 +68,26 @@
         <!-- Breadcrumb -->
         <nav class="breadcrumb-nav" aria-label="Breadcrumb">
           <ul class="breadcrumb-list">
-            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-            <li class="breadcrumb-item"><a id="breadcrumbSurveyLink" href="#">Survey Name</a></li>
-            <li class="breadcrumb-item" id="breadcrumbVideoName">Video Name</li>
+            <li class="breadcrumb-item" style="cursor: pointer;">
+              <a href="index.html" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit;">
+                <svg aria-hidden="true" style="width: 1rem; height: 1rem; margin-right: 0.5rem;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                </svg>
+                Home
+              </a>
+            </li>
+            <li class="breadcrumb-item">
+              <svg aria-hidden="true" style="width: 1.25rem; height: 1.25rem; color: #9ca3af; margin: 0 0.25rem;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              <a id="breadcrumbSurveyLink" href="#" style="text-decoration: none; color: inherit;">Survey Name</a>
+            </li>
+            <li class="breadcrumb-item">
+              <svg aria-hidden="true" style="width: 1.25rem; height: 1.25rem; color: #9ca3af; margin: 0 0.25rem;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              <span id="breadcrumbVideoName" style="color: #374151;">Video Name</span>
+            </li>
           </ul>
         </nav>
 
@@ -112,6 +129,7 @@
         <div class="video-player-container">
           <div class="custom-video-wrapper">
             <video id="videoPlayer" ontimeupdate="updateProgress()" onloadedmetadata="initializePlayer()" preload="auto"></video>
+            <div id="youtubePlayerContainer" style="display:none; width:100%; height:100%; min-height:400px; background:#000;"></div>
           </div>
 
           <!-- Custom Player Controls Bar -->
@@ -221,6 +239,202 @@
     let videoObject = null;
     let landmarks = [];
 
+    // Unified Player Interface Bridge
+    let playerType = 'html5'; // 'html5' or 'youtube'
+    let ytPlayer = null;
+    let ytPlayerReady = false;
+    let ytInterval = null;
+    let ytDuration = 0;
+
+    // Load YouTube API script dynamically
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    window.onYouTubeIframeAPIReady = function() {
+      if (playerType === 'youtube' && videoObject) {
+        initYoutubePlayer(getYouTubeId(videoObject.videoURL));
+      }
+    };
+
+    function isYouTubeUrl(url) {
+      if (!url) return false;
+      return url.includes('youtube.com') || url.includes('youtu.be');
+    }
+
+    function getYouTubeId(url) {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function initYoutubePlayer(ytId) {
+      document.getElementById('videoPlayer').style.display = 'none';
+      document.getElementById('youtubePlayerContainer').style.display = 'block';
+      
+      if (ytPlayer) {
+        try { ytPlayer.destroy(); } catch(e) {}
+      }
+
+      ytPlayerReady = false;
+      ytPlayer = new YT.Player('youtubePlayerContainer', {
+        height: '100%',
+        width: '100%',
+        videoId: ytId,
+        playerVars: {
+          'playsinline': 1,
+          'controls': 0, // Hide default controls
+          'disablekb': 1,
+          'rel': 0,
+          'showinfo': 0,
+          'ecver': 2
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      ytPlayerReady = true;
+      ytDuration = ytPlayer.getDuration();
+      progressBar.max = ytDuration;
+      
+      // Sync speed selection
+      const speedSelect = document.querySelector('select[onchange="changePlaybackSpeed(this)"]');
+      if (speedSelect) {
+        ytPlayer.setPlaybackRate(parseFloat(speedSelect.value));
+      }
+      
+      // Sync volume slider
+      const volSlider = document.querySelector('.volume-slider');
+      if (volSlider) {
+        ytPlayer.setVolume(parseFloat(volSlider.value) * 100);
+      }
+      
+      updateProgress();
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.PLAYING) {
+        updatePlayIcons(true);
+        startYtTimer();
+      } else {
+        updatePlayIcons(false);
+        stopYtTimer();
+      }
+    }
+
+    function startYtTimer() {
+      stopYtTimer();
+      ytInterval = setInterval(() => {
+        if (ytPlayerReady) {
+          updateProgress();
+        }
+      }, 250);
+    }
+
+    function stopYtTimer() {
+      if (ytInterval) {
+        clearInterval(ytInterval);
+        ytInterval = null;
+      }
+    }
+
+    // Bridge methods
+    function getDuration() {
+      if (playerType === 'youtube') {
+        return ytDuration || (ytPlayerReady ? ytPlayer.getDuration() : 0);
+      }
+      return player.duration || 0;
+    }
+
+    function getCurrentTime() {
+      if (playerType === 'youtube') {
+        return ytPlayerReady ? ytPlayer.getCurrentTime() : 0;
+      }
+      return player.currentTime || 0;
+    }
+
+    function setCurrentTime(time) {
+      if (playerType === 'youtube') {
+        if (ytPlayerReady) ytPlayer.seekTo(time, true);
+      } else {
+        player.currentTime = time;
+      }
+      updateProgress();
+    }
+
+    function playVideo() {
+      if (playerType === 'youtube') {
+        if (ytPlayerReady) ytPlayer.playVideo();
+      } else {
+        player.play().catch(err => console.error("HTML5 play error:", err));
+      }
+      updatePlayIcons(true);
+    }
+
+    function pauseVideo() {
+      if (playerType === 'youtube') {
+        if (ytPlayerReady) ytPlayer.pauseVideo();
+      } else {
+        player.pause();
+      }
+      updatePlayIcons(false);
+    }
+
+    function getMuted() {
+      if (playerType === 'youtube') {
+        return ytPlayerReady ? ytPlayer.isMuted() : false;
+      }
+      return player.muted;
+    }
+
+    function setMuted(muted) {
+      if (playerType === 'youtube') {
+        if (ytPlayerReady) {
+          if (muted) ytPlayer.mute();
+          else ytPlayer.unMute();
+        }
+      } else {
+        player.muted = muted;
+      }
+    }
+
+    // Handle range 0-1
+    function getVolume() {
+      if (playerType === 'youtube') {
+        return ytPlayerReady ? ytPlayer.getVolume() / 100 : 1;
+      }
+      return player.volume;
+    }
+
+    function setVolume(vol) {
+      if (playerType === 'youtube') {
+        if (ytPlayerReady) ytPlayer.setVolume(vol * 100);
+      } else {
+        player.volume = vol;
+      }
+    }
+
+    function getPlaybackRate() {
+      if (playerType === 'youtube') {
+        return ytPlayerReady ? ytPlayer.getPlaybackRate() : 1;
+      }
+      return player.playbackRate;
+    }
+
+    function setPlaybackRate(rate) {
+      if (playerType === 'youtube') {
+        if (ytPlayerReady) ytPlayer.setPlaybackRate(rate);
+      } else {
+        player.playbackRate = rate;
+      }
+    }
+
     // URL Query Params
     const urlParams = new URLSearchParams(window.location.search);
     videoId = urlParams.get('id');
@@ -281,16 +495,30 @@
         }
 
         videoObject = video;
-        const videoEl = document.getElementById('videoPlayer');
-        videoEl.src = videoObject.videoURL;
-        videoEl.load();
         
-        // Add error handler for debugging
-        videoEl.addEventListener('error', function() {
-          const err = videoEl.error;
-          console.error('Video load error:', err ? err.message : 'Unknown error', 'Code:', err ? err.code : '');
-          console.log('Attempted URL:', videoObject.videoURL);
-        });
+        if (isYouTubeUrl(videoObject.videoURL)) {
+          playerType = 'youtube';
+          document.getElementById('videoPlayer').style.display = 'none';
+          document.getElementById('youtubePlayerContainer').style.display = 'block';
+          if (typeof YT !== 'undefined' && YT.Player) {
+            initYoutubePlayer(getYouTubeId(videoObject.videoURL));
+          }
+        } else {
+          playerType = 'html5';
+          document.getElementById('videoPlayer').style.display = 'block';
+          document.getElementById('youtubePlayerContainer').style.display = 'none';
+          
+          const videoEl = document.getElementById('videoPlayer');
+          videoEl.src = videoObject.videoURL;
+          videoEl.load();
+          
+          // Add error handler for debugging
+          videoEl.addEventListener('error', function() {
+            const err = videoEl.error;
+            console.error('Video load error:', err ? err.message : 'Unknown error', 'Code:', err ? err.code : '');
+            console.log('Attempted URL:', videoObject.videoURL);
+          });
+        }
 
         // Load custom landmarks overrides if any
         const key = `landmarks_${videoId}`;
@@ -362,13 +590,11 @@
     }
 
     function seekToTime(time) {
-      const player = document.getElementById('videoPlayer');
-      player.currentTime = time;
-      player.play();
-      updatePlayIcons(true);
+      setCurrentTime(time);
+      playVideo();
     }
 
-    // Video Player controls
+    // Video Player controls element references
     const player = document.getElementById('videoPlayer');
     const progressBar = document.getElementById('progressBar');
     const timeDisplay = document.getElementById('timeDisplay');
@@ -376,17 +602,26 @@
     const pauseIcon = document.getElementById('pauseIcon');
 
     function initializePlayer() {
-      progressBar.max = player.duration;
+      progressBar.max = getDuration();
       updateProgress();
     }
 
     function togglePlayPause() {
-      if (player.paused || player.ended) {
-        player.play();
-        updatePlayIcons(true);
+      if (playerType === 'youtube') {
+        if (ytPlayerReady) {
+          const state = ytPlayer.getPlayerState();
+          if (state === YT.PlayerState.PLAYING) {
+            pauseVideo();
+          } else {
+            playVideo();
+          }
+        }
       } else {
-        player.pause();
-        updatePlayIcons(false);
+        if (player.paused || player.ended) {
+          playVideo();
+        } else {
+          pauseVideo();
+        }
       }
     }
 
@@ -401,18 +636,21 @@
     }
 
     function updateProgress() {
-      progressBar.value = player.currentTime;
+      const curTime = getCurrentTime();
+      const dur = getDuration();
+      progressBar.value = curTime;
+      progressBar.max = dur || 100;
       
-      const curTotalSecs = Math.floor(player.currentTime);
+      const curTotalSecs = Math.floor(curTime);
       const curMins = Math.floor(curTotalSecs / 60);
       const curSecs = curTotalSecs % 60;
 
-      const durTotalSecs = isNaN(player.duration) ? 0 : Math.floor(player.duration);
+      const durTotalSecs = isNaN(dur) ? 0 : Math.floor(dur);
       const durMins = Math.floor(durTotalSecs / 60);
       const durSecs = durTotalSecs % 60;
 
       const timeString = `${curMins}:${curSecs.toString().padStart(2, '0')} / ${durMins}:${durSecs.toString().padStart(2, '0')}`;
-      const speed = player.playbackRate;
+      const speed = getPlaybackRate();
 
       timeDisplay.innerText = `${timeString} x ${speed}`;
 
@@ -422,24 +660,26 @@
     }
 
     function seekVideo(slider) {
-      player.currentTime = parseFloat(slider.value);
+      setCurrentTime(parseFloat(slider.value));
     }
 
     function seekRelative(secs) {
-      player.currentTime = Math.max(0, Math.min(player.duration, player.currentTime + secs));
+      const newTime = Math.max(0, Math.min(getDuration(), getCurrentTime() + secs));
+      setCurrentTime(newTime);
     }
 
     function changePlaybackSpeed(sel) {
-      player.playbackRate = parseFloat(sel.value);
+      setPlaybackRate(parseFloat(sel.value));
       updateProgress();
     }
 
     function changeVolume(slider) {
-      player.volume = parseFloat(slider.value);
+      const vol = parseFloat(slider.value);
+      setVolume(vol);
       const muteOn = document.getElementById('volumeOnIcon');
       const muteOff = document.getElementById('volumeMuteIcon');
       
-      if (player.volume === 0) {
+      if (vol === 0) {
         muteOn.style.display = 'none';
         muteOff.style.display = 'block';
       } else {
@@ -449,11 +689,12 @@
     }
 
     function toggleMute() {
-      player.muted = !player.muted;
+      const isMuted = getMuted();
+      setMuted(!isMuted);
       const muteOn = document.getElementById('volumeOnIcon');
       const muteOff = document.getElementById('volumeMuteIcon');
       
-      if (player.muted) {
+      if (!isMuted) {
         muteOn.style.display = 'none';
         muteOff.style.display = 'block';
       } else {
@@ -463,12 +704,13 @@
     }
 
     function toggleFullscreen() {
-      if (player.requestFullscreen) {
-        player.requestFullscreen();
-      } else if (player.webkitRequestFullscreen) {
-        player.webkitRequestFullscreen();
-      } else if (player.msRequestFullscreen) {
-        player.msRequestFullscreen();
+      const container = document.querySelector('.custom-video-wrapper');
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      } else if (container.msRequestFullscreen) {
+        container.msRequestFullscreen();
       }
     }
 
@@ -483,7 +725,7 @@
       event.preventDefault();
       const name = document.getElementById('breakpointNameInput').value;
       const km = document.getElementById('breakpointKmInput').value;
-      const time = player.currentTime;
+      const time = getCurrentTime();
 
       const newLm = {
         name,

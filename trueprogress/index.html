@@ -356,6 +356,9 @@
         return currentUser.survey && currentUser.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
       });
 
+      // Sort alphabetically by name to match the original site
+      allowedSurveys.sort((a, b) => a.name.localeCompare(b.name));
+
       if (allowedSurveys.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="${currentUser.admin === 'true' ? '8' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
         return;
@@ -369,9 +372,9 @@
         const deptCell = `<td>${escapeHtml(survey.department)}</td>`;
         const lengthCell = `<td>${escapeHtml(survey.survey_length || 'N/A')}</td>`;
 
-        // Dynamically compute video count from allVideos
+        // Dynamically compute video count from allVideos (prioritize dynamic count)
         const matchingVideos = allVideos.filter(v => v.survey === survey.id);
-        const videoCount = survey.video_count || matchingVideos.length || survey.total_surveys || 0;
+        const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (survey.video_count !== undefined ? survey.video_count : (survey.total_surveys || 0));
         const videoCell = `<td>${videoCount}</td>`;
 
         // User count - use the user_count array if present, otherwise count from matching videos
@@ -392,8 +395,13 @@
           const date = new Date(createdOn.seconds * 1000);
           createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         } else if (typeof createdOn === 'string' && createdOn !== 'N/A') {
-          // ISO date string like "2022-01-11"
-          const date = new Date(createdOn + 'T00:00:00');
+          // Handle both ISO dates like "2022-01-11" and readable dates like "Thu Apr 27 2023"
+          let date;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(createdOn)) {
+            date = new Date(createdOn + 'T00:00:00');
+          } else {
+            date = new Date(createdOn);
+          }
           if (!isNaN(date.getTime())) {
             createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
           }
