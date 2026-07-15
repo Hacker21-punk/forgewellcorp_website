@@ -91,135 +91,27 @@
           </ul>
         </nav>
 
-        <!-- Video Top Controls -->
-        <div class="video-top-controls">
-          <!-- File Upload -->
-          <div class="search-select-wrapper">
-            <span class="search-select-label">Upload LandMarks File</span>
-            <div class="file-upload-container">
-              <label class="file-input-wrapper" id="fileInputLabel">
-                Choose File
-                <input type="file" id="landmarksFileInput" accept=".csv,.json" onchange="handleFileChange(this)" />
-              </label>
-              <button class="btn-upload-submit" onclick="uploadLandmarksFile()">Upload</button>
-            </div>
-          </div>
-
-          <!-- Landmarks Dropdown -->
-          <div class="search-select-wrapper">
-            <span class="search-select-label">Landmarks</span>
-            <select id="landmarksSelect" class="search-select" onchange="jumpToLandmarkSelect(this)">
-              <option value="">Search for landmarks</option>
-            </select>
-          </div>
-
-          <!-- KM Dropdown -->
-          <div class="search-select-wrapper">
-            <span class="search-select-label">KM</span>
-            <select id="kmSelect" class="search-select" onchange="jumpToKmSelect(this)">
-              <option value="">Search for KM</option>
-            </select>
-          </div>
+        <!-- Dynamic comparative grid wrapper -->
+        <div id="playersContainer" class="videos-grid">
+          <!-- Populated dynamically via JS -->
         </div>
 
-        <!-- Heading -->
-        <h2 class="video-heading-title" id="videoHeadingTitle">Film</h2>
-
-        <!-- Custom Video Player Wrapper -->
-        <div class="video-player-container">
-          <div class="custom-video-wrapper">
-            <video id="videoPlayer" ontimeupdate="updateProgress()" onloadedmetadata="initializePlayer()" preload="auto"></video>
-            <div id="youtubePlayerContainer" style="display:none; width:100%; height:100%; min-height:400px; background:#000;"></div>
-          </div>
-
-          <!-- Custom Player Controls Bar -->
-          <div class="player-controls-container">
-            <!-- Progress Bar -->
-            <div class="progress-bar-wrapper">
-              <input type="range" id="progressBar" class="player-progress-bar" value="0" min="0" step="0.1" oninput="seekVideo(this)" />
-            </div>
-
-            <!-- Controls Row -->
-            <div class="player-time-controls">
-              <!-- Left: Time Display & Speed selector -->
-              <div style="display: flex; align-items: center; gap: 1rem;">
-                <span class="time-display" id="timeDisplay">0:00 / 0:00 x 1</span>
-                <select id="speedSelector" class="search-select" style="width: 70px; padding: 0.25rem;" onchange="changePlaybackSpeed(this)">
-                  <option value="0.5">x0.5</option>
-                  <option value="1" selected>x1</option>
-                  <option value="1.5">x1.5</option>
-                  <option value="2">x2</option>
-                </select>
-              </div>
-
-              <!-- Center: Action buttons -->
-              <div class="player-btn-group">
-                <!-- Seek Back -->
-                <button class="player-icon-btn" onclick="seekRelative(-10)" title="Rewind 10s">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
-                </button>
-                <!-- Play / Pause -->
-                <button class="player-icon-btn" id="playPauseBtn" onclick="togglePlayPause()" style="background-color: #2563eb; color: white; border-radius: 9999px; width: 2.25rem; height: 2.25rem;">
-                  <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                  <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                </button>
-                <!-- Seek Forward -->
-                <button class="player-icon-btn" onclick="seekRelative(10)" title="Forward 10s">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
-                </button>
-              </div>
-
-              <!-- Right: Fullscreen, Download, Volume controls -->
-              <div class="player-btn-group">
-                <!-- Volume Slider -->
-                <div class="volume-slider-wrapper">
-                  <button class="player-icon-btn" id="muteBtn" onclick="toggleMute()">
-                    <svg id="volumeOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                    <svg id="volumeMuteIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
-                  </button>
-                  <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="1" oninput="changeVolume(this)" />
-                </div>
-                <!-- Download Video -->
-                <button class="player-icon-btn" onclick="downloadVideoFile()" title="Download Video">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                </button>
-                <!-- Fullscreen -->
-                <button class="player-icon-btn" onclick="toggleFullscreen()" title="Fullscreen">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Add Breakpoint Form -->
-        <div class="breakpoint-form-card" id="adminBreakpointPanel" style="display: none;">
-          <h3 class="video-heading-title" style="font-size: 1.125rem; margin-bottom: 1rem;">Add Landmark / Breakpoint</h3>
-          <form onsubmit="return handleAddBreakpoint(event)">
-            <div class="breakpoint-grid">
-              <div class="search-select-wrapper">
-                <span class="search-select-label">Landmark Name</span>
-                <input type="text" id="breakpointNameInput" class="form-input" placeholder="Enter landmark name..." required />
-              </div>
-              <div class="search-select-wrapper">
-                <span class="search-select-label">Time (Auto)</span>
-                <input type="text" id="breakpointTimeInput" class="form-input" value="0:00" readonly style="background-color: #f3f4f6;" />
-              </div>
-              <div class="search-select-wrapper">
-                <span class="search-select-label">KM Number</span>
-                <input type="text" id="breakpointKmInput" class="form-input" placeholder="KM Number" required />
-              </div>
-            </div>
-            <button type="submit" class="btn-breakpoint-add">Add Breakpoint</button>
-          </form>
-
-          <div class="breakpoints-footer">
-            <span class="total-landmarks-label" id="totalLandmarksCount">Total Landmarks: 0</span>
-            <div style="display: flex; gap: 0.75rem;">
-              <button class="btn-csv-export" onclick="exportLandmarksCsv()">Export CSV</button>
-              <button class="btn-delete-all" onclick="deleteAllLandmarks()">Delete ALL</button>
-            </div>
-          </div>
+        <!-- Floating Comparative Controls (Shows only when comparing multiple videos) -->
+        <div id="comparativeControls" class="comparative-controls-dock" style="display: none;">
+          <button class="player-icon-btn" onclick="seekAllRelative(-10)" title="Rewind All 10s">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+          </button>
+          <button class="player-icon-btn" id="playPauseAllBtn" onclick="togglePlayPauseAll()" style="background-color: #2563eb; color: white; border-radius: 9999px; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; padding: 0.25rem;">
+            <svg id="playAllIcon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <svg id="pauseAllIcon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          </button>
+          <button class="player-icon-btn" onclick="seekAllRelative(10)" title="Forward All 10s">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+          </button>
+          <button class="player-icon-btn" onclick="toggleFullscreenAll()" title="Fullscreen All">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+          </button>
+          <button class="btn-action-normal" onclick="resetAllVideos()" style="padding: 0.35rem 0.75rem; font-size: 0.8125rem;">Reset</button>
         </div>
 
         <!-- Footer -->
@@ -229,22 +121,21 @@
       </div>
     </main>
   </div>
-
   <script>
-    let videoId = null;
+    let activeVideoIds = [];
+    let activeVideoNames = [];
     let surveyId = null;
     let surveyName = '';
-    let videoNames = '';
     let currentUser = null;
-    let videoObject = null;
-    let landmarks = [];
 
-    // Unified Player Interface Bridge
-    let playerType = 'html5'; // 'html5' or 'youtube'
-    let ytPlayer = null;
-    let ytPlayerReady = false;
-    let ytInterval = null;
-    let ytDuration = 0;
+    // Dictionaries for Multi-player comparative state
+    let players = {};             // video element or YT.Player
+    let playerTypes = {};         // 'html5' or 'youtube'
+    let ytPlayerReadyState = {};  // boolean
+    let ytDurations = {};         // number
+    let videoObjects = {};        // metadata object
+    let videoLandmarks = {};      // array of landmarks
+    let ytTimerInterval = null;
 
     // Load YouTube API script dynamically
     const tag = document.createElement('script');
@@ -253,9 +144,11 @@
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     window.onYouTubeIframeAPIReady = function() {
-      if (playerType === 'youtube' && videoObject) {
-        initYoutubePlayer(getYouTubeId(videoObject.videoURL));
-      }
+      activeVideoIds.forEach(id => {
+        if (playerTypes[id] === 'youtube' && videoObjects[id]) {
+          initYoutubePlayer(getYouTubeId(videoObjects[id].videoURL), id);
+        }
+      });
     };
 
     function isYouTubeUrl(url) {
@@ -263,6 +156,7 @@
       return url.includes('youtube.com') || url.includes('youtu.be');
     }
 
+    // Extract 11 character YouTube ID
     function getYouTubeId(url) {
       if (!url) return null;
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -270,16 +164,18 @@
       return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    function initYoutubePlayer(ytId) {
-      document.getElementById('videoPlayer').style.display = 'none';
-      document.getElementById('youtubePlayerContainer').style.display = 'block';
-      
-      if (ytPlayer) {
-        try { ytPlayer.destroy(); } catch(e) {}
+    function initYoutubePlayer(ytId, id) {
+      const videoEl = document.getElementById(`videoPlayer_${id}`);
+      const ytContainer = document.getElementById(`youtubePlayerContainer_${id}`);
+      if (videoEl) videoEl.style.display = 'none';
+      if (ytContainer) ytContainer.style.display = 'block';
+
+      if (players[id] && playerTypes[id] === 'youtube') {
+        try { players[id].destroy(); } catch(e) {}
       }
 
-      ytPlayerReady = false;
-      ytPlayer = new YT.Player('youtubePlayerContainer', {
+      ytPlayerReadyState[id] = false;
+      players[id] = new YT.Player(`youtubePlayerContainer_${id}`, {
         height: '100%',
         width: '100%',
         videoId: ytId,
@@ -292,164 +188,183 @@
           'ecver': 2
         },
         events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
+          'onReady': (event) => onPlayerReady(event, id),
+          'onStateChange': (event) => onPlayerStateChange(event, id)
         }
       });
     }
 
-    function onPlayerReady(event) {
-      ytPlayerReady = true;
-      ytDuration = ytPlayer.getDuration();
-      progressBar.max = ytDuration;
+    function onPlayerReady(event, id) {
+      ytPlayerReadyState[id] = true;
+      const dur = players[id].getDuration();
+      ytDurations[id] = dur;
+      
+      const progressBar = document.getElementById(`progressBar_${id}`);
+      if (progressBar) progressBar.max = dur;
       
       // Sync speed selection
-      const speedSelect = document.querySelector('select[onchange="changePlaybackSpeed(this)"]');
+      const speedSelect = document.getElementById(`speedSelector_${id}`);
       if (speedSelect) {
-        ytPlayer.setPlaybackRate(parseFloat(speedSelect.value));
+        players[id].setPlaybackRate(parseFloat(speedSelect.value));
       }
       
       // Sync volume slider
-      const volSlider = document.querySelector('.volume-slider');
+      const volSlider = document.getElementById(`volumeSlider_${id}`);
       if (volSlider) {
-        ytPlayer.setVolume(parseFloat(volSlider.value) * 100);
+        players[id].setVolume(parseFloat(volSlider.value) * 100);
       }
       
-      updateProgress();
+      updateProgress(id);
     }
 
-    function onPlayerStateChange(event) {
+    function onPlayerStateChange(event, id) {
       if (event.data === YT.PlayerState.PLAYING) {
-        updatePlayIcons(true);
-        startYtTimer();
+        updatePlayIcons(id, true);
+        startGlobalYtTimer();
       } else {
-        updatePlayIcons(false);
-        stopYtTimer();
+        updatePlayIcons(id, false);
+        // Stop timer if no other youtube player is playing
+        let anyPlaying = false;
+        activeVideoIds.forEach(vid => {
+          if (playerTypes[vid] === 'youtube' && ytPlayerReadyState[vid] && players[vid] && players[vid].getPlayerState() === YT.PlayerState.PLAYING) {
+            anyPlaying = true;
+          }
+        });
+        if (!anyPlaying) stopGlobalYtTimer();
       }
+      syncGlobalPlayState();
     }
 
-    function startYtTimer() {
-      stopYtTimer();
-      ytInterval = setInterval(() => {
-        if (ytPlayerReady) {
-          updateProgress();
-        }
+    function startGlobalYtTimer() {
+      if (ytTimerInterval) return;
+      ytTimerInterval = setInterval(() => {
+        activeVideoIds.forEach(id => {
+          if (playerTypes[id] === 'youtube' && ytPlayerReadyState[id]) {
+            updateProgress(id);
+          }
+        });
       }, 250);
     }
 
-    function stopYtTimer() {
-      if (ytInterval) {
-        clearInterval(ytInterval);
-        ytInterval = null;
+    function stopGlobalYtTimer() {
+      if (ytTimerInterval) {
+        clearInterval(ytTimerInterval);
+        ytTimerInterval = null;
       }
     }
 
     // Bridge methods
-    function getDuration() {
-      if (playerType === 'youtube') {
-        return ytDuration || (ytPlayerReady ? ytPlayer.getDuration() : 0);
+    function getDuration(id) {
+      if (playerTypes[id] === 'youtube') {
+        return ytDurations[id] || (ytPlayerReadyState[id] && players[id] ? players[id].getDuration() : 0);
       }
-      return player.duration || 0;
+      const el = document.getElementById(`videoPlayer_${id}`);
+      return el ? (el.duration || 0) : 0;
     }
 
-    function getCurrentTime() {
-      if (playerType === 'youtube') {
-        return ytPlayerReady ? ytPlayer.getCurrentTime() : 0;
+    function getCurrentTime(id) {
+      if (playerTypes[id] === 'youtube') {
+        return (ytPlayerReadyState[id] && players[id]) ? players[id].getCurrentTime() : 0;
       }
-      return player.currentTime || 0;
+      const el = document.getElementById(`videoPlayer_${id}`);
+      return el ? (el.currentTime || 0) : 0;
     }
 
-    function setCurrentTime(time) {
-      if (playerType === 'youtube') {
-        if (ytPlayerReady) ytPlayer.seekTo(time, true);
+    function setCurrentTime(id, time) {
+      if (playerTypes[id] === 'youtube') {
+        if (ytPlayerReadyState[id] && players[id]) players[id].seekTo(time, true);
       } else {
-        player.currentTime = time;
+        const el = document.getElementById(`videoPlayer_${id}`);
+        if (el) el.currentTime = time;
       }
-      updateProgress();
+      updateProgress(id);
     }
 
-    function playVideo() {
-      if (playerType === 'youtube') {
-        if (ytPlayerReady) ytPlayer.playVideo();
+    function playVideo(id) {
+      if (playerTypes[id] === 'youtube') {
+        if (ytPlayerReadyState[id] && players[id]) players[id].playVideo();
       } else {
-        player.play().catch(err => console.error("HTML5 play error:", err));
+        const el = document.getElementById(`videoPlayer_${id}`);
+        if (el) el.play().catch(err => console.error("Play error:", err));
       }
-      updatePlayIcons(true);
+      updatePlayIcons(id, true);
     }
 
-    function pauseVideo() {
-      if (playerType === 'youtube') {
-        if (ytPlayerReady) ytPlayer.pauseVideo();
+    function pauseVideo(id) {
+      if (playerTypes[id] === 'youtube') {
+        if (ytPlayerReadyState[id] && players[id]) players[id].pauseVideo();
       } else {
-        player.pause();
+        const el = document.getElementById(`videoPlayer_${id}`);
+        if (el) el.pause();
       }
-      updatePlayIcons(false);
+      updatePlayIcons(id, false);
     }
 
-    function getMuted() {
-      if (playerType === 'youtube') {
-        return ytPlayerReady ? ytPlayer.isMuted() : false;
+    function getMuted(id) {
+      if (playerTypes[id] === 'youtube') {
+        return (ytPlayerReadyState[id] && players[id]) ? players[id].isMuted() : false;
       }
-      return player.muted;
+      const el = document.getElementById(`videoPlayer_${id}`);
+      return el ? el.muted : false;
     }
 
-    function setMuted(muted) {
-      if (playerType === 'youtube') {
-        if (ytPlayerReady) {
-          if (muted) ytPlayer.mute();
-          else ytPlayer.unMute();
+    function setMuted(id, muted) {
+      if (playerTypes[id] === 'youtube') {
+        if (ytPlayerReadyState[id] && players[id]) {
+          if (muted) players[id].mute();
+          else players[id].unMute();
         }
       } else {
-        player.muted = muted;
+        const el = document.getElementById(`videoPlayer_${id}`);
+        if (el) el.muted = muted;
       }
     }
 
-    // Handle range 0-1
-    function getVolume() {
-      if (playerType === 'youtube') {
-        return ytPlayerReady ? ytPlayer.getVolume() / 100 : 1;
-      }
-      return player.volume;
-    }
-
-    function setVolume(vol) {
-      if (playerType === 'youtube') {
-        if (ytPlayerReady) ytPlayer.setVolume(vol * 100);
+    function setVolume(id, vol) {
+      if (playerTypes[id] === 'youtube') {
+        if (ytPlayerReadyState[id] && players[id]) players[id].setVolume(vol * 100);
       } else {
-        player.volume = vol;
+        const el = document.getElementById(`videoPlayer_${id}`);
+        if (el) el.volume = vol;
       }
     }
 
-    function getPlaybackRate() {
-      if (playerType === 'youtube') {
-        return ytPlayerReady ? ytPlayer.getPlaybackRate() : 1;
+    function getPlaybackRate(id) {
+      if (playerTypes[id] === 'youtube') {
+        return (ytPlayerReadyState[id] && players[id]) ? players[id].getPlaybackRate() : 1;
       }
-      return player.playbackRate;
+      const el = document.getElementById(`videoPlayer_${id}`);
+      return el ? el.playbackRate : 1;
     }
 
-    function setPlaybackRate(rate) {
-      if (playerType === 'youtube') {
-        if (ytPlayerReady) ytPlayer.setPlaybackRate(rate);
+    function setPlaybackRate(id, rate) {
+      if (playerTypes[id] === 'youtube') {
+        if (ytPlayerReadyState[id] && players[id]) players[id].setPlaybackRate(rate);
       } else {
-        player.playbackRate = rate;
+        const el = document.getElementById(`videoPlayer_${id}`);
+        if (el) el.playbackRate = rate;
       }
     }
 
-    // URL Query Params
+    // URL Query Params Parsing
     const urlParams = new URLSearchParams(window.location.search);
-    videoId = urlParams.get('id');
+    const idParam = urlParams.get('id');
     surveyId = urlParams.get('survey');
     surveyName = urlParams.get('surveyName');
-    videoNames = urlParams.get('videoNames');
+    const videoNamesParam = urlParams.get('videoNames');
 
-    if (!videoId || !surveyId || !surveyName || !videoNames) {
+    if (!idParam || !surveyId || !surveyName || !videoNamesParam) {
       window.location.href = 'index.html';
     }
 
+    activeVideoIds = idParam.split(',').map(s => s.trim());
+    activeVideoNames = videoNamesParam.split(',').map(s => s.trim());
+
     document.getElementById('breadcrumbSurveyLink').innerText = surveyName;
     document.getElementById('breadcrumbSurveyLink').href = `survey.html?id=${surveyId}&name=${encodeURIComponent(surveyName)}`;
-    document.getElementById('breadcrumbVideoName').innerText = videoNames;
-    document.getElementById('videoHeadingTitle').innerText = videoNames;
+    
+    const breadcrumbVideoText = activeVideoNames.join(' - ');
+    document.getElementById('breadcrumbVideoName').innerText = breadcrumbVideoText;
 
     // Session verification
     const userSession = sessionStorage.getItem('loggedInUser');
@@ -465,10 +380,154 @@
 
       if (currentUser.admin === "true") {
         document.getElementById('dropdownRole').innerText = "Admin";
-        document.getElementById('adminBreakpointPanel').style.display = "block";
       } else {
         document.getElementById('dropdownRole').innerText = "User";
       }
+
+      setupComparativePlayers();
+    }
+
+    // Dynamically build DOM elements for each video
+    function setupComparativePlayers() {
+      const container = document.getElementById('playersContainer');
+      container.innerHTML = '';
+      
+      // Set grid columns class
+      container.className = `videos-grid cols-${Math.min(activeVideoIds.length, 3)}`;
+
+      // Show/hide shared comparative control dock
+      const compControls = document.getElementById('comparativeControls');
+      if (activeVideoIds.length > 1) {
+        compControls.style.display = 'flex';
+      } else {
+        compControls.style.display = 'none';
+      }
+
+      activeVideoIds.forEach((id, index) => {
+        const videoName = activeVideoNames[index] || `Survey Run ${index + 1}`;
+        const card = document.createElement('div');
+        card.className = 'player-column';
+        card.innerHTML = `
+          <!-- Top row: File Upload and Landmarks/KM selectors -->
+          <div class="video-top-controls" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1rem;">
+            <!-- File Upload -->
+            <div class="search-select-wrapper">
+              <span class="search-select-label">Upload LandMarks File</span>
+              <div class="file-upload-container">
+                <label class="file-input-wrapper" id="fileInputLabel_${id}">
+                  Choose File
+                  <input type="file" id="landmarksFileInput_${id}" accept=".csv,.json" onchange="handleFileChange(this, '${id}')" />
+                </label>
+                <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
+              </div>
+            </div>
+            <!-- Landmarks select -->
+            <div class="search-select-wrapper">
+              <span class="search-select-label">Landmarks</span>
+              <select id="landmarksSelect_${id}" class="search-select" onchange="jumpToLandmarkSelect(this, '${id}')">
+                <option value="">Search for landmarks</option>
+              </select>
+            </div>
+            <!-- KM select -->
+            <div class="search-select-wrapper">
+              <span class="search-select-label">KM</span>
+              <select id="kmSelect_${id}" class="search-select" onchange="jumpToKmSelect(this, '${id}')">
+                <option value="">Search for KM</option>
+              </select>
+            </div>
+          </div>
+
+          <h2 class="video-heading-title" style="margin-bottom: 0.75rem;">${escapeHtml(videoName)}</h2>
+
+          <!-- Video player container -->
+          <div class="video-player-container">
+            <div class="custom-video-wrapper" id="videoWrapper_${id}">
+              <video id="videoPlayer_${id}" ontimeupdate="updateProgress('${id}')" onloadedmetadata="initializePlayer('${id}')" preload="auto"></video>
+              <div id="youtubePlayerContainer_${id}" style="display:none; width:100%; height:100%; min-height:400px; background:#000;"></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="player-controls-container">
+              <div class="progress-bar-wrapper">
+                <input type="range" id="progressBar_${id}" class="player-progress-bar" value="0" min="0" step="0.1" oninput="seekVideo(this, '${id}')" />
+              </div>
+              <div class="player-time-controls">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span class="time-display" id="timeDisplay_${id}" style="font-size: 0.75rem;">0:00 / 0:00 x 1</span>
+                  <select id="speedSelector_${id}" class="search-select" style="width: 65px; padding: 0.15rem; font-size: 0.75rem;" onchange="changePlaybackSpeed(this, '${id}')">
+                    <option value="0.5">x0.5</option>
+                    <option value="1" selected>x1</option>
+                    <option value="1.5">x1.5</option>
+                    <option value="2">x2</option>
+                  </select>
+                </div>
+                <div class="player-btn-group">
+                  <button class="player-icon-btn" onclick="seekRelative(-10, '${id}')" title="Rewind 10s">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+                  </button>
+                  <button class="player-icon-btn" id="playPauseBtn_${id}" onclick="togglePlayPause('${id}')" style="background-color: #2563eb; color: white; border-radius: 9999px; width: 2rem; height: 2rem; padding: 0.25rem;">
+                    <svg id="playIcon_${id}" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <svg id="pauseIcon_${id}" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                  </button>
+                  <button class="player-icon-btn" onclick="seekRelative(10, '${id}')" title="Forward 10s">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+                  </button>
+                </div>
+                <div class="player-btn-group">
+                  <div class="volume-slider-wrapper">
+                    <button class="player-icon-btn" id="muteBtn_${id}" onclick="toggleMute('${id}')">
+                      <svg id="volumeOnIcon_${id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                      <svg id="volumeMuteIcon_${id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                    </button>
+                    <input type="range" id="volumeSlider_${id}" class="volume-slider" min="0" max="1" step="0.05" value="1" oninput="changeVolume(this, '${id}')" style="width: 50px;" />
+                  </div>
+                  <button class="player-icon-btn" onclick="downloadVideoFile('${id}')" title="Download Video">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  </button>
+                  <button class="player-icon-btn" onclick="toggleFullscreen('${id}')" title="Fullscreen">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Breakpoint form specific to this video -->
+          <div class="breakpoint-form-card" id="adminBreakpointPanel_${id}" style="display: none;">
+            <h3 class="video-heading-title" style="font-size: 0.95rem; margin-bottom: 0.5rem; text-align: left;">Add Landmark / Breakpoint</h3>
+            <form onsubmit="return handleAddBreakpoint(event, '${id}')">
+              <div class="breakpoint-grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                <div class="search-select-wrapper">
+                  <span class="search-select-label" style="font-size: 0.75rem;">Landmark Name</span>
+                  <input type="text" id="breakpointNameInput_${id}" class="form-input" placeholder="Name" required style="font-size: 0.8125rem; padding: 0.375rem;" />
+                </div>
+                <div class="search-select-wrapper">
+                  <span class="search-select-label" style="font-size: 0.75rem;">Time (Auto)</span>
+                  <input type="text" id="breakpointTimeInput_${id}" class="form-input" value="0:00" readonly style="background-color: #f3f4f6; font-size: 0.8125rem; padding: 0.375rem;" />
+                </div>
+                <div class="search-select-wrapper">
+                  <span class="search-select-label" style="font-size: 0.75rem;">KM Number</span>
+                  <input type="text" id="breakpointKmInput_${id}" class="form-input" placeholder="KM" required style="font-size: 0.8125rem; padding: 0.375rem;" />
+                </div>
+              </div>
+              <button type="submit" class="btn-breakpoint-add" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; font-size: 0.8125rem; width: fit-content;">Add Breakpoint</button>
+            </form>
+            <div class="breakpoints-footer" style="margin-top: 0.5rem; padding-top: 0.5rem;">
+              <span class="total-landmarks-label" id="totalLandmarksCount_${id}" style="font-size: 0.75rem;">Total Landmarks: 0</span>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-csv-export" onclick="exportLandmarksCsv('${id}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Export CSV</button>
+                <button class="btn-delete-all" onclick="deleteAllLandmarks('${id}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete ALL</button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+
+        // Show admin breakpoint panel if current user is admin
+        if (currentUser.admin === "true") {
+          document.getElementById(`adminBreakpointPanel_${id}`).style.display = "block";
+        }
+      });
 
       loadVideoData();
     }
@@ -477,95 +536,94 @@
       try {
         const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
         if (!response.ok) throw new Error('Failed to load videos data');
-        const videos = await response.json();
+        const videosList = await response.json();
 
         // Check local storage updates
         const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
         const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
 
-        // Check edited first, then custom, then default
-        let video = editedVideos.find(e => e.id === videoId);
-        if (!video) video = customVideos.find(v => v.id === videoId);
-        if (!video) video = videos.find(v => v.id === videoId);
+        activeVideoIds.forEach(id => {
+          let video = editedVideos.find(e => e.id === id);
+          if (!video) video = customVideos.find(v => v.id === id);
+          if (!video) video = videosList.find(v => v.id === id);
 
-        if (!video) {
-          alert('Video not found.');
-          window.location.href = 'index.html';
-          return;
-        }
-
-        videoObject = video;
-        
-        if (isYouTubeUrl(videoObject.videoURL)) {
-          playerType = 'youtube';
-          document.getElementById('videoPlayer').style.display = 'none';
-          document.getElementById('youtubePlayerContainer').style.display = 'block';
-          if (typeof YT !== 'undefined' && YT.Player) {
-            initYoutubePlayer(getYouTubeId(videoObject.videoURL));
+          if (!video) {
+            console.error(`Video ${id} not found in database.`);
+            return;
           }
-        } else {
-          playerType = 'html5';
-          document.getElementById('videoPlayer').style.display = 'block';
-          document.getElementById('youtubePlayerContainer').style.display = 'none';
-          
-          const videoEl = document.getElementById('videoPlayer');
-          videoEl.src = videoObject.videoURL;
-          videoEl.load();
-          
-          // Add error handler for debugging
-          videoEl.addEventListener('error', function() {
-            const err = videoEl.error;
-            console.error('Video load error:', err ? err.message : 'Unknown error', 'Code:', err ? err.code : '');
-            console.log('Attempted URL:', videoObject.videoURL);
-          });
-        }
 
-        // Load custom landmarks overrides if any
-        const key = `landmarks_${videoId}`;
-        const overrides = localStorage.getItem(key);
-        if (overrides) {
-          landmarks = JSON.parse(overrides);
-        } else {
-          landmarks = videoObject.landmarks || [];
-        }
+          videoObjects[id] = video;
+          
+          // Load custom landmarks overrides if any
+          const key = `landmarks_${id}`;
+          const overrides = localStorage.getItem(key);
+          if (overrides) {
+            videoLandmarks[id] = JSON.parse(overrides);
+          } else {
+            videoLandmarks[id] = videoObjects[id].landmarks || [];
+          }
 
-        updateLandmarksUI();
+          updateLandmarksUI(id);
+
+          // Initialize HTML5 or YouTube Player
+          if (isYouTubeUrl(videoObjects[id].videoURL)) {
+            playerTypes[id] = 'youtube';
+            if (typeof YT !== 'undefined' && YT.Player) {
+              initYoutubePlayer(getYouTubeId(videoObjects[id].videoURL), id);
+            }
+          } else {
+            playerTypes[id] = 'html5';
+            const videoEl = document.getElementById(`videoPlayer_${id}`);
+            if (videoEl) {
+              videoEl.src = videoObjects[id].videoURL;
+              videoEl.load();
+              
+              videoEl.addEventListener('error', function() {
+                const err = videoEl.error;
+                console.error(`Video ${id} load error:`, err ? err.message : 'Unknown error');
+              });
+            }
+          }
+        });
+
       } catch (e) {
         console.error(e);
         alert('Error loading video information.');
       }
     }
 
-    // Dropdowns & Total Count updates
-    function updateLandmarksUI() {
+    // Dropdowns & Total Count updates for specific player
+    function updateLandmarksUI(id) {
+      if (!videoLandmarks[id]) return;
+
       // Sort landmarks by time
-      landmarks.sort((a, b) => a.time - b.time);
+      videoLandmarks[id].sort((a, b) => a.time - b.time);
 
       // Save to localStorage
-      localStorage.setItem(`landmarks_${videoId}`, JSON.stringify(landmarks));
+      localStorage.setItem(`landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
 
       // Update dropdown selects
-      const landmarksSelect = document.getElementById('landmarksSelect');
-      const kmSelect = document.getElementById('kmSelect');
+      const landmarksSelect = document.getElementById(`landmarksSelect_${id}`);
+      const kmSelect = document.getElementById(`kmSelect_${id}`);
       
-      landmarksSelect.innerHTML = '<option value="">Search for landmarks</option>';
-      kmSelect.innerHTML = '<option value="">Search for KM</option>';
+      if (landmarksSelect) landmarksSelect.innerHTML = '<option value="">Search for landmarks</option>';
+      if (kmSelect) kmSelect.innerHTML = '<option value="">Search for KM</option>';
 
-      landmarks.forEach((lm, idx) => {
-        // Landmarks
+      videoLandmarks[id].forEach((lm, idx) => {
         const display = lm.display || lm.name || `Landmark ${idx + 1}`;
         const totalSecs = Math.floor(lm.time);
         const mins = Math.floor(totalSecs / 60);
         const secs = totalSecs % 60;
         const timeCode = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-        const opt1 = document.createElement('option');
-        opt1.value = lm.time;
-        opt1.innerText = `${display} (${timeCode})`;
-        landmarksSelect.appendChild(opt1);
+        if (landmarksSelect) {
+          const opt1 = document.createElement('option');
+          opt1.value = lm.time;
+          opt1.innerText = `${display} (${timeCode})`;
+          landmarksSelect.appendChild(opt1);
+        }
 
-        // KM
-        if (lm.km) {
+        if (kmSelect && lm.km) {
           const opt2 = document.createElement('option');
           opt2.value = lm.time;
           opt2.innerText = `KM ${lm.km} (${timeCode})`;
@@ -573,73 +631,81 @@
         }
       });
 
-      document.getElementById('totalLandmarksCount').innerText = `Total Landmarks: ${landmarks.length}`;
+      const countEl = document.getElementById(`totalLandmarksCount_${id}`);
+      if (countEl) {
+        countEl.innerText = `Total Landmarks: ${videoLandmarks[id].length}`;
+      }
     }
 
     // Jump by dropdown selection
-    function jumpToLandmarkSelect(sel) {
+    function jumpToLandmarkSelect(sel, id) {
       if (sel.value) {
-        seekToTime(parseFloat(sel.value));
+        seekToTime(parseFloat(sel.value), id);
       }
     }
 
-    function jumpToKmSelect(sel) {
+    function jumpToKmSelect(sel, id) {
       if (sel.value) {
-        seekToTime(parseFloat(sel.value));
+        seekToTime(parseFloat(sel.value), id);
       }
     }
 
-    function seekToTime(time) {
-      setCurrentTime(time);
-      playVideo();
+    function seekToTime(time, id) {
+      setCurrentTime(id, time);
+      playVideo(id);
     }
 
-    // Video Player controls element references
-    const player = document.getElementById('videoPlayer');
-    const progressBar = document.getElementById('progressBar');
-    const timeDisplay = document.getElementById('timeDisplay');
-    const playIcon = document.getElementById('playIcon');
-    const pauseIcon = document.getElementById('pauseIcon');
-
-    function initializePlayer() {
-      progressBar.max = getDuration();
-      updateProgress();
+    function initializePlayer(id) {
+      const progressBar = document.getElementById(`progressBar_${id}`);
+      if (progressBar) progressBar.max = getDuration(id);
+      updateProgress(id);
     }
 
-    function togglePlayPause() {
-      if (playerType === 'youtube') {
-        if (ytPlayerReady) {
-          const state = ytPlayer.getPlayerState();
+    function togglePlayPause(id) {
+      if (playerTypes[id] === 'youtube') {
+        if (ytPlayerReadyState[id] && players[id]) {
+          const state = players[id].getPlayerState();
           if (state === YT.PlayerState.PLAYING) {
-            pauseVideo();
+            pauseVideo(id);
           } else {
-            playVideo();
+            playVideo(id);
           }
         }
       } else {
-        if (player.paused || player.ended) {
-          playVideo();
-        } else {
-          pauseVideo();
+        const el = document.getElementById(`videoPlayer_${id}`);
+        if (el) {
+          if (el.paused || el.ended) {
+            playVideo(id);
+          } else {
+            pauseVideo(id);
+          }
         }
       }
     }
 
-    function updatePlayIcons(isPlaying) {
-      if (isPlaying) {
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-      } else {
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
+    function updatePlayIcons(id, isPlaying) {
+      const playIcon = document.getElementById(`playIcon_${id}`);
+      const pauseIcon = document.getElementById(`pauseIcon_${id}`);
+      if (playIcon && pauseIcon) {
+        if (isPlaying) {
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+        } else {
+          playIcon.style.display = 'block';
+          pauseIcon.style.display = 'none';
+        }
       }
     }
 
-    function updateProgress() {
-      const curTime = getCurrentTime();
-      const dur = getDuration();
-      progressBar.value = curTime;
-      progressBar.max = dur || 100;
+    function updateProgress(id) {
+      const curTime = getCurrentTime(id);
+      const dur = getDuration(id);
+      
+      const progressBar = document.getElementById(`progressBar_${id}`);
+      if (progressBar) {
+        progressBar.value = curTime;
+        progressBar.max = dur || 100;
+      }
       
       const curTotalSecs = Math.floor(curTime);
       const curMins = Math.floor(curTotalSecs / 60);
@@ -650,61 +716,73 @@
       const durSecs = durTotalSecs % 60;
 
       const timeString = `${curMins}:${curSecs.toString().padStart(2, '0')} / ${durMins}:${durSecs.toString().padStart(2, '0')}`;
-      const speed = getPlaybackRate();
+      const speed = getPlaybackRate(id);
 
-      timeDisplay.innerText = `${timeString} x ${speed}`;
+      const timeDisplay = document.getElementById(`timeDisplay_${id}`);
+      if (timeDisplay) {
+        timeDisplay.innerText = `${timeString} x ${speed}`;
+      }
 
       // Update admin breakpoint current time field
       const currentFormattedTime = `${curMins}:${curSecs.toString().padStart(2, '0')}`;
-      document.getElementById('breakpointTimeInput').value = currentFormattedTime;
+      const timeInput = document.getElementById(`breakpointTimeInput_${id}`);
+      if (timeInput) {
+        timeInput.value = currentFormattedTime;
+      }
     }
 
-    function seekVideo(slider) {
-      setCurrentTime(parseFloat(slider.value));
+    function seekVideo(slider, id) {
+      setCurrentTime(id, parseFloat(slider.value));
     }
 
-    function seekRelative(secs) {
-      const newTime = Math.max(0, Math.min(getDuration(), getCurrentTime() + secs));
-      setCurrentTime(newTime);
+    function seekRelative(secs, id) {
+      const newTime = Math.max(0, Math.min(getDuration(id), getCurrentTime(id) + secs));
+      setCurrentTime(id, newTime);
     }
 
-    function changePlaybackSpeed(sel) {
-      setPlaybackRate(parseFloat(sel.value));
-      updateProgress();
+    function changePlaybackSpeed(sel, id) {
+      setPlaybackRate(id, parseFloat(sel.value));
+      updateProgress(id);
     }
 
-    function changeVolume(slider) {
+    function changeVolume(slider, id) {
       const vol = parseFloat(slider.value);
-      setVolume(vol);
-      const muteOn = document.getElementById('volumeOnIcon');
-      const muteOff = document.getElementById('volumeMuteIcon');
+      setVolume(id, vol);
       
-      if (vol === 0) {
-        muteOn.style.display = 'none';
-        muteOff.style.display = 'block';
-      } else {
-        muteOn.style.display = 'block';
-        muteOff.style.display = 'none';
+      const muteOn = document.getElementById(`volumeOnIcon_${id}`);
+      const muteOff = document.getElementById(`volumeMuteIcon_${id}`);
+      
+      if (muteOn && muteOff) {
+        if (vol === 0) {
+          muteOn.style.display = 'none';
+          muteOff.style.display = 'block';
+        } else {
+          muteOn.style.display = 'block';
+          muteOff.style.display = 'none';
+        }
       }
     }
 
-    function toggleMute() {
-      const isMuted = getMuted();
-      setMuted(!isMuted);
-      const muteOn = document.getElementById('volumeOnIcon');
-      const muteOff = document.getElementById('volumeMuteIcon');
+    function toggleMute(id) {
+      const isMuted = getMuted(id);
+      setMuted(id, !isMuted);
       
-      if (!isMuted) {
-        muteOn.style.display = 'none';
-        muteOff.style.display = 'block';
-      } else {
-        muteOn.style.display = 'block';
-        muteOff.style.display = 'none';
+      const muteOn = document.getElementById(`volumeOnIcon_${id}`);
+      const muteOff = document.getElementById(`volumeMuteIcon_${id}`);
+      
+      if (muteOn && muteOff) {
+        if (!isMuted) {
+          muteOn.style.display = 'none';
+          muteOff.style.display = 'block';
+        } else {
+          muteOn.style.display = 'block';
+          muteOff.style.display = 'none';
+        }
       }
     }
 
-    function toggleFullscreen() {
-      const container = document.querySelector('.custom-video-wrapper');
+    function toggleFullscreen(id) {
+      const container = document.getElementById(`videoWrapper_${id}`);
       if (container.requestFullscreen) {
         container.requestFullscreen();
       } else if (container.webkitRequestFullscreen) {
@@ -714,49 +792,53 @@
       }
     }
 
-    function downloadVideoFile() {
-      if (videoObject && videoObject.videoURL) {
-        window.open(videoObject.videoURL, '_blank');
+    function downloadVideoFile(id) {
+      if (videoObjects[id] && videoObjects[id].videoURL) {
+        window.open(videoObjects[id].videoURL, '_blank');
       }
     }
 
     // Add Landmark Breakpoint
-    function handleAddBreakpoint(event) {
+    function handleAddBreakpoint(event, id) {
       event.preventDefault();
-      const name = document.getElementById('breakpointNameInput').value;
-      const km = document.getElementById('breakpointKmInput').value;
-      const time = getCurrentTime();
+      const nameInput = document.getElementById(`breakpointNameInput_${id}`);
+      const kmInput = document.getElementById(`breakpointKmInput_${id}`);
+      if (!nameInput || !kmInput) return;
+
+      const name = nameInput.value;
+      const km = kmInput.value;
+      const time = getCurrentTime(id);
 
       const newLm = {
         name,
         display: name,
         time,
         km,
-        videoId
+        videoId: id
       };
 
-      landmarks.push(newLm);
-      updateLandmarksUI();
+      if (!videoLandmarks[id]) videoLandmarks[id] = [];
+      videoLandmarks[id].push(newLm);
+      updateLandmarksUI(id);
 
-      // Reset form fields
-      document.getElementById('breakpointNameInput').value = '';
-      document.getElementById('breakpointKmInput').value = '';
+      nameInput.value = '';
+      kmInput.value = '';
     }
 
-    function deleteAllLandmarks() {
+    function deleteAllLandmarks(id) {
       if (confirm('Are you sure you want to delete all landmarks for this video run?')) {
-        landmarks = [];
-        updateLandmarksUI();
+        videoLandmarks[id] = [];
+        updateLandmarksUI(id);
       }
     }
 
-    function exportLandmarksCsv() {
-      if (landmarks.length === 0) {
+    function exportLandmarksCsv(id) {
+      if (!videoLandmarks[id] || videoLandmarks[id].length === 0) {
         alert('No landmarks to export.');
         return;
       }
       let csvContent = "data:text/csv;charset=utf-8,Name,KM,Time (seconds),Time (formatted)\n";
-      landmarks.forEach(lm => {
+      videoLandmarks[id].forEach(lm => {
         const display = lm.display || lm.name;
         const totalSecs = Math.floor(lm.time);
         const mins = Math.floor(totalSecs / 60);
@@ -766,29 +848,32 @@
         csvContent += `"${display.replace(/"/g, '""')}","${(lm.km || '').replace(/"/g, '""')}",${lm.time},"${timeCode}"\n`;
       });
 
+      const videoName = videoObjects[id] ? videoObjects[id].name : 'video';
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `landmarks_${videoNames.replace(/\s+/g, '_')}.csv`);
+      link.setAttribute("download", `landmarks_${videoName.replace(/\s+/g, '_')}.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();
     }
 
     // File input selection label toggle
-    function handleFileChange(input) {
-      const label = document.getElementById('fileInputLabel');
-      if (input.files && input.files[0]) {
-        label.innerText = input.files[0].name;
-      } else {
-        label.innerText = 'Choose File';
+    function handleFileChange(input, id) {
+      const label = document.getElementById(`fileInputLabel_${id}`);
+      if (label) {
+        if (input.files && input.files[0]) {
+          label.innerText = input.files[0].name;
+        } else {
+          label.innerText = 'Choose File';
+        }
       }
     }
 
     // Upload CSV/JSON landmarks list
-    function uploadLandmarksFile() {
-      const fileInput = document.getElementById('landmarksFileInput');
-      if (!fileInput.files || !fileInput.files[0]) {
+    function uploadLandmarksFile(id) {
+      const fileInput = document.getElementById(`landmarksFileInput_${id}`);
+      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
         alert('Please choose a file first.');
         return;
       }
@@ -802,29 +887,26 @@
           if (file.name.endsWith('.json')) {
             const parsed = JSON.parse(text);
             if (Array.isArray(parsed)) {
-              landmarks = parsed.map(item => ({
+              videoLandmarks[id] = parsed.map(item => ({
                 name: item.name || item.display || 'Landmark',
                 display: item.display || item.name || 'Landmark',
                 time: parseFloat(item.time) || 0,
                 km: item.km || '',
-                videoId
+                videoId: id
               }));
-              updateLandmarksUI();
+              updateLandmarksUI(id);
               alert('JSON landmarks loaded successfully.');
             } else {
               alert('JSON file must contain an array of landmarks.');
             }
           } else if (file.name.endsWith('.csv')) {
-            // Simple CSV parsing
             const rows = text.split('\n');
             const newLandmarks = [];
             
-            // Assume format: Name, KM, Time
             for (let i = 1; i < rows.length; i++) {
               const row = rows[i].trim();
               if (!row) continue;
               
-              // Basic split (splits by comma, handles simple quotes if needed)
               const cols = row.split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
               if (cols.length >= 3) {
                 newLandmarks.push({
@@ -832,13 +914,13 @@
                   display: cols[0] || 'Landmark',
                   km: cols[1] || '',
                   time: parseFloat(cols[2]) || 0,
-                  videoId
+                  videoId: id
                 });
               }
             }
             if (newLandmarks.length > 0) {
-              landmarks = newLandmarks;
-              updateLandmarksUI();
+              videoLandmarks[id] = newLandmarks;
+              updateLandmarksUI(id);
               alert(`${newLandmarks.length} CSV landmarks loaded successfully.`);
             } else {
               alert('Could not find valid landmark records in CSV.');
@@ -851,6 +933,98 @@
       };
 
       reader.readAsText(file);
+    }
+
+    // Shared Comparative Control Dock Methods
+    function playAll() {
+      activeVideoIds.forEach(id => playVideo(id));
+      updateGlobalPlayIcon(true);
+    }
+
+    function pauseAll() {
+      activeVideoIds.forEach(id => pauseVideo(id));
+      updateGlobalPlayIcon(false);
+    }
+
+    function togglePlayPauseAll() {
+      let anyPlaying = false;
+      activeVideoIds.forEach(id => {
+        if (playerTypes[id] === 'youtube') {
+          if (ytPlayerReadyState[id] && players[id] && players[id].getPlayerState() === YT.PlayerState.PLAYING) {
+            anyPlaying = true;
+          }
+        } else {
+          const el = document.getElementById(`videoPlayer_${id}`);
+          if (el && !el.paused && !el.ended) {
+            anyPlaying = true;
+          }
+        }
+      });
+
+      if (anyPlaying) {
+        pauseAll();
+      } else {
+        playAll();
+      }
+    }
+
+    function updateGlobalPlayIcon(isPlaying) {
+      const playAllIcon = document.getElementById('playAllIcon');
+      const pauseAllIcon = document.getElementById('pauseAllIcon');
+      if (playAllIcon && pauseAllIcon) {
+        if (isPlaying) {
+          playAllIcon.style.display = 'none';
+          pauseAllIcon.style.display = 'block';
+        } else {
+          playAllIcon.style.display = 'block';
+          pauseAllIcon.style.display = 'none';
+        }
+      }
+    }
+
+    function syncGlobalPlayState() {
+      let anyPlaying = false;
+      activeVideoIds.forEach(id => {
+        if (playerTypes[id] === 'youtube') {
+          if (ytPlayerReadyState[id] && players[id] && players[id].getPlayerState() === YT.PlayerState.PLAYING) {
+            anyPlaying = true;
+          }
+        } else {
+          const el = document.getElementById(`videoPlayer_${id}`);
+          if (el && !el.paused && !el.ended) {
+            anyPlaying = true;
+          }
+        }
+      });
+      updateGlobalPlayIcon(anyPlaying);
+    }
+
+    function seekAllRelative(secs) {
+      activeVideoIds.forEach(id => {
+        const curTime = getCurrentTime(id);
+        const dur = getDuration(id);
+        const newTime = Math.max(0, Math.min(dur, curTime + secs));
+        setCurrentTime(id, newTime);
+      });
+    }
+
+    function resetAllVideos() {
+      activeVideoIds.forEach(id => {
+        setCurrentTime(id, 0);
+        pauseVideo(id);
+      });
+      updateGlobalPlayIcon(false);
+    }
+
+    function toggleFullscreenAll() {
+      const container = document.getElementById('playersContainer');
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      } else if (container.msRequestFullscreen) {
+        container.msRequestFullscreen();
+      }
     }
 
     // Dropdown toggle logic

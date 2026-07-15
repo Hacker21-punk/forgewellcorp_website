@@ -461,11 +461,13 @@
       if (checkedBoxes.length === 0) return;
 
       const videoIds = checkedBoxes.map(c => c.value).join(',');
-      const selectedObj = surveyVideos.find(v => v.id === checkedBoxes[0].value);
-      const videoName = selectedObj ? selectedObj.name : 'Film';
+      const videoNamesList = checkedBoxes.map(cb => {
+        const found = surveyVideos.find(v => v.id === cb.value);
+        return found ? found.name : 'Film';
+      }).join(',');
 
       // Navigate to video page
-      window.location.href = `video.html?id=${checkedBoxes[0].value}&survey=${surveyId}&surveyName=${encodeURIComponent(surveyName)}&videoNames=${encodeURIComponent(videoName)}`;
+      window.location.href = `video.html?id=${videoIds}&survey=${surveyId}&surveyName=${encodeURIComponent(surveyName)}&videoNames=${encodeURIComponent(videoNamesList)}`;
     }
 
     // Dropdown toggle logic

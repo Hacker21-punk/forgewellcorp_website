@@ -1085,5 +1085,67 @@ a {
   background-color: #dc2626;
 }
 
+/* Comparative Grid & Comparative Controls Dock */
+.videos-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .videos-grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .videos-grid.cols-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.comparative-controls-dock {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(20, 18, 76, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.comparative-controls-dock .player-icon-btn {
+  color: #ffffff;
+  opacity: 0.85;
+  transition: opacity 0.2s, transform 0.2s;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comparative-controls-dock .player-icon-btn:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.comparative-controls-dock .btn-action-normal {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+  background-color: transparent;
+}
+
+.comparative-controls-dock .btn-action-normal:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 
 
