@@ -264,6 +264,8 @@
     let surveysList = [];
     let currentUser = null;
     let allVideos = [];
+    let allUsers = [];
+    let surveyUserMap = {};
 
     // Active Column Filters State
     let activeFilters = {
@@ -307,6 +309,8 @@
     async function initializeApp() {
       await fetchSurveys();
       await fetchVideos();
+      await fetchUsers();
+      buildSurveyUserMap();
       renderSurveysTable();
     }
 
@@ -355,6 +359,35 @@
       }
     }
 
+    // Fetch all users
+    async function fetchUsers() {
+      try {
+        const response = await fetch('backup%20details%20of%20trueprogress/users.json');
+        if (!response.ok) throw new Error('Failed to load users data');
+        allUsers = await response.json();
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    }
+
+    // Build a map of survey name -> list of user names who have access
+    function buildSurveyUserMap() {
+      surveyUserMap = {};
+      surveysList.forEach(survey => {
+        const surveyNameLower = survey.name.trim().toLowerCase();
+        const matchingUserNames = [];
+        allUsers.forEach(user => {
+          if (user.survey && Array.isArray(user.survey)) {
+            const hasAccess = user.survey.some(s => s.trim().toLowerCase() === surveyNameLower);
+            if (hasAccess) {
+              matchingUserNames.push(user.name);
+            }
+          }
+        });
+        surveyUserMap[survey.id] = matchingUserNames;
+      });
+    }
+
     function renderSurveysTable() {
       const tableBody = document.getElementById('tableBody');
       tableBody.innerHTML = '';
@@ -388,8 +421,9 @@
           return false;
         }
 
-        // User Count calculation
-        const userCountNum = (survey.user_count && Array.isArray(survey.user_count)) ? survey.user_count.length : 0;
+        // User Count calculation (dynamic from users.json)
+        const dynamicUsers = surveyUserMap[survey.id] || [];
+        const userCountNum = dynamicUsers.length;
         if (activeFilters.user_count && !String(userCountNum).includes(activeFilters.user_count)) {
           return false;
         }
@@ -435,12 +469,13 @@
         const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (survey.video_count !== undefined ? survey.video_count : (survey.total_surveys || 0));
         const videoCell = `<td>${videoCount}</td>`;
 
-        // User count with popover click event
+        // User count with popover click event (dynamic from users.json)
+        const dynamicUserNames = surveyUserMap[survey.id] || [];
         let userCell = `<td>N/A</td>`;
-        if (survey.user_count && Array.isArray(survey.user_count) && survey.user_count.length > 0) {
-          const namesData = JSON.stringify(survey.user_count).replace(/"/g, '&quot;');
-          userCell = `<td><span class="user-count-clickable" onclick="showUsersPopover(event, ${namesData})">${survey.user_count.length} Users</span></td>`;
-        } else if (survey.user_count && Array.isArray(survey.user_count) && survey.user_count.length === 0) {
+        if (dynamicUserNames.length > 0) {
+          const namesData = JSON.stringify(dynamicUserNames).replace(/"/g, '&quot;');
+          userCell = `<td><span class="user-count-clickable" onclick="showUsersPopover(event, ${namesData})">${dynamicUserNames.length} Users</span></td>`;
+        } else if (dynamicUserNames.length === 0 && allUsers.length > 0) {
           userCell = `<td>0 Users</td>`;
         }
         
@@ -676,7 +711,7 @@
       surveyModal.classList.add('show');
     }
 
-    function handleSaveSurvey(event) {
+    async function handleSaveSurvey(event) {
       event.preventDefault();
       const id = document.getElementById('editSurveyId').value;
       const name = document.getElementById('surveyNameInput').value;
@@ -720,10 +755,12 @@
       }
 
       closeSurveyModal();
-      fetchSurveys();
+      await fetchSurveys();
+      buildSurveyUserMap();
+      renderSurveysTable();
     }
 
-    function handleDeleteSurvey(id) {
+    async function handleDeleteSurvey(id) {
       if (confirm('Are you sure you want to delete this survey?')) {
         let deletedSurveys = JSON.parse(localStorage.getItem('deleted_surveys') || '[]');
         
@@ -736,7 +773,9 @@
           localStorage.setItem('deleted_surveys', JSON.stringify(deletedSurveys));
         }
 
-        fetchSurveys();
+        await fetchSurveys();
+        buildSurveyUserMap();
+        renderSurveysTable();
       }
     }
 
