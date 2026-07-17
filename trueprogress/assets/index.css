@@ -918,11 +918,19 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
 }
 
-.custom-video-wrapper video {
-  width: 100%;
-  display: block;
+.custom-video-wrapper video,
+.custom-video-wrapper iframe,
+.custom-video-wrapper div[id^="youtubePlayerContainer_"] {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
 }
 
 /* Custom Player Controls */
@@ -1093,10 +1101,14 @@ a {
   width: 100%;
 }
 
-@media (min-width: 992px) {
-  .videos-grid.cols-2 {
+@media (min-width: 768px) {
+  .videos-grid.cols-2,
+  .videos-grid.cols-3 {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+@media (min-width: 1100px) {
   .videos-grid.cols-3 {
     grid-template-columns: 1fr 1fr 1fr;
   }
@@ -1389,4 +1401,25 @@ a {
 .landmark-action-btn.delete-btn:hover {
   color: #ef4444;
   background-color: #fee2e2;
+}
+
+/* Mobile Logo Sizer & Controls Dock Responsive Adjustments */
+@media (max-width: 576px) {
+  .logo-sizer {
+    width: 160px !important;
+    height: 29px !important;
+  }
+  .comparative-controls-dock {
+    padding: 0.5rem 1rem !important;
+    gap: 0.5rem !important;
+    bottom: 12px !important;
+  }
+  .comparative-controls-dock .player-icon-btn {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+  .comparative-controls-dock .btn-action-normal {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
 }

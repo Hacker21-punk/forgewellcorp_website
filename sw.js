@@ -7,8 +7,8 @@
 */
 "use strict";
 
-const CACHE = "forgewell-v2";
-const ASSET_CACHE = "forgewell-assets-v2";
+const CACHE = "forgewell-v3";
+const ASSET_CACHE = "forgewell-assets-v3";
 const PRECACHE = [
   "./",
   "index.html",
@@ -19,7 +19,14 @@ const PRECACHE = [
   "sitemap.xml",
   "assets/media/logo-2.svg",
   "assets/media/logo-full.svg",
-  "404.html"
+  "404.html",
+  "trueprogress/assets/index.css",
+  "trueprogress/assets/login.css",
+  "trueprogress/assets/reset-password.css",
+  "trueprogress/assets/trueprogress_logo.png",
+  "trueprogress/backup%20details%20of%20trueprogress/users.json",
+  "trueprogress/backup%20details%20of%20trueprogress/videos.json",
+  "trueprogress/backup%20details%20of%20trueprogress/surveys.json"
 ];
 
 self.addEventListener("install", (event) => {
@@ -39,7 +46,7 @@ self.addEventListener("activate", (event) => {
 });
 
 const isAsset = (url) =>
-  /\.(?:css|js|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|webmanifest)$/i.test(url.pathname);
+  /\.(?:css|js|json|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|webmanifest)$/i.test(url.pathname);
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;

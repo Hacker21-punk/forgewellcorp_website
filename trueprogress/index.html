@@ -669,7 +669,14 @@
       const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      popover.style.left = `${rect.left + scrollLeft}px`;
+      let left = rect.left + scrollLeft;
+      const popoverWidth = 200; // matching .filter-popover width in CSS
+      if (left + popoverWidth > window.innerWidth) {
+        left = window.innerWidth - popoverWidth - 16;
+      }
+      if (left < 16) left = 16;
+
+      popover.style.left = `${left}px`;
       popover.style.top = `${rect.bottom + scrollTop + 4}px`;
 
       // Focus input
@@ -742,7 +749,14 @@
       const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      popover.style.left = `${rect.left + scrollLeft - 50}px`;
+      let left = rect.left + scrollLeft - 50;
+      const popoverWidth = 260; // matching .users-popover width in CSS
+      if (left + popoverWidth > window.innerWidth) {
+        left = window.innerWidth - popoverWidth - 16;
+      }
+      if (left < 16) left = 16;
+
+      popover.style.left = `${left}px`;
       popover.style.top = `${rect.bottom + scrollTop + 8}px`;
 
       // Prevent closing when clicking inside popover
@@ -959,6 +973,13 @@
     function escapeHtml(str) {
       if (!str) return '';
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Register Service Worker for offline capability & asset caching
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
     }
   </script>
 </body>
