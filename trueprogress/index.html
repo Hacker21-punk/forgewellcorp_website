@@ -33,8 +33,7 @@
           <!-- Profile Menu Container -->
           <div class="profile-menu-container">
             <div class="profile-btn-wrapper" id="profileMenuBtn">
-              <div class="profile-avatar-placeholder" id="profileInitial">A</div>
-              <span class="profile-name" id="profileName">Admin</span>
+              <span class="profile-name" id="profileName">AV</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
@@ -285,9 +284,15 @@
     } else {
       currentUser = JSON.parse(userSession);
       
+      function getInitials(name) {
+        if (!name) return '';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      
       // Update UI Header details
-      document.getElementById('profileName').innerText = currentUser.name;
-      document.getElementById('profileInitial').innerText = currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('profileName').innerText = getInitials(currentUser.name);
 
       // Update Dropdown details
       document.getElementById('dropdownName').innerText = currentUser.name;
@@ -389,7 +394,99 @@
       });
     }
 
+    function renderTableHeader() {
+      const thead = document.querySelector('.data-table thead');
+      if (!thead) return;
+
+      let headersHtml = '';
+      if (currentUser.admin === "true") {
+        headersHtml = `
+          <tr>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
+                Name
+                <svg id="filter-icon-name" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'department')">
+                Department
+                <svg id="filter-icon-department" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'survey_length')">
+                Survey Length
+                <svg id="filter-icon-survey_length" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'video_count')">
+                Video Count
+                <svg id="filter-icon-video_count" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'user_count')">
+                User Count
+                <svg id="filter-icon-user_count" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>Created On</th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'status')">
+                Status
+                <svg id="filter-icon-status" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>Action</th>
+          </tr>
+        `;
+      } else {
+        // Non-admin headers: Name, Department, Video Count, Survey Length, Created On, Status
+        headersHtml = `
+          <tr>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
+                Name
+                <svg id="filter-icon-name" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'department')">
+                Department
+                <svg id="filter-icon-department" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'video_count')">
+                Video Count
+                <svg id="filter-icon-video_count" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'survey_length')">
+                Survey Length
+                <svg id="filter-icon-survey_length" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+            <th>Created On</th>
+            <th>
+              <div class="header-content" onclick="toggleFilterPopover(event, 'status')">
+                Status
+                <svg id="filter-icon-status" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
+              </div>
+            </th>
+          </tr>
+        `;
+      }
+      thead.innerHTML = headersHtml;
+    }
+
     function renderSurveysTable() {
+      // Render the table header dynamically
+      renderTableHeader();
+
       const tableBody = document.getElementById('tableBody');
       tableBody.innerHTML = '';
 
@@ -453,7 +550,7 @@
       });
 
       if (allowedSurveys.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="${currentUser.admin === 'true' ? '8' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="${currentUser.admin === 'true' ? '8' : '6'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
         return;
       }
 
@@ -463,7 +560,7 @@
         
         const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name)}">${escapeHtml(survey.name)}</a></td>`;
         const deptCell = `<td>${escapeHtml(survey.department)}</td>`;
-        const lengthCell = `<td>${escapeHtml(survey.survey_length || 'N/A')}</td>`;
+        const lengthCell = `<td>${escapeHtml(survey.survey_length || '')}</td>`;
 
         // Video Count
         const matchingVideos = allVideos.filter(v => v.survey === survey.id);
@@ -526,7 +623,11 @@
           `;
         }
 
-        row.innerHTML = nameCell + deptCell + lengthCell + videoCell + userCell + dateCell + statusCell + actionCell;
+        if (currentUser.admin === "true") {
+          row.innerHTML = nameCell + deptCell + lengthCell + videoCell + userCell + dateCell + statusCell + actionCell;
+        } else {
+          row.innerHTML = nameCell + deptCell + videoCell + lengthCell + dateCell + statusCell;
+        }
         tableBody.appendChild(row);
       });
     }

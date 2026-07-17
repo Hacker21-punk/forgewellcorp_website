@@ -33,8 +33,7 @@
           <!-- Profile Menu Container -->
           <div class="profile-menu-container">
             <div class="profile-btn-wrapper" id="profileMenuBtn">
-              <div class="profile-avatar-placeholder" id="profileInitial">A</div>
-              <span class="profile-name" id="profileName">Admin</span>
+              <span class="profile-name" id="profileName">AV</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
@@ -388,8 +387,13 @@
       window.location.href = 'login.html';
     } else {
       currentUser = JSON.parse(userSession);
-      document.getElementById('profileName').innerText = currentUser.name;
-      document.getElementById('profileInitial').innerText = currentUser.name.charAt(0).toUpperCase();
+      function getInitials(name) {
+        if (!name) return '';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      document.getElementById('profileName').innerText = getInitials(currentUser.name);
       document.getElementById('dropdownName').innerText = currentUser.name;
       document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
       document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
