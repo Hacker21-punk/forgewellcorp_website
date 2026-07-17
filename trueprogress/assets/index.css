@@ -1272,5 +1272,38 @@ a {
   fill: #2563eb !important;
 }
 
+/* Shared Common Selectors Card */
+.shared-common-selectors-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
 
+@media (min-width: 768px) {
+  .shared-common-selectors-card {
+    grid-template-columns: 1fr 1fr;
+  }
+}
 
+.shared-common-selectors-card .search-select-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+/* Draggable master player controls */
+.comparative-controls-dock {
+  cursor: move;
+}
+.comparative-controls-dock button,
+.comparative-controls-dock select,
+.comparative-controls-dock input {
+  cursor: pointer;
+}

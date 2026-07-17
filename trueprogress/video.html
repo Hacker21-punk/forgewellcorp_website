@@ -91,6 +91,22 @@
           </ul>
         </nav>
 
+        <!-- Shared Common Selectors -->
+        <div id="sharedCommonSelectors" class="shared-common-selectors-card" style="display: none;">
+          <div class="search-select-wrapper">
+            <span class="search-select-label">Landmarks</span>
+            <select id="sharedLandmarksSelect" class="search-select" onchange="jumpToSharedLandmark(this)">
+              <option value="">Search for landmarks</option>
+            </select>
+          </div>
+          <div class="search-select-wrapper">
+            <span class="search-select-label">KM</span>
+            <select id="sharedKmSelect" class="search-select" onchange="jumpToSharedKm(this)">
+              <option value="">Search for KM</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Dynamic comparative grid wrapper -->
         <div id="playersContainer" class="videos-grid">
           <!-- Populated dynamically via JS -->
@@ -395,24 +411,28 @@
       // Set grid columns class
       container.className = `videos-grid cols-${Math.min(activeVideoIds.length, 3)}`;
 
-      // Show/hide shared comparative control dock
+      // Show/hide shared comparative control dock & common selectors card
       const compControls = document.getElementById('comparativeControls');
+      const sharedSelectors = document.getElementById('sharedCommonSelectors');
       if (activeVideoIds.length > 1) {
         compControls.style.display = 'flex';
+        sharedSelectors.style.display = 'grid';
+        makeElementDraggable(compControls);
       } else {
         compControls.style.display = 'none';
+        sharedSelectors.style.display = 'none';
       }
 
       activeVideoIds.forEach((id, index) => {
         const videoName = activeVideoNames[index] || `Survey Run ${index + 1}`;
         const card = document.createElement('div');
         card.className = 'player-column';
-        card.innerHTML = `
-          <!-- Top row: File Upload and Landmarks/KM selectors -->
-          <div class="video-top-controls" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1rem;">
-            <!-- File Upload -->
-            <div class="search-select-wrapper">
-              <span class="search-select-label">Upload LandMarks File</span>
+
+        let topControlsHtml = '';
+        if (activeVideoIds.length > 1) {
+          // Comparative mode: only file upload block, no Landmarks/KM dropdowns in column
+          topControlsHtml = `
+            <div class="video-top-controls" style="grid-template-columns: 1fr; margin-bottom: 1rem;">
               <div class="file-upload-container">
                 <label class="file-input-wrapper" id="fileInputLabel_${id}">
                   Choose File
@@ -421,21 +441,42 @@
                 <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
               </div>
             </div>
-            <!-- Landmarks select -->
-            <div class="search-select-wrapper">
-              <span class="search-select-label">Landmarks</span>
-              <select id="landmarksSelect_${id}" class="search-select" onchange="jumpToLandmarkSelect(this, '${id}')">
-                <option value="">Search for landmarks</option>
-              </select>
+          `;
+        } else {
+          // Single video mode: file upload + Landmarks + KM dropdowns in column
+          topControlsHtml = `
+            <div class="video-top-controls" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1rem;">
+              <!-- File Upload -->
+              <div class="search-select-wrapper">
+                <span class="search-select-label">Upload LandMarks File</span>
+                <div class="file-upload-container">
+                  <label class="file-input-wrapper" id="fileInputLabel_${id}">
+                    Choose File
+                    <input type="file" id="landmarksFileInput_${id}" accept=".csv,.json" onchange="handleFileChange(this, '${id}')" />
+                  </label>
+                  <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
+                </div>
+              </div>
+              <!-- Landmarks select -->
+              <div class="search-select-wrapper">
+                <span class="search-select-label">Landmarks</span>
+                <select id="landmarksSelect_${id}" class="search-select" onchange="jumpToLandmarkSelect(this, '${id}')">
+                  <option value="">Search for landmarks</option>
+                </select>
+              </div>
+              <!-- KM select -->
+              <div class="search-select-wrapper">
+                <span class="search-select-label">KM</span>
+                <select id="kmSelect_${id}" class="search-select" onchange="jumpToKmSelect(this, '${id}')">
+                  <option value="">Search for KM</option>
+                </select>
+              </div>
             </div>
-            <!-- KM select -->
-            <div class="search-select-wrapper">
-              <span class="search-select-label">KM</span>
-              <select id="kmSelect_${id}" class="search-select" onchange="jumpToKmSelect(this, '${id}')">
-                <option value="">Search for KM</option>
-              </select>
-            </div>
-          </div>
+          `;
+        }
+
+        card.innerHTML = `
+          ${topControlsHtml}
 
           <h2 class="video-heading-title" style="margin-bottom: 0.75rem;">${escapeHtml(videoName)}</h2>
 
@@ -532,6 +573,83 @@
       loadVideoData();
     }
 
+    function makeElementDraggable(elmnt) {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      
+      elmnt.onmousedown = dragMouseDown;
+      elmnt.ontouchstart = dragTouchStart;
+
+      function dragMouseDown(e) {
+        e = e || window.event;
+        if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select') || e.target.closest('svg')) {
+          return;
+        }
+        e.preventDefault();
+        
+        const rect = elmnt.getBoundingClientRect();
+        elmnt.style.transform = 'none';
+        elmnt.style.left = rect.left + 'px';
+        elmnt.style.top = rect.top + 'px';
+        elmnt.style.bottom = 'auto';
+        elmnt.style.right = 'auto';
+        
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+
+      function dragTouchStart(e) {
+        if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select') || e.target.closest('svg')) {
+          return;
+        }
+        
+        const rect = elmnt.getBoundingClientRect();
+        elmnt.style.transform = 'none';
+        elmnt.style.left = rect.left + 'px';
+        elmnt.style.top = rect.top + 'px';
+        elmnt.style.bottom = 'auto';
+        elmnt.style.right = 'auto';
+
+        pos3 = e.touches[0].clientX;
+        pos4 = e.touches[0].clientY;
+        document.ontouchend = closeDragTouch;
+        document.ontouchmove = elementTouchDrag;
+      }
+
+      function elementTouchDrag(e) {
+        pos1 = pos3 - e.touches[0].clientX;
+        pos2 = pos4 - e.touches[0].clientY;
+        pos3 = e.touches[0].clientX;
+        pos4 = e.touches[0].clientY;
+        
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragTouch() {
+        document.ontouchend = null;
+        document.ontouchmove = null;
+      }
+    }
+
     async function loadVideoData() {
       try {
         const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
@@ -602,39 +720,90 @@
       // Save to localStorage
       localStorage.setItem(`landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
 
-      // Update dropdown selects
-      const landmarksSelect = document.getElementById(`landmarksSelect_${id}`);
-      const kmSelect = document.getElementById(`kmSelect_${id}`);
-      
-      if (landmarksSelect) landmarksSelect.innerHTML = '<option value="">Search for landmarks</option>';
-      if (kmSelect) kmSelect.innerHTML = '<option value="">Search for KM</option>';
+      if (activeVideoIds.length > 1) {
+        updateSharedLandmarksUI();
+      } else {
+        // Update dropdown selects for this single video
+        const landmarksSelect = document.getElementById(`landmarksSelect_${id}`);
+        const kmSelect = document.getElementById(`kmSelect_${id}`);
+        
+        if (landmarksSelect) landmarksSelect.innerHTML = '<option value="">Search for landmarks</option>';
+        if (kmSelect) kmSelect.innerHTML = '<option value="">Search for KM</option>';
 
-      videoLandmarks[id].forEach((lm, idx) => {
-        const display = lm.display || lm.name || `Landmark ${idx + 1}`;
-        const totalSecs = Math.floor(lm.time);
-        const mins = Math.floor(totalSecs / 60);
-        const secs = totalSecs % 60;
-        const timeCode = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        videoLandmarks[id].forEach((lm, idx) => {
+          const display = lm.display || lm.name || `Landmark ${idx + 1}`;
+          const totalSecs = Math.floor(lm.time);
+          const mins = Math.floor(totalSecs / 60);
+          const secs = totalSecs % 60;
+          const timeCode = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-        if (landmarksSelect) {
-          const opt1 = document.createElement('option');
-          opt1.value = lm.time;
-          opt1.innerText = `${display} (${timeCode})`;
-          landmarksSelect.appendChild(opt1);
-        }
+          if (landmarksSelect) {
+            const opt1 = document.createElement('option');
+            opt1.value = lm.time;
+            opt1.innerText = `${display} (${timeCode})`;
+            landmarksSelect.appendChild(opt1);
+          }
 
-        if (kmSelect && lm.km) {
-          const opt2 = document.createElement('option');
-          opt2.value = lm.time;
-          opt2.innerText = `KM ${lm.km} (${timeCode})`;
-          kmSelect.appendChild(opt2);
-        }
-      });
+          if (kmSelect && lm.km) {
+            const opt2 = document.createElement('option');
+            opt2.value = lm.time;
+            opt2.innerText = `KM ${lm.km} (${timeCode})`;
+            kmSelect.appendChild(opt2);
+          }
+        });
+      }
 
       const countEl = document.getElementById(`totalLandmarksCount_${id}`);
       if (countEl) {
         countEl.innerText = `Total Landmarks: ${videoLandmarks[id].length}`;
       }
+    }
+
+    function updateSharedLandmarksUI() {
+      const sharedLandmarksSelect = document.getElementById('sharedLandmarksSelect');
+      const sharedKmSelect = document.getElementById('sharedKmSelect');
+      
+      if (sharedLandmarksSelect) sharedLandmarksSelect.innerHTML = '<option value="">Search for landmarks</option>';
+      if (sharedKmSelect) sharedKmSelect.innerHTML = '<option value="">Search for KM</option>';
+
+      const uniqueNames = new Set();
+      const uniqueKms = new Set();
+
+      activeVideoIds.forEach(id => {
+        if (videoLandmarks[id]) {
+          videoLandmarks[id].forEach(lm => {
+            const name = lm.display || lm.name;
+            if (name) uniqueNames.add(name);
+            if (lm.km) uniqueKms.add(lm.km);
+          });
+        }
+      });
+
+      const sortedNames = Array.from(uniqueNames).sort((a, b) => a.localeCompare(b));
+      const sortedKms = Array.from(uniqueKms).sort((a, b) => {
+        const numA = parseFloat(a);
+        const numB = parseFloat(b);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return a.localeCompare(b);
+      });
+
+      sortedNames.forEach(name => {
+        if (sharedLandmarksSelect) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.innerText = name;
+          sharedLandmarksSelect.appendChild(opt);
+        }
+      });
+
+      sortedKms.forEach(km => {
+        if (sharedKmSelect) {
+          const opt = document.createElement('option');
+          opt.value = km;
+          opt.innerText = `KM ${km}`;
+          sharedKmSelect.appendChild(opt);
+        }
+      });
     }
 
     // Jump by dropdown selection
@@ -648,6 +817,32 @@
       if (sel.value) {
         seekToTime(parseFloat(sel.value), id);
       }
+    }
+
+    function jumpToSharedLandmark(sel) {
+      const selectedName = sel.value;
+      if (!selectedName) return;
+      activeVideoIds.forEach(id => {
+        if (videoLandmarks[id]) {
+          const lm = videoLandmarks[id].find(l => (l.display || l.name) === selectedName);
+          if (lm) {
+            seekToTime(lm.time, id);
+          }
+        }
+      });
+    }
+
+    function jumpToSharedKm(sel) {
+      const selectedKm = sel.value;
+      if (!selectedKm) return;
+      activeVideoIds.forEach(id => {
+        if (videoLandmarks[id]) {
+          const lm = videoLandmarks[id].find(l => l.km === selectedKm);
+          if (lm) {
+            seekToTime(lm.time, id);
+          }
+        }
+      });
     }
 
     function seekToTime(time, id) {
