@@ -238,6 +238,7 @@
           <table class="users-table">
             <thead>
               <tr>
+                <th>S.No.</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
@@ -791,9 +792,10 @@
         const tableBody = document.getElementById('usersTableBody');
         tableBody.innerHTML = '';
 
-        users.forEach(user => {
+        users.forEach((user, idx) => {
           const row = document.createElement('tr');
           row.innerHTML = `
+            <td>${idx + 1}</td>
             <td><strong>${escapeHtml(user.name || 'N/A')}</strong></td>
             <td>${escapeHtml(user.email || 'N/A')}</td>
             <td>${escapeHtml(user.phoneNumber || 'N/A')}</td>
