@@ -43,28 +43,35 @@
                 </a>
 
                 <!-- Heading -->
-                <p class="login-heading">Please login to your account</p>
+                <h1 class="login-heading">Welcome Back</h1>
+                <p class="login-subheading">Please login to your account to continue</p>
 
                 <!-- Input Fields -->
                 <div class="login-fields">
-                  <input
-                    type="email"
-                    id="loginEmail"
-                    name="email"
-                    placeholder="Email Address"
-                    class="login-input"
-                    required
-                    autocomplete="email"
-                  />
-                  <input
-                    type="password"
-                    id="loginPassword"
-                    name="password"
-                    placeholder="Password"
-                    class="login-input"
-                    required
-                    autocomplete="current-password"
-                  />
+                  <div class="input-group">
+                    <label class="input-label" for="loginEmail">EMAIL ADDRESS</label>
+                    <input
+                      type="email"
+                      id="loginEmail"
+                      name="email"
+                      placeholder="name@company.com"
+                      class="login-input"
+                      required
+                      autocomplete="email"
+                    />
+                  </div>
+                  <div class="input-group">
+                    <label class="input-label" for="loginPassword">PASSWORD</label>
+                    <input
+                      type="password"
+                      id="loginPassword"
+                      name="password"
+                      placeholder="••••••••"
+                      class="login-input"
+                      required
+                      autocomplete="current-password"
+                    />
+                  </div>
                 </div>
 
                 <!-- Sign In Button -->
