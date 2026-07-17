@@ -114,14 +114,14 @@
 
         <!-- Floating Comparative Controls (Shows only when comparing multiple videos) -->
         <div id="comparativeControls" class="comparative-controls-dock" style="display: none;">
-          <button class="player-icon-btn" onclick="seekAllRelative(-10)" title="Rewind All 10s">
+          <button class="player-icon-btn" onclick="fastBackwardAll()" title="Fast Backward All">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
           </button>
           <button class="player-icon-btn" id="playPauseAllBtn" onclick="togglePlayPauseAll()" style="background-color: #2563eb; color: white; border-radius: 9999px; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; padding: 0.25rem;">
             <svg id="playAllIcon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             <svg id="pauseAllIcon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
           </button>
-          <button class="player-icon-btn" onclick="seekAllRelative(10)" title="Forward All 10s">
+          <button class="player-icon-btn" onclick="fastForwardAll()" title="Fast Forward All">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
           </button>
           <button class="player-icon-btn" onclick="toggleFullscreenAll()" title="Fullscreen All">
@@ -500,17 +500,19 @@
                     <option value="1" selected>x1</option>
                     <option value="1.5">x1.5</option>
                     <option value="2">x2</option>
+                    <option value="4">x4</option>
+                    <option value="8">x8</option>
                   </select>
                 </div>
                 <div class="player-btn-group">
-                  <button class="player-icon-btn" onclick="seekRelative(-10, '${id}')" title="Rewind 10s">
+                  <button class="player-icon-btn" onclick="fastBackward('${id}')" title="Fast Backward">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
                   </button>
                   <button class="player-icon-btn" id="playPauseBtn_${id}" onclick="togglePlayPause('${id}')" style="background-color: #2563eb; color: white; border-radius: 9999px; width: 2rem; height: 2rem; padding: 0.25rem;">
                     <svg id="playIcon_${id}" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     <svg id="pauseIcon_${id}" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                   </button>
-                  <button class="player-icon-btn" onclick="seekRelative(10, '${id}')" title="Forward 10s">
+                  <button class="player-icon-btn" onclick="fastForward('${id}')" title="Fast Forward">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
                   </button>
                 </div>
@@ -857,12 +859,24 @@
     }
 
     function togglePlayPause(id) {
+      if (rewindIntervals[id]) {
+        clearInterval(rewindIntervals[id]);
+        rewindIntervals[id] = null;
+        rewindSpeeds[id] = 0;
+        pauseVideo(id);
+        return;
+      }
+
       if (playerTypes[id] === 'youtube') {
         if (ytPlayerReadyState[id] && players[id]) {
           const state = players[id].getPlayerState();
           if (state === YT.PlayerState.PLAYING) {
             pauseVideo(id);
           } else {
+            const speedSelect = document.getElementById(`speedSelector_${id}`);
+            if (speedSelect) {
+              setPlaybackRate(id, parseFloat(speedSelect.value));
+            }
             playVideo(id);
           }
         }
@@ -870,6 +884,10 @@
         const el = document.getElementById(`videoPlayer_${id}`);
         if (el) {
           if (el.paused || el.ended) {
+            const speedSelect = document.getElementById(`speedSelector_${id}`);
+            if (speedSelect) {
+              setPlaybackRate(id, parseFloat(speedSelect.value));
+            }
             playVideo(id);
           } else {
             pauseVideo(id);
@@ -930,9 +948,92 @@
       setCurrentTime(id, parseFloat(slider.value));
     }
 
-    function seekRelative(secs, id) {
-      const newTime = Math.max(0, Math.min(getDuration(id), getCurrentTime(id) + secs));
-      setCurrentTime(id, newTime);
+    let rewindIntervals = {};
+    let rewindSpeeds = {};
+    let globalSpeedState = 1;
+    let globalRewindSpeed = 0;
+
+    function fastForward(id) {
+      // Clear any active rewind
+      if (rewindIntervals[id]) {
+        clearInterval(rewindIntervals[id]);
+        rewindIntervals[id] = null;
+        rewindSpeeds[id] = 0;
+      }
+
+      let currentRate = getPlaybackRate(id);
+      let newRate = 1;
+      
+      let isPlaying = false;
+      if (playerTypes[id] === 'youtube') {
+        isPlaying = (ytPlayerReadyState[id] && players[id] && players[id].getPlayerState() === YT.PlayerState.PLAYING);
+      } else {
+        const el = document.getElementById(`videoPlayer_${id}`);
+        isPlaying = (el && !el.paused && !el.ended);
+      }
+
+      if (!isPlaying) {
+        newRate = 2;
+      } else {
+        if (currentRate === 1) newRate = 2;
+        else if (currentRate === 2) newRate = 4;
+        else if (currentRate === 4) newRate = 8;
+        else if (currentRate === 8) newRate = 1;
+        else newRate = 2;
+      }
+
+      setPlaybackRate(id, newRate);
+      playVideo(id);
+
+      // Sync selector dropdown
+      const speedSelect = document.getElementById(`speedSelector_${id}`);
+      if (speedSelect) {
+        speedSelect.value = newRate;
+      }
+      
+      updateProgress(id);
+    }
+
+    function fastBackward(id) {
+      // Pause native playing
+      pauseVideo(id);
+
+      let currentSpeed = rewindSpeeds[id] || 0;
+      let newSpeed = 0;
+
+      if (currentSpeed === 0) newSpeed = 2;
+      else if (currentSpeed === 2) newSpeed = 4;
+      else if (currentSpeed === 4) newSpeed = 8;
+      else if (currentSpeed === 8) newSpeed = 0;
+
+      if (rewindIntervals[id]) {
+        clearInterval(rewindIntervals[id]);
+        rewindIntervals[id] = null;
+      }
+
+      rewindSpeeds[id] = newSpeed;
+
+      if (newSpeed > 0) {
+        updatePlayIcons(id, true); // Show pause icon during active rewind
+        const intervalMs = 100;
+        rewindIntervals[id] = setInterval(() => {
+          const cur = getCurrentTime(id);
+          if (cur <= 0) {
+            clearInterval(rewindIntervals[id]);
+            rewindIntervals[id] = null;
+            rewindSpeeds[id] = 0;
+            setCurrentTime(id, 0);
+            updatePlayIcons(id, false);
+          } else {
+            // Subtract time based on rewind speed
+            setCurrentTime(id, Math.max(0, cur - (newSpeed * (intervalMs / 1000))));
+          }
+        }, intervalMs);
+      } else {
+        // Stop
+        setPlaybackRate(id, 1);
+        updatePlayIcons(id, false);
+      }
     }
 
     function changePlaybackSpeed(sel, id) {
@@ -1142,6 +1243,26 @@
     }
 
     function togglePlayPauseAll() {
+      let anyRewinding = false;
+      activeVideoIds.forEach(id => {
+        if (rewindIntervals[id]) anyRewinding = true;
+      });
+
+      if (anyRewinding || globalRewindSpeed > 0) {
+        // Stop all rewinding
+        activeVideoIds.forEach(id => {
+          if (rewindIntervals[id]) {
+            clearInterval(rewindIntervals[id]);
+            rewindIntervals[id] = null;
+          }
+          rewindSpeeds[id] = 0;
+          pauseVideo(id);
+        });
+        globalRewindSpeed = 0;
+        updateGlobalPlayIcon(false);
+        return;
+      }
+
       let anyPlaying = false;
       activeVideoIds.forEach(id => {
         if (playerTypes[id] === 'youtube') {
@@ -1159,7 +1280,15 @@
       if (anyPlaying) {
         pauseAll();
       } else {
-        playAll();
+        // Restore speed selectors and play
+        activeVideoIds.forEach(id => {
+          const speedSelect = document.getElementById(`speedSelector_${id}`);
+          if (speedSelect) {
+            setPlaybackRate(id, parseFloat(speedSelect.value));
+          }
+          playVideo(id);
+        });
+        updateGlobalPlayIcon(true);
       }
     }
 
@@ -1194,6 +1323,82 @@
       updateGlobalPlayIcon(anyPlaying);
     }
 
+    function fastForwardAll() {
+      // Stop all rewinding first
+      if (globalRewindSpeed > 0) {
+        activeVideoIds.forEach(id => {
+          if (rewindIntervals[id]) {
+            clearInterval(rewindIntervals[id]);
+            rewindIntervals[id] = null;
+            rewindSpeeds[id] = 0;
+          }
+        });
+        globalRewindSpeed = 0;
+      }
+
+      if (globalSpeedState === 1) globalSpeedState = 2;
+      else if (globalSpeedState === 2) globalSpeedState = 4;
+      else if (globalSpeedState === 4) globalSpeedState = 8;
+      else if (globalSpeedState === 8) globalSpeedState = 1;
+      else globalSpeedState = 2;
+
+      activeVideoIds.forEach(id => {
+        setPlaybackRate(id, globalSpeedState);
+        playVideo(id);
+
+        const speedSelect = document.getElementById(`speedSelector_${id}`);
+        if (speedSelect) {
+          speedSelect.value = globalSpeedState;
+        }
+      });
+      
+      updateGlobalPlayIcon(true);
+    }
+
+    function fastBackwardAll() {
+      // Reset forward speed to 1 first
+      globalSpeedState = 1;
+
+      if (globalRewindSpeed === 0) globalRewindSpeed = 2;
+      else if (globalRewindSpeed === 2) globalRewindSpeed = 4;
+      else if (globalRewindSpeed === 4) globalRewindSpeed = 8;
+      else if (globalRewindSpeed === 8) globalRewindSpeed = 0;
+
+      activeVideoIds.forEach(id => {
+        // Pause first
+        pauseVideo(id);
+
+        if (rewindIntervals[id]) {
+          clearInterval(rewindIntervals[id]);
+          rewindIntervals[id] = null;
+        }
+
+        rewindSpeeds[id] = globalRewindSpeed;
+
+        if (globalRewindSpeed > 0) {
+          updatePlayIcons(id, true);
+          const intervalMs = 100;
+          rewindIntervals[id] = setInterval(() => {
+            const cur = getCurrentTime(id);
+            if (cur <= 0) {
+              clearInterval(rewindIntervals[id]);
+              rewindIntervals[id] = null;
+              rewindSpeeds[id] = 0;
+              setCurrentTime(id, 0);
+              updatePlayIcons(id, false);
+            } else {
+              setCurrentTime(id, Math.max(0, cur - (globalRewindSpeed * (intervalMs / 1000))));
+            }
+          }, intervalMs);
+        } else {
+          setPlaybackRate(id, 1);
+          updatePlayIcons(id, false);
+        }
+      });
+
+      updateGlobalPlayIcon(globalRewindSpeed > 0);
+    }
+
     function seekAllRelative(secs) {
       activeVideoIds.forEach(id => {
         const curTime = getCurrentTime(id);
@@ -1204,9 +1409,22 @@
     }
 
     function resetAllVideos() {
+      globalSpeedState = 1;
+      globalRewindSpeed = 0;
       activeVideoIds.forEach(id => {
+        if (rewindIntervals[id]) {
+          clearInterval(rewindIntervals[id]);
+          rewindIntervals[id] = null;
+        }
+        rewindSpeeds[id] = 0;
+        setPlaybackRate(id, 1);
         setCurrentTime(id, 0);
         pauseVideo(id);
+        
+        const speedSelect = document.getElementById(`speedSelector_${id}`);
+        if (speedSelect) {
+          speedSelect.value = 1;
+        }
       });
       updateGlobalPlayIcon(false);
     }
