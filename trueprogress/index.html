@@ -52,26 +52,7 @@
                 <span class="detail-value" id="dropdownEmail">N/A</span>
               </div>
               
-              <!-- Admin specific options -->
-              <div id="adminDropdownOptions" style="display: none;">
-                <button class="profile-dropdown-action-btn" id="allUsersBtn">
-                  All Users
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                </button>
-                <button class="profile-dropdown-action-btn" id="createBackupBtn">
-                  Create Backup
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                </button>
-              </div>
+
 
               <button class="profile-dropdown-logout-btn" id="logoutBtn">
                 Logout
@@ -86,7 +67,7 @@
         </header>
 
         <!-- Breadcrumb -->
-        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
           <ul class="breadcrumb-list">
             <li class="breadcrumb-item">
               <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -95,6 +76,26 @@
               Home
             </li>
           </ul>
+          <!-- Admin actions beside breadcrumbs -->
+          <div id="breadcrumbAdminActions" style="display: none; gap: 0.75rem; align-items: center;">
+            <button class="btn-breadcrumb-action" id="allUsersBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              All Users
+            </button>
+            <button class="btn-breadcrumb-action" id="createBackupBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Create Backup
+            </button>
+          </div>
         </nav>
 
         <!-- Create Survey Button (Visible only to Admin) -->
@@ -311,7 +312,7 @@
 
       if (currentUser.admin === "true") {
         document.getElementById('dropdownRole').innerText = "Admin";
-        document.getElementById('adminDropdownOptions').style.display = "block";
+        document.getElementById('breadcrumbAdminActions').style.display = "flex";
         document.getElementById('adminControls').style.display = "block";
         document.getElementById('actionHeader').style.display = "table-cell";
       } else {

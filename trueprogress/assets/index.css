@@ -178,6 +178,30 @@ a {
   color: #10b981;
 }
 
+.btn-breadcrumb-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 1px solid #14124c;
+  background-color: #ffffff;
+  color: #14124c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-breadcrumb-action:hover {
+  background-color: #14124c;
+  color: #ffffff;
+}
+
+.btn-breadcrumb-action svg {
+  stroke: currentColor;
+}
+
 .breadcrumb-item svg {
   width: 1rem;
   height: 1rem;
