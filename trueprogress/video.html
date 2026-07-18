@@ -515,8 +515,20 @@
                     <option value="1" selected>x1</option>
                     <option value="1.5">x1.5</option>
                     <option value="2">x2</option>
+                    <option value="3">x3</option>
                     <option value="4">x4</option>
+                    <option value="5">x5</option>
+                    <option value="6">x6</option>
+                    <option value="7">x7</option>
                     <option value="8">x8</option>
+                    <option value="9">x9</option>
+                    <option value="10">x10</option>
+                    <option value="11">x11</option>
+                    <option value="12">x12</option>
+                    <option value="13">x13</option>
+                    <option value="14">x14</option>
+                    <option value="15">x15</option>
+                    <option value="16">x16</option>
                   </select>
                 </div>
                 <div class="player-btn-group">
@@ -1059,7 +1071,7 @@
     let globalSpeedState = 1;
     let globalRewindSpeed = 0;
 
-    const speedList = [0.5, 1, 1.5, 2, 4, 8];
+    const speedList = [0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
     function updateSpeedButtonStates(id, currentRate) {
       const backwardBtn = document.getElementById(`fastBackwardBtn_${id}`);
@@ -1069,13 +1081,13 @@
         backwardBtn.disabled = (currentRate <= 0.5);
       }
       if (forwardBtn) {
-        forwardBtn.disabled = (currentRate >= 8);
+        forwardBtn.disabled = (currentRate >= 16);
       }
     }
 
     function fastForward(id) {
       let currentRate = getPlaybackRate(id);
-      let idx = speedList.indexOf(currentRate);
+      let idx = speedList.findIndex(s => Math.abs(s - currentRate) < 0.01);
       if (idx === -1) {
         idx = speedList.findIndex(s => s >= currentRate);
         if (idx === -1) idx = 1;
@@ -1097,7 +1109,7 @@
 
     function fastBackward(id) {
       let currentRate = getPlaybackRate(id);
-      let idx = speedList.indexOf(currentRate);
+      let idx = speedList.findIndex(s => Math.abs(s - currentRate) < 0.01);
       if (idx === -1) {
         idx = speedList.findIndex(s => s >= currentRate);
         if (idx === -1) idx = 1;
@@ -1430,12 +1442,12 @@
         backwardBtn.disabled = (currentRate <= 0.5);
       }
       if (forwardBtn) {
-        forwardBtn.disabled = (currentRate >= 8);
+        forwardBtn.disabled = (currentRate >= 16);
       }
     }
 
     function fastForwardAll() {
-      let idx = speedList.indexOf(globalSpeedState);
+      let idx = speedList.findIndex(s => Math.abs(s - globalSpeedState) < 0.01);
       if (idx === -1) {
         idx = speedList.findIndex(s => s >= globalSpeedState);
         if (idx === -1) idx = 1;
@@ -1458,7 +1470,7 @@
     }
 
     function fastBackwardAll() {
-      let idx = speedList.indexOf(globalSpeedState);
+      let idx = speedList.findIndex(s => Math.abs(s - globalSpeedState) < 0.01);
       if (idx === -1) {
         idx = speedList.findIndex(s => s >= globalSpeedState);
         if (idx === -1) idx = 1;
