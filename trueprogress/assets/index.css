@@ -1456,3 +1456,33 @@ a {
     font-size: 0.75rem !important;
   }
 }
+
+/* Survey assignment chips inside user modal */
+.survey-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.survey-chip input[type="checkbox"] {
+  width: 0.875rem;
+  height: 0.875rem;
+  accent-color: #3b82f6; /* Blue checkbox */
+  cursor: pointer;
+}
+
+.survey-chip.checked {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  background-color: #f0f9ff;
+}

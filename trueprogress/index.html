@@ -103,6 +103,11 @@
           <button class="btn-create-survey" id="openCreateSurveyModalBtn">Create a survey</button>
         </div>
 
+        <!-- Create User Button (Visible only to Admin when on users view) -->
+        <div id="adminUserControls" style="display: none;">
+          <button class="btn-create-survey" id="openCreateUserModalBtn">Create a User</button>
+        </div>
+
         <!-- Table Card -->
         <div class="table-card">
           <div class="table-container">
@@ -224,6 +229,93 @@
     </div>
   </div>
 
+  <!-- MODAL: Create / Edit User -->
+  <div class="modal-overlay" id="userModal">
+    <div class="modal-container" style="max-width: 600px; width: 90%;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="userModalTitle">Edit</h3>
+        <button class="modal-close-btn" onclick="closeUserModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="userForm" onsubmit="return handleSaveUser(event)">
+        <input type="hidden" id="editUserUid" />
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px;">
+          <!-- Two-column grid -->
+          <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input type="text" id="userNameInput" class="form-input" placeholder="Name" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Organization</label>
+              <input type="text" id="userOrgInput" class="form-input" placeholder="Organization" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <input type="text" id="userDeptInput" class="form-input" placeholder="Department" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">State</label>
+              <input type="text" id="userStateInput" class="form-input" placeholder="State" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="userEmailInput" class="form-input" placeholder="Email Address" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password (for first-time use only)</label>
+              <input type="text" id="userPasswordInput" class="form-input" placeholder="Password" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="text" id="userPhoneInput" class="form-input" placeholder="Phone Number" />
+            </div>
+            <div></div> <!-- Blank cell for layout grid alignment -->
+          </div>
+
+          <!-- Radio columns -->
+          <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600;">Is Admin</label>
+              <div class="form-radio-group" style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userIsAdmin" value="true" class="form-radio-input" /> TRUE
+                </label>
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userIsAdmin" value="false" checked class="form-radio-input" /> FALSE
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600;">Disable User</label>
+              <div class="form-radio-group" style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userDisable" value="true" class="form-radio-input" /> TRUE
+                </label>
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userDisable" value="false" checked class="form-radio-input" /> FALSE
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Survey checkboxes -->
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label class="form-label" style="font-weight: 600; margin-bottom: 0.5rem;">Assign Survey</label>
+            <div id="surveyAssignGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
+              <!-- Dynamically populated checkbox chips -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeUserModal()">Cancel</button>
+          <button type="submit" class="btn-modal-submit" id="saveUserBtn" style="background-color: #14124c; border-color: #14124c;">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 
 
 
@@ -248,7 +340,8 @@
             </svg>
             Home
           </li>
-          <li class="breadcrumb-item">All Users</li>
+          <li class="breadcrumb-item" style="color: #9ca3af; margin: 0 0.5rem;">&gt;</li>
+          <li class="breadcrumb-item">Users</li>
         `;
       } else {
         breadcrumbList.innerHTML = `
@@ -267,12 +360,19 @@
       renderBreadcrumbs();
 
       const adminControls = document.getElementById('adminControls');
-      if (adminControls) {
-        if (currentView === 'surveys' && currentUser.admin === 'true') {
-          adminControls.style.display = 'block';
-        } else {
-          adminControls.style.display = 'none';
+      const adminUserControls = document.getElementById('adminUserControls');
+      
+      if (currentUser && currentUser.admin === 'true') {
+        if (currentView === 'surveys') {
+          if (adminControls) adminControls.style.display = 'block';
+          if (adminUserControls) adminUserControls.style.display = 'none';
+        } else if (currentView === 'users') {
+          if (adminControls) adminControls.style.display = 'none';
+          if (adminUserControls) adminUserControls.style.display = 'block';
         }
+      } else {
+        if (adminControls) adminControls.style.display = 'none';
+        if (adminUserControls) adminUserControls.style.display = 'none';
       }
 
       renderSurveysTable();
@@ -328,6 +428,7 @@
       await fetchVideos();
       await fetchUsers();
       buildSurveyUserMap();
+      populateSurveyCheckboxes();
       renderSurveysTable();
     }
 
@@ -381,7 +482,34 @@
       try {
         const response = await fetch('backup%20details%20of%20trueprogress/users.json');
         if (!response.ok) throw new Error('Failed to load users data');
-        allUsers = await response.json();
+        let baseUsers = await response.json();
+
+        // Apply edits / creations from localStorage
+        const customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+        const editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+
+        // Start with base users
+        allUsers = [...baseUsers];
+
+        // Merge edited users
+        editedUsers.forEach(edited => {
+          const idx = allUsers.findIndex(u => u.uid === edited.uid);
+          if (idx > -1) {
+            allUsers[idx] = { ...allUsers[idx], ...edited };
+          } else {
+            allUsers.push(edited);
+          }
+        });
+
+        // Add custom users
+        customUsers.forEach(custom => {
+          const idx = allUsers.findIndex(u => u.uid === custom.uid);
+          if (idx > -1) {
+            allUsers[idx] = { ...allUsers[idx], ...custom };
+          } else {
+            allUsers.push(custom);
+          }
+        });
       } catch (error) {
         console.error('Error fetching users:', error);
       }
@@ -413,13 +541,50 @@
       if (currentView === 'users') {
         headersHtml = `
           <tr>
-            <th>S.No.</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Organization</th>
-            <th>Department</th>
-            <th>Role</th>
+            <th>Users</th>
+            <th>
+              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
+                Name
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
+                Email
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
+                Organization
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
+                Department
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </th>
+            <th>
+              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
+                State
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </th>
+            <th>Status</th>
+            <th>Is Admin</th>
+            <th>Action</th>
           </tr>
         `;
         thead.innerHTML = headersHtml;
@@ -521,16 +686,38 @@
       tableBody.innerHTML = '';
 
       if (currentView === 'users') {
-        allUsers.forEach((user, idx) => {
+        const sortedUsers = [...allUsers].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        
+        sortedUsers.forEach((user, idx) => {
           const row = document.createElement('tr');
+          
+          // Determine status badge (status field is usually empty or Active, check userDisable)
+          const isActive = user.status !== 'Disable';
+          const statusBadge = isActive 
+            ? `<span class="status-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Active</span>`
+            : `<span class="status-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Disabled</span>`;
+            
+          const isAdminBadge = user.admin === 'true'
+            ? `<span class="admin-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Yes</span>`
+            : `<span class="admin-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">No</span>`;
+
           row.innerHTML = `
             <td>${idx + 1}</td>
-            <td><strong>${escapeHtml(user.name || 'N/A')}</strong></td>
+            <td>${escapeHtml(user.name || 'N/A')}</td>
             <td>${escapeHtml(user.email || 'N/A')}</td>
-            <td>${escapeHtml(user.phoneNumber || 'N/A')}</td>
             <td>${escapeHtml(user.organization || 'N/A')}</td>
             <td>${escapeHtml(user.department || 'N/A')}</td>
-            <td><span style="font-weight: 700; color: ${user.admin === 'true' ? '#b45309' : '#047857'}">${user.admin === 'true' ? 'Admin' : 'User'}</span></td>
+            <td>${escapeHtml(user.state || 'N/A')}</td>
+            <td>${statusBadge}</td>
+            <td>${isAdminBadge}</td>
+            <td>
+              <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #4b5563;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+            </td>
           `;
           tableBody.appendChild(row);
         });
@@ -996,6 +1183,233 @@
         window.location.href = 'login.html';
       }
     });
+
+    // Users management operations
+    const userModal = document.getElementById('userModal');
+    const openCreateUserModalBtn = document.getElementById('openCreateUserModalBtn');
+    
+    if (openCreateUserModalBtn) {
+      openCreateUserModalBtn.addEventListener('click', () => {
+        openCreateUserModal();
+      });
+    }
+
+    function populateSurveyCheckboxes() {
+      const grid = document.getElementById('surveyAssignGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      
+      surveysList.forEach(survey => {
+        const label = document.createElement('label');
+        label.className = 'survey-chip';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = survey.name;
+        checkbox.className = 'survey-checkbox';
+        
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            label.classList.add('checked');
+          } else {
+            label.classList.remove('checked');
+          }
+        });
+        
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' ' + survey.name));
+        grid.appendChild(label);
+      });
+    }
+
+    function openEditUserModal(uid) {
+      if (currentUser.admin !== "true") {
+        alert("Permission denied.");
+        return;
+      }
+      
+      const user = allUsers.find(u => u.uid === uid);
+      if (!user) {
+        alert("User not found.");
+        return;
+      }
+      
+      document.getElementById('userModalTitle').innerText = "Edit";
+      document.getElementById('editUserUid').value = user.uid;
+      document.getElementById('userNameInput').value = user.name || '';
+      document.getElementById('userOrgInput').value = user.organization || '';
+      document.getElementById('userDeptInput').value = user.department || '';
+      document.getElementById('userStateInput').value = user.state || '';
+      document.getElementById('userEmailInput').value = user.email || '';
+      document.getElementById('userPasswordInput').value = user.password || '';
+      document.getElementById('userPhoneInput').value = user.phoneNumber || '';
+      
+      // Set admin radios
+      const isAdmin = user.admin === 'true';
+      const adminRadios = document.getElementsByName('userIsAdmin');
+      for (let r of adminRadios) {
+        r.checked = (r.value === 'true' && isAdmin) || (r.value === 'false' && !isAdmin);
+      }
+      
+      // Set status radios (Disable User)
+      const isDisabled = user.status === 'Disable';
+      const disableRadios = document.getElementsByName('userDisable');
+      for (let r of disableRadios) {
+        r.checked = (r.value === 'true' && isDisabled) || (r.value === 'false' && !isDisabled);
+      }
+      
+      // Set survey checkboxes
+      const assignedSurveys = (user.survey || []).map(s => s.trim().toLowerCase());
+      
+      const chips = document.querySelectorAll('.survey-chip');
+      chips.forEach(chip => {
+        const checkbox = chip.querySelector('input[type="checkbox"]');
+        const isAssigned = assignedSurveys.includes(checkbox.value.trim().toLowerCase());
+        checkbox.checked = isAssigned;
+        if (isAssigned) {
+          chip.classList.add('checked');
+        } else {
+          chip.classList.remove('checked');
+        }
+      });
+      
+      if (userModal) userModal.classList.add('show');
+    }
+
+    function openCreateUserModal() {
+      if (currentUser.admin !== "true") {
+        alert("Permission denied.");
+        return;
+      }
+      
+      document.getElementById('userModalTitle').innerText = "Create a User";
+      document.getElementById('editUserUid').value = '';
+      document.getElementById('userNameInput').value = '';
+      document.getElementById('userOrgInput').value = '';
+      document.getElementById('userDeptInput').value = '';
+      document.getElementById('userStateInput').value = '';
+      document.getElementById('userEmailInput').value = '';
+      document.getElementById('userPasswordInput').value = '123456';
+      document.getElementById('userPhoneInput').value = '';
+      
+      // Default radios
+      const adminRadios = document.getElementsByName('userIsAdmin');
+      for (let r of adminRadios) {
+        r.checked = r.value === 'false';
+      }
+      const disableRadios = document.getElementsByName('userDisable');
+      for (let r of disableRadios) {
+        r.checked = r.value === 'false';
+      }
+      
+      // Uncheck all survey checkboxes
+      const chips = document.querySelectorAll('.survey-chip');
+      chips.forEach(chip => {
+        const checkbox = chip.querySelector('input[type="checkbox"]');
+        checkbox.checked = false;
+        chip.classList.remove('checked');
+      });
+      
+      if (userModal) userModal.classList.add('show');
+    }
+
+    function closeUserModal() {
+      if (userModal) userModal.classList.remove('show');
+    }
+
+    async function handleSaveUser(event) {
+      event.preventDefault();
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return false;
+      }
+      
+      const uid = document.getElementById('editUserUid').value;
+      const name = document.getElementById('userNameInput').value;
+      const organization = document.getElementById('userOrgInput').value;
+      const department = document.getElementById('userDeptInput').value;
+      const state = document.getElementById('userStateInput').value;
+      const email = document.getElementById('userEmailInput').value;
+      const password = document.getElementById('userPasswordInput').value;
+      const phoneNumber = document.getElementById('userPhoneInput').value;
+      
+      const adminRadios = document.getElementsByName('userIsAdmin');
+      let admin = 'false';
+      for (let r of adminRadios) {
+        if (r.checked) admin = r.value;
+      }
+      
+      const disableRadios = document.getElementsByName('userDisable');
+      let status = '';
+      for (let r of disableRadios) {
+        if (r.checked && r.value === 'true') {
+          status = 'Disable';
+        }
+      }
+      
+      // Gather assigned surveys
+      const selectedSurveys = [];
+      const checkboxes = document.querySelectorAll('.survey-checkbox');
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          selectedSurveys.push(cb.value);
+        }
+      });
+      
+      if (uid) {
+        // Edit User
+        let editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+        const existingIdx = editedUsers.findIndex(e => e.uid === uid);
+        
+        const userUpdate = {
+          uid,
+          name,
+          organization,
+          department,
+          state,
+          email,
+          password,
+          phoneNumber,
+          admin,
+          status,
+          survey: selectedSurveys
+        };
+        
+        if (existingIdx > -1) {
+          editedUsers[existingIdx] = userUpdate;
+        } else {
+          editedUsers.push(userUpdate);
+        }
+        localStorage.setItem('edited_users', JSON.stringify(editedUsers));
+      } else {
+        // Create User
+        const newUser = {
+          uid: 'user-' + Math.random().toString(36).substring(2, 15),
+          name,
+          organization,
+          department,
+          state,
+          email,
+          password,
+          phoneNumber,
+          admin,
+          status,
+          survey: selectedSurveys,
+          createdAt: {
+            seconds: Math.floor(Date.now() / 1000),
+            nanoseconds: 0
+          }
+        };
+        let customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+        customUsers.push(newUser);
+        localStorage.setItem('custom_users', JSON.stringify(customUsers));
+      }
+      
+      closeUserModal();
+      await fetchUsers();
+      buildSurveyUserMap();
+      renderSurveysTable();
+    }
 
     // Helpers
     function escapeHtml(str) {
