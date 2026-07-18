@@ -430,6 +430,17 @@
       buildSurveyUserMap();
       populateSurveyCheckboxes();
       renderSurveysTable();
+
+      // Check query params for user deep-linking
+      const params = new URLSearchParams(window.location.search);
+      const nameParam = params.get('name');
+      if (nameParam) {
+        const user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === nameParam.trim().toLowerCase());
+        if (user) {
+          navigateToView('users');
+          openEditUserModal(user.uid);
+        }
+      }
     }
 
     // Fetch surveys from surveys.json and local storage overrides
@@ -966,7 +977,11 @@
 
       let listHtml = '';
       userNames.forEach((name, idx) => {
-        listHtml += `<li class="users-popover-item">${idx + 1}. - ${escapeHtml(name)}</li>`;
+        listHtml += `
+          <li class="users-popover-item" style="margin-bottom: 0.25rem;">
+            ${idx + 1}. - <a href="#" onclick="event.preventDefault(); navigateToUserByName('${escapeHtml(name).replace(/'/g, "\\'")}')" class="user-popover-link">${escapeHtml(name)}</a>
+          </li>
+        `;
       });
 
       popover.innerHTML = `
@@ -1194,6 +1209,23 @@
       });
     }
 
+    function navigateToUserByName(name) {
+      const user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === name.trim().toLowerCase());
+      if (user) {
+        // Update URL to match exactly
+        history.pushState(null, '', `?name=${encodeURIComponent(name)}`);
+        
+        // Hide popover
+        const popover = document.getElementById('usersPopover');
+        if (popover) popover.style.display = 'none';
+
+        navigateToView('users');
+        openEditUserModal(user.uid);
+      } else {
+        alert("User details not found.");
+      }
+    }
+
     function populateSurveyCheckboxes() {
       const grid = document.getElementById('surveyAssignGrid');
       if (!grid) return;
@@ -1315,6 +1347,12 @@
 
     function closeUserModal() {
       if (userModal) userModal.classList.remove('show');
+      // Clean query parameter
+      const url = new URL(window.location);
+      if (url.searchParams.has('name')) {
+        url.searchParams.delete('name');
+        history.pushState(null, '', url.pathname);
+      }
     }
 
     async function handleSaveUser(event) {
