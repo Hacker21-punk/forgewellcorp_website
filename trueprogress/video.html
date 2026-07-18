@@ -346,15 +346,14 @@
       }
     }
 
+    let currentSpeeds = {};
+
     function getPlaybackRate(id) {
-      if (playerTypes[id] === 'youtube') {
-        return (ytPlayerReadyState[id] && players[id]) ? players[id].getPlaybackRate() : 1;
-      }
-      const el = document.getElementById(`videoPlayer_${id}`);
-      return el ? el.playbackRate : 1;
+      return currentSpeeds[id] || 1;
     }
 
     function setPlaybackRate(id, rate) {
+      currentSpeeds[id] = rate;
       if (playerTypes[id] === 'youtube') {
         if (ytPlayerReadyState[id] && players[id]) players[id].setPlaybackRate(rate);
       } else {
