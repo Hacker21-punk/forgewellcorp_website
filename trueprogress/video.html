@@ -434,24 +434,28 @@
         const card = document.createElement('div');
         card.className = 'player-column';
 
+        const isAdmin = (currentUser && currentUser.admin === "true");
         let topControlsHtml = '';
         if (activeVideoIds.length > 1) {
-          // Comparative mode: only file upload block, no Landmarks/KM dropdowns in column
-          topControlsHtml = `
-            <div class="video-top-controls" style="grid-template-columns: 1fr; margin-bottom: 1rem;">
-              <div class="file-upload-container">
-                <label class="file-input-wrapper" id="fileInputLabel_${id}">
-                  Choose File
-                  <input type="file" id="landmarksFileInput_${id}" accept=".csv,.json" onchange="handleFileChange(this, '${id}')" />
-                </label>
-                <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
+          // Comparative mode: only file upload block, no Landmarks/KM dropdowns in column (Admin only)
+          if (isAdmin) {
+            topControlsHtml = `
+              <div class="video-top-controls" style="grid-template-columns: 1fr; margin-bottom: 1rem;">
+                <div class="file-upload-container">
+                  <label class="file-input-wrapper" id="fileInputLabel_${id}">
+                    Choose File
+                    <input type="file" id="landmarksFileInput_${id}" accept=".csv,.json" onchange="handleFileChange(this, '${id}')" />
+                  </label>
+                  <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          } else {
+            topControlsHtml = '';
+          }
         } else {
           // Single video mode: file upload + Landmarks + KM dropdowns in column
-          topControlsHtml = `
-            <div class="video-top-controls" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1rem;">
+          const uploadHtml = isAdmin ? `
               <!-- File Upload -->
               <div class="search-select-wrapper">
                 <span class="search-select-label">Upload LandMarks File</span>
@@ -463,6 +467,11 @@
                   <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
                 </div>
               </div>
+          ` : '';
+
+          topControlsHtml = `
+            <div class="video-top-controls" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1rem;">
+              ${uploadHtml}
               <!-- Landmarks select -->
               <div class="search-select-wrapper">
                 <span class="search-select-label">Landmarks</span>
@@ -572,7 +581,7 @@
             <div class="breakpoints-footer" style="margin-top: 0.5rem; padding-top: 0.5rem;">
               <span class="total-landmarks-label" id="totalLandmarksCount_${id}" style="font-size: 0.75rem;">Total Landmarks: 0</span>
               <div style="display: flex; gap: 0.5rem;">
-                <button class="btn-csv-export" onclick="exportLandmarksCsv('${id}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Export CSV</button>
+                <button class="btn-csv-export" id="btnCsvExport_${id}" onclick="exportLandmarksCsv('${id}')" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Export CSV</button>
                 <button class="btn-delete-all" id="btnDeleteAll_${id}" onclick="deleteAllLandmarks('${id}')" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete ALL</button>
               </div>
             </div>
@@ -585,6 +594,7 @@
           document.getElementById(`landmarksTitle_${id}`).innerText = "Add Landmark / Breakpoint";
           document.getElementById(`adminBreakpointForm_${id}`).style.display = "block";
           document.getElementById(`btnDeleteAll_${id}`).style.display = "block";
+          document.getElementById(`btnCsvExport_${id}`).style.display = "block";
         } else {
           document.getElementById(`landmarksTitle_${id}`).innerText = "Landmarks";
         }
@@ -1192,6 +1202,10 @@
     // Add Landmark Breakpoint
     function handleAddBreakpoint(event, id) {
       event.preventDefault();
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return false;
+      }
       const nameInput = document.getElementById(`breakpointNameInput_${id}`);
       const kmInput = document.getElementById(`breakpointKmInput_${id}`);
       if (!nameInput || !kmInput) return;
@@ -1217,6 +1231,10 @@
     }
 
     function deleteAllLandmarks(id) {
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return;
+      }
       if (confirm('Are you sure you want to delete all landmarks for this video run?')) {
         videoLandmarks[id] = [];
         updateLandmarksUI(id);
@@ -1224,6 +1242,10 @@
     }
 
     function exportLandmarksCsv(id) {
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return;
+      }
       if (!videoLandmarks[id] || videoLandmarks[id].length === 0) {
         alert('No landmarks to export.');
         return;
@@ -1263,6 +1285,10 @@
 
     // Upload CSV/JSON landmarks list
     function uploadLandmarksFile(id) {
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return;
+      }
       const fileInput = document.getElementById(`landmarksFileInput_${id}`);
       if (!fileInput || !fileInput.files || !fileInput.files[0]) {
         alert('Please choose a file first.');

@@ -829,6 +829,10 @@
 
     async function handleSaveSurvey(event) {
       event.preventDefault();
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return false;
+      }
       const id = document.getElementById('editSurveyId').value;
       const name = document.getElementById('surveyNameInput').value;
       const department = document.getElementById('surveyDeptInput').value;
@@ -877,6 +881,10 @@
     }
 
     async function handleDeleteSurvey(id) {
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return;
+      }
       if (confirm('Are you sure you want to delete this survey?')) {
         let deletedSurveys = JSON.parse(localStorage.getItem('deleted_surveys') || '[]');
         

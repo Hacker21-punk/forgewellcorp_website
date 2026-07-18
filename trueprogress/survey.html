@@ -396,6 +396,10 @@
 
     function handleSaveVideo(event) {
       event.preventDefault();
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return false;
+      }
       const id = document.getElementById('editVideoId').value;
       const name = document.getElementById('videoNameInput').value;
       const videoURL = document.getElementById('videoUrlInput').value;
@@ -436,6 +440,10 @@
     }
 
     function handleDeleteVideos() {
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return;
+      }
       const checkedBoxes = Array.from(document.querySelectorAll('.video-row-checkbox')).filter(c => c.checked);
       if (checkedBoxes.length === 0) return;
 
