@@ -1500,3 +1500,9 @@ a {
   color: #3b82f6;
   text-decoration: underline;
 }
+
+.player-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
