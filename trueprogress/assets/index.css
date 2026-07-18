@@ -169,6 +169,15 @@ a {
   color: #374151;
 }
 
+.breadcrumb-item.clickable {
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.breadcrumb-item.clickable:hover {
+  color: #10b981;
+}
+
 .breadcrumb-item svg {
   width: 1rem;
   height: 1rem;

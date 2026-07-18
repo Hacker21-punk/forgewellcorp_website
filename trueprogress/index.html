@@ -223,40 +223,7 @@
     </div>
   </div>
 
-  <!-- MODAL: All Users -->
-  <div class="modal-overlay" id="usersModal">
-    <div class="modal-container" style="max-width: 800px;">
-      <div class="modal-header">
-        <h3 class="modal-title">All Users</h3>
-        <button class="modal-close-btn" onclick="closeUsersModal()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-body" style="padding: 1rem;">
-        <div style="overflow-x: auto;">
-          <table class="users-table">
-            <thead>
-              <tr>
-                <th>S.No.</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Organization</th>
-                <th>Department</th>
-                <th>Role</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-modal-cancel" onclick="closeUsersModal()">Close</button>
-      </div>
-    </div>
-  </div>
+
 
 
 
@@ -266,6 +233,49 @@
     let allVideos = [];
     let allUsers = [];
     let surveyUserMap = {};
+    let currentView = 'surveys'; // 'surveys' or 'users'
+
+    function renderBreadcrumbs() {
+      const breadcrumbList = document.querySelector('.breadcrumb-list');
+      if (!breadcrumbList) return;
+
+      if (currentView === 'users') {
+        breadcrumbList.innerHTML = `
+          <li class="breadcrumb-item clickable" onclick="navigateToView('surveys')" style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+            <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem; margin-right: 0.25rem;">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+            </svg>
+            Home
+          </li>
+          <li class="breadcrumb-item">All Users</li>
+        `;
+      } else {
+        breadcrumbList.innerHTML = `
+          <li class="breadcrumb-item" style="display: flex; align-items: center; gap: 0.25rem;">
+            <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem; margin-right: 0.25rem;">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+            </svg>
+            Home
+          </li>
+        `;
+      }
+    }
+
+    function navigateToView(view) {
+      currentView = view;
+      renderBreadcrumbs();
+
+      const adminControls = document.getElementById('adminControls');
+      if (adminControls) {
+        if (currentView === 'surveys' && currentUser.admin === 'true') {
+          adminControls.style.display = 'block';
+        } else {
+          adminControls.style.display = 'none';
+        }
+      }
+
+      renderSurveysTable();
+    }
 
     // Active Column Filters State
     let activeFilters = {
@@ -399,6 +409,22 @@
       if (!thead) return;
 
       let headersHtml = '';
+      if (currentView === 'users') {
+        headersHtml = `
+          <tr>
+            <th>S.No.</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Organization</th>
+            <th>Department</th>
+            <th>Role</th>
+          </tr>
+        `;
+        thead.innerHTML = headersHtml;
+        return;
+      }
+
       if (currentUser.admin === "true") {
         headersHtml = `
           <tr>
@@ -484,11 +510,31 @@
     }
 
     function renderSurveysTable() {
+      // Render breadcrumbs to keep in sync
+      renderBreadcrumbs();
+
       // Render the table header dynamically
       renderTableHeader();
 
       const tableBody = document.getElementById('tableBody');
       tableBody.innerHTML = '';
+
+      if (currentView === 'users') {
+        allUsers.forEach((user, idx) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${idx + 1}</td>
+            <td><strong>${escapeHtml(user.name || 'N/A')}</strong></td>
+            <td>${escapeHtml(user.email || 'N/A')}</td>
+            <td>${escapeHtml(user.phoneNumber || 'N/A')}</td>
+            <td>${escapeHtml(user.organization || 'N/A')}</td>
+            <td>${escapeHtml(user.department || 'N/A')}</td>
+            <td><span style="font-weight: 700; color: ${user.admin === 'true' ? '#b45309' : '#047857'}">${user.admin === 'true' ? 'Admin' : 'User'}</span></td>
+          `;
+          tableBody.appendChild(row);
+        });
+        return;
+      }
 
       // Filter surveys based on user access and active filters
       const allowedSurveys = surveysList.filter(survey => {
@@ -903,42 +949,15 @@
       }
     }
 
-    // Modal Control: All Users
-    const usersModal = document.getElementById('usersModal');
-    
-    document.getElementById('allUsersBtn').addEventListener('click', async () => {
-      try {
-        const response = await fetch('backup%20details%20of%20trueprogress/users.json');
-        if (!response.ok) throw new Error('Failed to fetch users list');
-        const users = await response.json();
-
-        const tableBody = document.getElementById('usersTableBody');
-        tableBody.innerHTML = '';
-
-        users.forEach((user, idx) => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${idx + 1}</td>
-            <td><strong>${escapeHtml(user.name || 'N/A')}</strong></td>
-            <td>${escapeHtml(user.email || 'N/A')}</td>
-            <td>${escapeHtml(user.phoneNumber || 'N/A')}</td>
-            <td>${escapeHtml(user.organization || 'N/A')}</td>
-            <td>${escapeHtml(user.department || 'N/A')}</td>
-            <td><span style="font-weight: 700; color: ${user.admin === 'true' ? '#b45309' : '#047857'}">${user.admin === 'true' ? 'Admin' : 'User'}</span></td>
-          `;
-          tableBody.appendChild(row);
-        });
-
-        usersModal.classList.add('show');
-      } catch (error) {
-        console.error(error);
-        alert('Error loading users list.');
+    // View Control: All Users
+    document.getElementById('allUsersBtn').addEventListener('click', () => {
+      // Close dropdown first
+      const profileDropdown = document.getElementById('profileDropdown');
+      if (profileDropdown) {
+        profileDropdown.classList.remove('show');
       }
+      navigateToView('users');
     });
-
-    function closeUsersModal() {
-      usersModal.classList.remove('show');
-    }
 
 
 
