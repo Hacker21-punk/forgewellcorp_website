@@ -822,14 +822,18 @@
           userCell = `<td>0 Users</td>`;
         }
         
-        // Format Created On date to M/D/YYYY
+        // Format Created On date to DD/MM/YYYY
         let createdOn = survey.createdAt || 'N/A';
         if (typeof createdOn === 'number') {
           const date = new Date(createdOn);
-          createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          createdOn = `${day}/${month}/${date.getFullYear()}`;
         } else if (typeof createdOn === 'object' && createdOn.seconds) {
           const date = new Date(createdOn.seconds * 1000);
-          createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          createdOn = `${day}/${month}/${date.getFullYear()}`;
         } else if (typeof createdOn === 'string' && createdOn !== 'N/A') {
           let date;
           if (/^\d{4}-\d{2}-\d{2}$/.test(createdOn)) {
@@ -838,7 +842,9 @@
             date = new Date(createdOn);
           }
           if (!isNaN(date.getTime())) {
-            createdOn = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            createdOn = `${day}/${month}/${date.getFullYear()}`;
           }
         }
         const dateCell = `<td>${createdOn}</td>`;

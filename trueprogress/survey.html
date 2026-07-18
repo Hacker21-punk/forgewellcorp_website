@@ -261,11 +261,15 @@
         try {
           if (typeof displayDate === 'number') {
             const d = new Date(displayDate);
-            displayDate = d.toDateString();
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            displayDate = `${day}/${month}/${d.getFullYear()}`;
           } else if (typeof displayDate === 'string' && displayDate !== 'N/A') {
             const d = new Date(displayDate + (displayDate.includes('T') ? '' : 'T00:00:00'));
             if (!isNaN(d.getTime())) {
-              displayDate = d.toDateString();
+              const day = String(d.getDate()).padStart(2, '0');
+              const month = String(d.getMonth() + 1).padStart(2, '0');
+              displayDate = `${day}/${month}/${d.getFullYear()}`;
             }
           }
         } catch(e) {}
