@@ -1134,7 +1134,7 @@ a {
   width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 480px) {
   .videos-grid.cols-2,
   .videos-grid.cols-3 {
     grid-template-columns: 1fr 1fr;
@@ -1163,6 +1163,8 @@ a {
   z-index: 9999;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #ffffff;
+  max-width: calc(100% - 2rem);
+  box-sizing: border-box;
 }
 
 .comparative-controls-dock .player-icon-btn {
@@ -1543,4 +1545,19 @@ a {
 
 .table-container {
   -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px) {
+  .comparative-controls-dock {
+    gap: 0.75rem;
+    padding: 0.625rem 1.25rem;
+    bottom: 15px;
+    cursor: default;
+  }
+}
+
+@media (max-width: 640px) {
+  .comparative-controls-dock {
+    cursor: default;
+  }
 }
