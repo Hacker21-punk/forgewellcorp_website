@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress - Video Viewer" />
-  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="theme-color" content="#14124c" />
   <link rel="icon" href="assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1028,11 +1028,19 @@
       }
     }
 
+    const elCache = {};
+    function getCachedEl(id) {
+      if (!elCache[id]) {
+        elCache[id] = document.getElementById(id);
+      }
+      return elCache[id];
+    }
+
     function updateProgress(id) {
       const curTime = getCurrentTime(id);
       const dur = getDuration(id);
       
-      const progressBar = document.getElementById(`progressBar_${id}`);
+      const progressBar = getCachedEl(`progressBar_${id}`);
       if (progressBar) {
         progressBar.value = curTime;
         progressBar.max = dur || 100;
@@ -1049,7 +1057,7 @@
       const timeString = `${curMins}:${curSecs.toString().padStart(2, '0')} / ${durMins}:${durSecs.toString().padStart(2, '0')}`;
       const speed = getPlaybackRate(id);
 
-      const timeDisplay = document.getElementById(`timeDisplay_${id}`);
+      const timeDisplay = getCachedEl(`timeDisplay_${id}`);
       if (timeDisplay) {
         timeDisplay.innerText = `${timeString} x ${speed}`;
       }
@@ -1538,7 +1546,7 @@
       profileDropdown.classList.toggle('show');
     });
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('pointerdown', (e) => {
       if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
         profileDropdown.classList.remove('show');
       }

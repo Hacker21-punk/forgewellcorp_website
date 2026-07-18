@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress Dashboard" />
-  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="theme-color" content="#14124c" />
   <link rel="icon" href="assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1025,8 +1025,12 @@
       }
     }
 
-    // Global listener to close popovers on click outside
-    document.addEventListener('mousedown', () => {
+    // Global listener to close popovers on pointerdown outside
+    document.addEventListener('pointerdown', (e) => {
+      const userPopover = document.getElementById('usersPopover');
+      const filterPopover = document.getElementById('filterPopover');
+      if (userPopover && userPopover.contains(e.target)) return;
+      if (filterPopover && filterPopover.contains(e.target)) return;
       closeFilterPopover();
       closeUsersPopover();
     });
@@ -1191,7 +1195,7 @@
     });
 
     // Close dropdown on click outside
-    document.addEventListener('click', (e) => {
+    document.addEventListener('pointerdown', (e) => {
       if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
         profileDropdown.classList.remove('show');
       }
