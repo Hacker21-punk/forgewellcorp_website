@@ -168,6 +168,8 @@ a {
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 95;
 }
 
 .logo-link {
