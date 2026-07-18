@@ -459,7 +459,7 @@ a {
   right: 0;
   margin-top: 0.75rem;
   width: 280px;
-  background: var(--surface-300);
+  background: linear-gradient(180deg, rgba(25, 23, 60, 0.98) 0%, rgba(15, 14, 46, 0.98) 100%);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-radius: var(--radius-lg);
