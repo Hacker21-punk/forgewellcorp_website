@@ -589,7 +589,7 @@
             <!-- Admin form container -->
             <div id="adminBreakpointForm_${id}" style="display: none; margin-bottom: 1rem;">
               <form onsubmit="return handleAddBreakpoint(event, '${id}')">
-                <div class="breakpoint-grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                <div class="breakpoint-grid" style="gap: 0.5rem;">
                   <div class="search-select-wrapper">
                     <span class="search-select-label" style="font-size: 0.75rem;">Landmark Name</span>
                     <input type="text" id="breakpointNameInput_${id}" class="form-input" placeholder="Name" required style="font-size: 0.8125rem; padding: 0.375rem;" />
@@ -711,6 +711,26 @@
         document.ontouchmove = null;
       }
     }
+
+    // Reset dock position on window resize (device rotation, keyboard open)
+    window.addEventListener('resize', function() {
+      const dock = document.getElementById('comparativeControls');
+      if (dock && dock.style.display !== 'none') {
+        // Reset position to centered bottom
+        dock.style.transform = 'translateX(-50%)';
+        dock.style.left = '50%';
+        dock.style.top = '';
+        dock.style.bottom = '20px';
+        dock.style.right = '';
+        // Only enable dragging on desktop
+        if (window.innerWidth > 768) {
+          makeElementDraggable(dock);
+        } else {
+          dock.onmousedown = null;
+          dock.ontouchstart = null;
+        }
+      }
+    });
 
     async function loadVideoData() {
       try {
