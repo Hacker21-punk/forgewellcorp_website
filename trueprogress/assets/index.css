@@ -877,6 +877,11 @@ a {
   color: var(--text-primary);
 }
 
+.video-selector option {
+  background-color: var(--primary-800);
+  color: var(--text-primary);
+}
+
 .landmarks-wrapper {
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-sm);
@@ -1142,6 +1147,11 @@ a {
   background: var(--surface-100);
   color: var(--text-primary);
   transition: border-color var(--transition-fast);
+}
+
+.search-select option {
+  background-color: var(--primary-800);
+  color: var(--text-primary);
 }
 
 .search-select:focus {
