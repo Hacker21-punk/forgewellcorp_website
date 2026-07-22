@@ -138,11 +138,13 @@ body {
   display: inline-block;
   margin-bottom: 2rem;
   text-decoration: none;
-  transition: filter var(--transition-normal, 0.2s);
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.22));
+  transition: filter 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .login-logo-link:hover {
-  filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.45));
+  filter: drop-shadow(0 0 16px rgba(59, 130, 246, 0.55)) drop-shadow(0 0 4px rgba(14, 165, 233, 0.35));
+  transform: scale(1.02) translateY(-1px);
 }
 
 .login-logo-wrapper {

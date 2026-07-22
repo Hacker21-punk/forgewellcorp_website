@@ -198,12 +198,13 @@ a {
   display: inline-block;
   text-decoration: none;
   color: var(--text-primary);
-  transition: filter var(--transition-normal), transform var(--transition-fast);
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.22));
+  transition: filter var(--transition-normal), transform var(--transition-normal);
 }
 
 .logo-link:hover {
-  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.45));
-  transform: translateY(-1px);
+  filter: drop-shadow(0 0 16px rgba(59, 130, 246, 0.55)) drop-shadow(0 0 4px rgba(16, 185, 129, 0.35));
+  transform: scale(1.02) translateY(-1px);
 }
 
 .logo-wrapper {
