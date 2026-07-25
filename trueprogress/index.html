@@ -543,15 +543,17 @@
         if (!response.ok) throw new Error('Failed to load users data');
         let baseUsers = await response.json();
 
-        // Apply edits / creations from localStorage
+        // Apply edits / creations / deletions from localStorage
         const customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
         const editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+        const deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
 
-        // Start with base users
-        allUsers = [...baseUsers];
+        // Start with base users (excluding deleted ones)
+        allUsers = baseUsers.filter(u => !deletedUsers.includes(u.uid));
 
         // Merge edited users
         editedUsers.forEach(edited => {
+          if (deletedUsers.includes(edited.uid)) return;
           const idx = allUsers.findIndex(u => u.uid === edited.uid);
           if (idx > -1) {
             allUsers[idx] = { ...allUsers[idx], ...edited };
@@ -562,6 +564,7 @@
 
         // Add custom users
         customUsers.forEach(custom => {
+          if (deletedUsers.includes(custom.uid)) return;
           const idx = allUsers.findIndex(u => u.uid === custom.uid);
           if (idx > -1) {
             allUsers[idx] = { ...allUsers[idx], ...custom };
@@ -770,12 +773,22 @@
             <td>${statusBadge}</td>
             <td>${isAdminBadge}</td>
             <td>
-              <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #4b5563;">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-              </button>
+              <div class="action-btn-group">
+                <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #3b82f6;" title="Edit User">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button class="action-icon-btn delete" onclick="handleDeleteUser('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #ef4444;" title="Delete User">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
             </td>
           `;
           tableBody.appendChild(row);
@@ -1653,6 +1666,47 @@
       await fetchUsers();
       buildSurveyUserMap();
       renderSurveysTable();
+    }
+
+    async function handleDeleteUser(uid) {
+      if (!currentUser || currentUser.admin !== "true") {
+        alert('Permission denied.');
+        return;
+      }
+      if (uid === currentUser.uid) {
+        alert('You cannot delete your own logged-in account.');
+        return;
+      }
+
+      if (confirm('Are you sure you want to delete this user?')) {
+        // 1. Remove from custom_users if present
+        let customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+        const customIdx = customUsers.findIndex(u => u.uid === uid);
+        if (customIdx > -1) {
+          customUsers.splice(customIdx, 1);
+          localStorage.setItem('custom_users', JSON.stringify(customUsers));
+        }
+
+        // 2. Remove from edited_users if present
+        let editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+        const editedIdx = editedUsers.findIndex(u => u.uid === uid);
+        if (editedIdx > -1) {
+          editedUsers.splice(editedIdx, 1);
+          localStorage.setItem('edited_users', JSON.stringify(editedUsers));
+        }
+
+        // 3. Add to deleted_users array
+        let deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
+        if (!deletedUsers.includes(uid)) {
+          deletedUsers.push(uid);
+          localStorage.setItem('deleted_users', JSON.stringify(deletedUsers));
+        }
+
+        alert('User deleted successfully.');
+        await fetchUsers();
+        buildSurveyUserMap();
+        renderSurveysTable();
+      }
     }
 
     // Helpers
