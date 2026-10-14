@@ -1204,7 +1204,7 @@ p { color: var(--text-dim); line-height: 1.8; }
 .footer-middle { padding-top: 72px; }
 .footer-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1.4fr 1.2fr 1fr;
   gap: 44px;
 }
 .widget h3 {

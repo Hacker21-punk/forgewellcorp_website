@@ -45,12 +45,6 @@ SOLUTIONS_CONFIG = [
         "title": "BIM & 3D Lidar Scanning",
         "primary_file": "bim-and-3d-lidar-scanning.html",
         "aliases": ["bim-&-3d-lidar-scanning.html", "bim-3d-lidar-scanning.html"]
-    },
-    {
-        "source": "it-solutions.html",
-        "title": "IT Solutions",
-        "primary_file": "it-solutions.html",
-        "aliases": []
     }
 ]
 
@@ -577,7 +571,7 @@ def process_file(source_path, title):
           <li><a href="/" title="">Home</a></li>
           <li><a href="/#about" title="">About Us</a></li>
           <li class="has-menu solutions-nav-item">
-            <a href="/solutions/it-solutions" class="solutions-main-link" title="">Solutions</a>
+            <a href="/solutions/quantum-&-physics" class="solutions-main-link" title="">Solutions</a>
             <ul class="solutions-dropdown-menu">
               <li><a href="/solutions/quantum-&-physics">Quantum &amp; Physics</a></li>
               <li><a href="/solutions/tactical-&-surveillance-solutions">Tactical &amp; Surveillance Solutions</a></li>
@@ -586,7 +580,6 @@ def process_file(source_path, title):
               <li><a href="/solutions/automation-&-access-control-systems">Automation &amp; Access Control Systems</a></li>
               <li><a href="/solutions/aerial-survey">Aerial Survey</a></li>
               <li><a href="/solutions/bim-&-3d-lidar-scanning">BIM &amp; 3D Lidar Scanning</a></li>
-              <li><a href="/solutions/it-solutions">IT Solutions</a></li>
             </ul>
           </li>
           <li class="has-menu product-nav-item">
@@ -620,16 +613,45 @@ def process_file(source_path, title):
             btn.insert_before(BeautifulSoup(toggle_html, "html.parser"))
             break
 
-    # Mobile menu appearance toggle
+    # Mobile menu appearance toggle & remove IT Solutions
     mobile_menu = soup.find("div", class_="mobileMenu")
     if mobile_menu:
+        for a in mobile_menu.find_all("a"):
+            href = a.get("href", "")
+            t = a.text.strip().lower()
+            if "it-solutions" in href or t == "it solutions":
+                parent_li = a.find_parent("li")
+                if parent_li: parent_li.decompose()
+                else: a.decompose()
         ul_resp = mobile_menu.find("ul", class_="responsivemenu")
         if ul_resp:
             mobile_toggle_html = """<li style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid rgba(0,0,0,0.08);"><span style="font-weight:600; font-size:15px;">Appearance</span><button class="theme-toggle-btn mobile-theme-btn" type="button" aria-label="Toggle theme" style="margin:0;"><svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button></li>"""
             ul_resp.insert(0, BeautifulSoup(mobile_toggle_html, "html.parser"))
 
-    # Footer links
+    # Footer links & remove IT Solutions widget
     if footer:
+        # Remove IT Solutions widget column
+        for w in footer.find_all("div", class_="widget"):
+            title = w.find(["h3", "div"], class_="widget-title")
+            if title and "it solutions" in title.text.lower():
+                parent_col = w.find_parent("div", class_="col")
+                if parent_col:
+                    parent_col.decompose()
+                else:
+                    w.decompose()
+
+        # Balance remaining footer columns to col-lg-4
+        footer_middle = footer.find("div", class_="footer-middle")
+        if footer_middle:
+            for c in footer_middle.find_all("div", class_="col"):
+                if not c.text.strip() and not c.find("img"):
+                    c.decompose()
+                else:
+                    classes = c.get("class", [])
+                    classes = [cls for cls in classes if not cls.startswith("col-lg-")]
+                    classes.append("col-lg-4")
+                    c["class"] = classes
+
         for a in footer.find_all("a"):
             t = a.text.strip().lower()
             href = a.get("href", "")
@@ -650,7 +672,7 @@ def process_file(source_path, title):
             elif "bim" in t:
                 a["href"] = "/solutions/bim-&-3d-lidar-scanning"
             elif "it solutions" in t or "website development" in t or "graphic design" in t or "digital marketing" in t:
-                a["href"] = "/solutions/it-solutions"
+                a["href"] = "/solutions/quantum-&-physics"
             elif href.startswith("/"):
                 if href in ["/about", "/contact"]:
                     a["href"] = f"/#{href[1:]}"
@@ -661,6 +683,12 @@ def process_file(source_path, title):
         s_id = s.get("id", "")
         if "/_next/static/" in src or s_id in ["__NEXT_DATA__", "__NEXT_P"] or "__NEXT" in s.text:
             s.decompose()
+
+    for link in soup.find_all("link"):
+        rel = link.get("rel", [])
+        if isinstance(rel, str): rel = [rel]
+        if any(r in ["prefetch", "preload"] for r in rel) and link.get("as") == "script":
+            link.decompose()
 
     for r in soup.find_all("next-route-announcer"):
         r.decompose()
@@ -700,17 +728,24 @@ def main():
                 f.write(cleaned_html)
             print(f"  -> Wrote alias {alias_path}")
 
-    # Also create solutions/index.html that redirects or shows solutions
-    # Matching forgewellcorp.com/solutions
+    # Also create solutions/index.html that redirects to primary solution
     solutions_index_path = os.path.join(out_dir, "index.html")
-    # For index.html, we can use it-solutions.html or a dedicated solutions overview
-    it_path = os.path.join(out_dir, "it-solutions.html")
-    if os.path.exists(it_path):
-        with open(it_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        with open(solutions_index_path, "w", encoding="utf-8") as f:
-            f.write(content)
-        print(f"  -> Wrote {solutions_index_path}")
+    redirect_html = """<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0; url=/solutions/quantum-&-physics">
+  <title>Redirecting to Solutions...</title>
+  <script>window.location.replace('/solutions/quantum-&-physics');</script>
+</head>
+<body>
+  <p>Redirecting to <a href="/solutions/quantum-&-physics">Solutions</a>...</p>
+</body>
+</html>
+"""
+    with open(solutions_index_path, "w", encoding="utf-8") as f:
+        f.write(redirect_html)
+    print(f"  -> Wrote {solutions_index_path}")
 
 if __name__ == "__main__":
     main()

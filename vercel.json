@@ -15,8 +15,8 @@
     { "source": "/solutions/aerial-survey", "destination": "/solutions/aerial-survey.html" },
     { "source": "/solutions/bim-&-3d-lidar-scanning", "destination": "/solutions/bim-and-3d-lidar-scanning.html" },
     { "source": "/solutions/bim-3d-lidar-scanning", "destination": "/solutions/bim-and-3d-lidar-scanning.html" },
-    { "source": "/solutions/it-solutions", "destination": "/solutions/it-solutions.html" },
-    { "source": "/solutions/it%20solutions", "destination": "/solutions/it-solutions.html" },
+    { "source": "/solutions/it-solutions", "destination": "/solutions/quantum-and-physics.html" },
+    { "source": "/solutions/it%20solutions", "destination": "/solutions/quantum-and-physics.html" },
     { "source": "/solutions", "destination": "/solutions/index.html" }
   ],
   "headers": [
