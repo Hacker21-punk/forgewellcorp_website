@@ -592,7 +592,7 @@ def process_file(source_path, title):
             </ul>
           </li>
           <li><a href="/#blog" title="">Blog</a></li>
-          <li><a href="/#contact" title="">Contact</a></li>
+          <li><a href="/contact" title="">Contact</a></li>
         </ul>
         """
         nav_soup = BeautifulSoup(nav_html, "html.parser")
@@ -674,7 +674,7 @@ def process_file(source_path, title):
             elif "it solutions" in t or "website development" in t or "graphic design" in t or "digital marketing" in t:
                 a["href"] = "/solutions/quantum-&-physics"
             elif href.startswith("/"):
-                if href in ["/about", "/contact"]:
+                if href in ["/about"]:
                     a["href"] = f"/#{href[1:]}"
 
     # Remove Next.js script tags & clutter
