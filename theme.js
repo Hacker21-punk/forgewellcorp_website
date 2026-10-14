@@ -39,7 +39,7 @@
     // Update meta theme-color if present
     var metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', theme === 'dark' ? '#08080c' : '#ffffff');
+      metaThemeColor.setAttribute('content', theme === 'dark' ? '#0b111e' : '#ffffff');
     }
 
     updateUI(theme);
