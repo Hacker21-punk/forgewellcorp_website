@@ -1,5 +1,24 @@
 {
   "cleanUrls": true,
+  "rewrites": [
+    { "source": "/solutions/quantum-&-physics", "destination": "/solutions/quantum-and-physics.html" },
+    { "source": "/solutions/quantum-physics", "destination": "/solutions/quantum-and-physics.html" },
+    { "source": "/solutions/tactical-&-surveillance-solutions", "destination": "/solutions/tactical-and-surveillance-solutions.html" },
+    { "source": "/solutions/tactical-surveillance-solutions", "destination": "/solutions/tactical-and-surveillance-solutions.html" },
+    { "source": "/solutions/test-&-measurement-solutions", "destination": "/solutions/test-and-measurement-solutions.html" },
+    { "source": "/solutions/test-measurement-solutions", "destination": "/solutions/test-and-measurement-solutions.html" },
+    { "source": "/solutions/machine-vision-&-monitoring-solutions", "destination": "/solutions/machine-vision-and-monitoring-solutions.html" },
+    { "source": "/solutions/machine-vision-monitoring-solutions", "destination": "/solutions/machine-vision-and-monitoring-solutions.html" },
+    { "source": "/solutions/automation-&-access-control-systems", "destination": "/solutions/automation-and-access-control-systems.html" },
+    { "source": "/solutions/automation-access-control-systems", "destination": "/solutions/automation-and-access-control-systems.html" },
+    { "source": "/solutions/aerial-surveys", "destination": "/solutions/aerial-survey.html" },
+    { "source": "/solutions/aerial-survey", "destination": "/solutions/aerial-survey.html" },
+    { "source": "/solutions/bim-&-3d-lidar-scanning", "destination": "/solutions/bim-and-3d-lidar-scanning.html" },
+    { "source": "/solutions/bim-3d-lidar-scanning", "destination": "/solutions/bim-and-3d-lidar-scanning.html" },
+    { "source": "/solutions/it-solutions", "destination": "/solutions/it-solutions.html" },
+    { "source": "/solutions/it%20solutions", "destination": "/solutions/it-solutions.html" },
+    { "source": "/solutions", "destination": "/solutions/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

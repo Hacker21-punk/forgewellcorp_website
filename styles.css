@@ -194,6 +194,46 @@ p{color:var(--text-dim);line-height:1.8}
 }
 .desktop-nav .has-menu ul a::after{display:none}
 
+/* 2-Column Solutions Dropdown */
+.desktop-nav .has-menu.solutions-menu ul.solutions-dropdown {
+  width: 634px;
+  max-width: 90vw;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transform: translate(-50%, 12px);
+}
+.desktop-nav .has-menu.solutions-menu:hover ul.solutions-dropdown,
+.desktop-nav .has-menu.solutions-menu:focus-within ul.solutions-dropdown {
+  transform: translate(-50%, 0);
+}
+.desktop-nav .solutions-dropdown li {
+  border-bottom: 1px solid #f3f3f3;
+  width: 100%;
+}
+.desktop-nav .solutions-dropdown li a {
+  padding: 13px 20px;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  border-left: none;
+  background: transparent;
+  display: block;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.desktop-nav .solutions-dropdown li a:hover,
+.desktop-nav .solutions-dropdown li a:focus-visible {
+  color: #00d690;
+  background: #f9fafb;
+  padding-left: 20px;
+  border-left-color: transparent;
+}
+
 /* --- TrueProgress CTA --- */
 .trueprogress-login{
   min-height:46px;padding:11px 24px;background:var(--gold);border-radius:var(--radius);
