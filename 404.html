@@ -1,55 +1,78 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#0f1e3a">
+  <meta name="theme-color" content="#ffffff">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <title>Page Not Found · Forgewell Corporation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" type="image/svg+xml" href="assets/media/logo-2.svg">
+  <script src="theme.js"></script>
   <style>
+    :root, [data-theme="light"] {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: rgba(15, 23, 42, 0.08);
+      --card-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+      --heading: #0f172a;
+      --text: #475569;
+      --gold: #b3861b;
+      --gold-hover: #c89a2b;
+      --btn-text: #ffffff;
+    }
+    [data-theme="dark"] {
+      --bg: #08080c;
+      --card-bg: #15151e;
+      --card-border: rgba(255, 255, 255, 0.05);
+      --card-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      --heading: #f0ece0;
+      --text: #9e9a92;
+      --gold: #c8a84e;
+      --gold-hover: #dbb85e;
+      --btn-text: #08080c;
+    }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{
       display:grid;place-items:center;min-height:100vh;margin:0;
-      background:#08080c;color:#d4d0c8;
+      background:var(--bg);color:var(--text);
       font-family:"Nunito Sans",system-ui,-apple-system,sans-serif;
       text-align:center;padding:24px;
     }
     .card{
       max-width:560px;padding:56px 40px;
-      background:#15151e;border:1px solid rgba(255,255,255,0.05);
-      border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.6);
+      background:var(--card-bg);border:1px solid var(--card-border);
+      border-radius:16px;box-shadow:var(--card-shadow);
     }
     .code{
-      color:#c8a84e;font-family:"Quicksand",sans-serif;
+      color:var(--gold);font-family:"Quicksand",sans-serif;
       font-size:clamp(4rem,10vw,6rem);font-weight:700;line-height:1;
       margin-bottom:8px;letter-spacing:-0.02em;
     }
     h1{
       margin:0 0 12px;font-family:"Quicksand",sans-serif;
-      font-size:clamp(1.6rem,4vw,2.2rem);color:#f0ece0;
+      font-size:clamp(1.6rem,4vw,2.2rem);color:var(--heading);
       font-weight:700;line-height:1.2;
     }
     h1::after{
       content:"";display:block;width:40px;height:2px;
-      background:#c8a84e;margin:16px auto 0;
+      background:var(--gold);margin:16px auto 0;
     }
-    p{color:#9e9a92;font-size:17px;margin:0 0 32px;line-height:1.7}
+    p{color:var(--text);font-size:17px;margin:0 0 32px;line-height:1.7}
     a.btn{
       display:inline-flex;align-items:center;justify-content:center;
-      padding:14px 36px;background:#c8a84e;color:#08080c;
+      padding:14px 36px;background:var(--gold);color:var(--btn-text);
       border-radius:10px;font-family:"Quicksand",sans-serif;
       font-weight:700;font-size:15px;letter-spacing:0.02em;
       text-decoration:none;transition:all 0.3s cubic-bezier(.4,0,.2,1);
-      box-shadow:0 4px 20px rgba(200,168,78,0.15);
+      box-shadow:0 4px 20px rgba(179, 134, 27, 0.2);
     }
     a.btn:hover{
-      background:#dbb85e;transform:translateY(-2px);
-      box-shadow:0 8px 32px rgba(200,168,78,0.25);
+      background:var(--gold-hover);transform:translateY(-2px);
+      box-shadow:0 8px 32px rgba(179, 134, 27, 0.3);
     }
     @media(prefers-reduced-motion:reduce){
       *{transition-duration:0.01ms!important}
@@ -58,10 +81,10 @@
 </head>
 <body>
   <main class="card" role="main">
-    <p class="code">404</p>
-    <h1>Page not found</h1>
-    <p>The page you're looking for has moved or no longer exists. Let's get you back to innovation.</p>
-    <a class="btn" href="/">Back to Home</a>
+    <div class="code">404</div>
+    <h1>Page Not Found</h1>
+    <p>The page you requested does not exist or has been moved to another vertical.</p>
+    <a class="btn" href="/">Return to Homepage</a>
   </main>
 </body>
 </html>

@@ -1,20 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress - Login to your account" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <meta name="theme-color" content="#14124c" />
+  <meta name="theme-color" content="#ffffff" />
   <link rel="icon" href="assets/trueprogress/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/trueprogress/login.css" />
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('tp_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <script src="assets/trueprogress/theme.js"></script>
 </head>
 <body>
   <div id="__next">
     <div class="login-wrapper">
+      <!-- Theme Toggle Button -->
+      <button class="theme-toggle-btn auth-theme-toggle" id="themeToggleBtn" type="button" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+
       <section class="login-section">
         <div class="login-container">
           <div class="login-row">
@@ -30,7 +59,7 @@
             <div class="login-form-col">
               <form id="loginForm" onsubmit="return handleLogin(event)">
                 <!-- Logo -->
-                <a href="https://forgewellcorp-website-dnhu.vercel.app/" class="login-logo-link">
+                <a href="/" class="login-logo-link">
                   <span class="login-logo-wrapper">
                     <span class="login-logo-sizer">
                       <img
@@ -43,32 +72,39 @@
                 </a>
 
                 <!-- Heading -->
-                <p class="login-heading">Please login to your account</p>
+                <h1 class="login-heading">Welcome Back</h1>
+                <p class="login-subheading">Please login to your account to continue</p>
 
                 <!-- Input Fields -->
                 <div class="login-fields">
-                  <input
-                    type="email"
-                    id="loginEmail"
-                    name="email"
-                    placeholder="Email Address"
-                    class="login-input"
-                    required
-                    autocomplete="email"
-                  />
-                  <input
-                    type="password"
-                    id="loginPassword"
-                    name="password"
-                    placeholder="Password"
-                    class="login-input"
-                    required
-                    autocomplete="current-password"
-                  />
+                  <div class="input-group">
+                    <label class="input-label" for="loginEmail">EMAIL ADDRESS</label>
+                    <input
+                      type="email"
+                      id="loginEmail"
+                      name="email"
+                      placeholder="name@company.com"
+                      class="login-input"
+                      required
+                      autocomplete="email"
+                    />
+                  </div>
+                  <div class="input-group">
+                    <label class="input-label" for="loginPassword">PASSWORD</label>
+                    <input
+                      type="password"
+                      id="loginPassword"
+                      name="password"
+                      placeholder="••••••••"
+                      class="login-input"
+                      required
+                      autocomplete="current-password"
+                    />
+                  </div>
                 </div>
 
                 <!-- Sign In Button -->
-                <button type="submit" class="login-btn" id="loginSubmitBtn">
+                <button type="submit" id="loginBtn" class="login-btn">
                   SIGN IN
                 </button>
 
@@ -94,8 +130,8 @@
       event.preventDefault();
       const emailInput = document.getElementById('loginEmail').value.trim().toLowerCase();
       const passwordInput = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginBtn');
 
-      const btn = document.getElementById('loginSubmitBtn');
       btn.disabled = true;
       btn.innerText = 'SIGNING IN...';
 
@@ -113,13 +149,12 @@
           btn.disabled = false;
           btn.innerText = 'SIGN IN';
         }
-      } catch (error) {
-        console.error(error);
-        alert('An error occurred during sign in. Please try again.');
+      } catch (err) {
+        console.error('Login error:', err);
+        alert('An error occurred during login. Please try again.');
         btn.disabled = false;
         btn.innerText = 'SIGN IN';
       }
-      return false;
     }
   </script>
 </body>

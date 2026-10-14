@@ -283,6 +283,133 @@ CUSTOM_CSS = """
     background: #00b67a;
   }
 
+  /* Theme Toggle Button */
+  .theme-toggle-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    vertical-align: middle !important;
+    margin-right: 10px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+  .theme-toggle-btn:hover {
+    background: #f1f5f9 !important;
+    border-color: #00d690 !important;
+    color: #00d690 !important;
+    transform: translateY(-1px) !important;
+  }
+  .theme-toggle-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .theme-toggle-btn:hover svg {
+    transform: rotate(18deg) !important;
+  }
+
+  /* Theme Icon Toggling */
+  :root:not([data-theme="dark"]) .theme-toggle-btn .sun-icon,
+  [data-theme="light"] .theme-toggle-btn .sun-icon {
+    display: none !important;
+  }
+  :root:not([data-theme="dark"]) .theme-toggle-btn .moon-icon,
+  [data-theme="light"] .theme-toggle-btn .moon-icon {
+    display: block !important;
+  }
+  [data-theme="dark"] .theme-toggle-btn .sun-icon {
+    display: block !important;
+  }
+  [data-theme="dark"] .theme-toggle-btn .moon-icon {
+    display: none !important;
+  }
+
+  /* Dark mode theme styles for solutions pages */
+  [data-theme="dark"] body {
+    background-color: #08080c !important;
+    color: #d4d0c8 !important;
+  }
+  [data-theme="dark"] .middle-header,
+  [data-theme="dark"] .header-style-3 {
+    background-color: #0f0f16 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  [data-theme="dark"] nav ul li a {
+    color: #d4d0c8 !important;
+  }
+  [data-theme="dark"] .theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #f0ece0 !important;
+  }
+  [data-theme="dark"] .theme-toggle-btn:hover {
+    border-color: #00d690 !important;
+    color: #00d690 !important;
+    background: rgba(0, 214, 144, 0.12) !important;
+  }
+  [data-theme="dark"] nav ul li.solutions-nav-item > ul.solutions-dropdown-menu,
+  [data-theme="dark"] nav ul li.product-nav-item > ul.product-dropdown-menu {
+    background: #15151e !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+  [data-theme="dark"] nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li,
+  [data-theme="dark"] nav ul li.product-nav-item > ul.product-dropdown-menu > li {
+    background: #15151e !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+  [data-theme="dark"] nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li:hover,
+  [data-theme="dark"] nav ul li.product-nav-item > ul.product-dropdown-menu > li:hover {
+    background: #1c1c27 !important;
+  }
+  [data-theme="dark"] nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li > a,
+  [data-theme="dark"] nav ul li.product-nav-item > ul.product-dropdown-menu > li > a {
+    color: #e2e8f0 !important;
+  }
+  [data-theme="dark"] nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li > a:hover,
+  [data-theme="dark"] nav ul li.product-nav-item > ul.product-dropdown-menu > li > a:hover {
+    color: #00d690 !important;
+  }
+  [data-theme="dark"] .MuiAccordion-root {
+    background: #15151e !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  [data-theme="dark"] .MuiAccordionSummary-root {
+    color: #f0ece0 !important;
+  }
+  [data-theme="dark"] .MuiCollapse-root {
+    color: #94a3b8 !important;
+  }
+  [data-theme="dark"] .wpo-solutions-content-des h1,
+  [data-theme="dark"] .wpo-solutions-content-des h2 {
+    color: #f0ece0 !important;
+  }
+  [data-theme="dark"] .wpo-solutions-content-des p,
+  [data-theme="dark"] .wpo-solutions-content-des li {
+    color: #94a3b8 !important;
+  }
+  [data-theme="dark"] .room-details-item {
+    background: #15151e !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  [data-theme="dark"] .wpo-benefits-section h2 {
+    color: #f0ece0 !important;
+  }
+  [data-theme="dark"] .logo img {
+    filter: brightness(0) invert(1) opacity(0.92) !important;
+  }
+  :root:not([data-theme="dark"]) .logo img,
+  [data-theme="light"] .logo img {
+    filter: brightness(0) opacity(0.92) !important;
+  }
+
   /* Mobile responsiveness */
   @media (max-width: 991px) {
     nav ul li.solutions-nav-item > ul.solutions-dropdown-menu {
@@ -360,6 +487,20 @@ CUSTOM_JS = """
 def process_file(source_path, title):
     with open(source_path, "r", encoding="utf-8") as f:
         soup = BeautifulSoup(f.read(), "html.parser")
+
+    # Remove existing custom CSS/JS/theme elements to prevent duplication
+    for old_css in soup.find_all("style", id="custom-solutions-css"):
+        old_css.decompose()
+    for old_js in soup.find_all("script", id="custom-solutions-js"):
+        old_js.decompose()
+    for old_btn in soup.find_all(id="themeToggleBtn"):
+        old_btn.decompose()
+    for old_m_btn in soup.find_all(class_="mobile-theme-btn"):
+        parent_li = old_m_btn.find_parent("li")
+        if parent_li: parent_li.decompose()
+        else: old_m_btn.decompose()
+    for old_scr in soup.find_all("script", src="/theme.js"):
+        old_scr.decompose()
 
     # Title
     if soup.title:
@@ -465,10 +606,27 @@ def process_file(source_path, title):
         nav.clear()
         nav.append(nav_soup)
 
-    # Header TrueProgress button
+    # Theme support & Header TrueProgress button
+    if soup.html:
+        soup.html["data-theme"] = "light"
+    if soup.head:
+        theme_script = soup.new_tag("script", src="/theme.js")
+        soup.head.append(theme_script)
+
+    toggle_html = """<button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Switch to Dark Mode" title="Switch to Dark Mode"><svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>"""
     for btn in soup.find_all("a", class_="theme-btn-s2"):
         if "TrueProgress" in btn.text:
             btn["href"] = "/login"
+            btn.insert_before(BeautifulSoup(toggle_html, "html.parser"))
+            break
+
+    # Mobile menu appearance toggle
+    mobile_menu = soup.find("div", class_="mobileMenu")
+    if mobile_menu:
+        ul_resp = mobile_menu.find("ul", class_="responsivemenu")
+        if ul_resp:
+            mobile_toggle_html = """<li style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid rgba(0,0,0,0.08);"><span style="font-weight:600; font-size:15px;">Appearance</span><button class="theme-toggle-btn mobile-theme-btn" type="button" aria-label="Toggle theme" style="margin:0;"><svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button></li>"""
+            ul_resp.insert(0, BeautifulSoup(mobile_toggle_html, "html.parser"))
 
     # Footer links
     if footer:
@@ -523,10 +681,12 @@ def main():
     for cfg in SOLUTIONS_CONFIG:
         source_path = os.path.join("live_solutions_rendered", cfg["source"])
         if not os.path.exists(source_path):
+            source_path = os.path.join(out_dir, cfg["primary_file"])
+        if not os.path.exists(source_path):
             print(f"ERROR: {source_path} does not exist!")
             continue
         
-        print(f"Processing {cfg['title']}...")
+        print(f"Processing {cfg['title']} from {source_path}...")
         cleaned_html = process_file(source_path, cfg["title"])
         
         primary_path = os.path.join(out_dir, cfg["primary_file"])
