@@ -851,9 +851,14 @@ p { color: var(--text-dim); line-height: 1.8; }
 .wpo-about-img {
   position: relative;
 }
+.wpo-about-img picture,
 .wpo-about-img img {
   width: 100%;
+  height: auto;
   aspect-ratio: 1 / 1;
+  display: block;
+}
+.wpo-about-img img {
   object-fit: cover;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
