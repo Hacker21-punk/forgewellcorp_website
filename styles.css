@@ -853,13 +853,19 @@ p { color: var(--text-dim); line-height: 1.8; }
 }
 .wpo-about-img img {
   width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
   border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   position: relative;
   z-index: 1;
   box-shadow: var(--shadow-lg);
-  transition: transform var(--tr-slow);
+  transition: transform var(--tr-slow), box-shadow var(--tr-slow);
 }
-.wpo-about-img:hover img { transform: translateY(-4px); }
+.wpo-about-img:hover img {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
 
 .wpo-section-title { margin-bottom: 24px; }
 .wpo-section-title.centered { text-align: center; }
