@@ -70,7 +70,7 @@
     "uid": "5ldYzEqbIoT94gMU3uduV92wBd32",
     "password": "123456",
     "phoneNumber": "7043074932",
-    "organization": "IRCON ",
+    "organization": "IRCON",
     "name": "Ambily",
     "admin": "false",
     "survey": [
@@ -144,7 +144,7 @@
     ],
     "state": "Gujarat",
     "department": "DFC Project",
-    "email": "kirankumar@ircon.org ",
+    "email": "kirankumar@ircon.org",
     "status": ""
   },
   {
@@ -207,7 +207,7 @@
     ],
     "state": "Gujarat",
     "department": "DFC Project",
-    "email": "amit.kumar@ircon.org ",
+    "email": "amit.kumar@ircon.org",
     "status": "",
     "disabled": "false",
     "updatedAt": 1709706750310
@@ -326,7 +326,7 @@
     "department": "Works Engineer",
     "email": "erchnv@gmail.com",
     "status": "",
-    "organization": "IRCON ",
+    "organization": "IRCON",
     "survey": [
       "Gevra to Pendra Road_2A Package",
       "Urga to Kusumunda",
@@ -679,7 +679,7 @@
     },
     "password": "123456",
     "phoneNumber": "7043074912",
-    "organization": "IRCON ",
+    "organization": "IRCON",
     "name": "MR Rajesh",
     "survey": [
       "Sachin to Valsad",
@@ -896,7 +896,7 @@
     ],
     "state": "Gujarat",
     "department": "DFC Project",
-    "email": "indrajeet@ircon.org ",
+    "email": "indrajeet@ircon.org",
     "status": "",
     "disabled": "false",
     "updatedAt": 1680345262692

@@ -78,15 +78,15 @@
                 <!-- Input Fields -->
                 <div class="login-fields">
                   <div class="input-group">
-                    <label class="input-label" for="loginEmail">EMAIL ADDRESS</label>
+                    <label class="input-label" for="loginEmail">EMAIL OR USER ID / PHONE</label>
                     <input
-                      type="email"
+                      type="text"
                       id="loginEmail"
-                      name="email"
-                      placeholder="name@company.com"
+                      name="loginId"
+                      placeholder="Email, Phone, or User ID"
                       class="login-input"
                       required
-                      autocomplete="email"
+                      autocomplete="username"
                     />
                   </div>
                   <div class="input-group">
@@ -128,32 +128,109 @@
 
     async function handleLogin(event) {
       event.preventDefault();
-      const emailInput = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const rawInput = document.getElementById('loginEmail').value.trim();
+      const loginId = rawInput.toLowerCase();
+      const loginDigits = rawInput.replace(/\D/g, '');
       const passwordInput = document.getElementById('loginPassword').value;
 
       const btn = document.getElementById('loginSubmitBtn');
-      btn.disabled = true;
-      btn.innerText = 'SIGNING IN...';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'SIGNING IN...';
+      }
 
       try {
-        const response = await fetch('backup%20details%20of%20trueprogress/users.json');
+        let response = await fetch('backup%20details%20of%20trueprogress/users.json');
+        if (!response.ok) {
+          response = await fetch('trueprogress/backup%20details%20of%20trueprogress/users.json');
+        }
         if (!response.ok) throw new Error('Failed to load user database');
-        const users = await response.json();
+        let users = await response.json();
 
-        const user = users.find(u => u.email.toLowerCase() === emailInput && u.password === passwordInput);
+        // Integrate custom, edited, and deleted users from localStorage
+        const customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+        const editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+        const deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
+
+        // Filter out deleted users
+        users = users.filter(u => !deletedUsers.includes(u.uid));
+
+        // Merge edited users
+        editedUsers.forEach(edited => {
+          if (deletedUsers.includes(edited.uid)) return;
+          const idx = users.findIndex(u => u.uid === edited.uid);
+          if (idx > -1) {
+            users[idx] = { ...users[idx], ...edited };
+          } else {
+            users.push(edited);
+          }
+        });
+
+        // Merge custom created users
+        customUsers.forEach(custom => {
+          if (deletedUsers.includes(custom.uid)) return;
+          const idx = users.findIndex(u => u.uid === custom.uid);
+          if (idx > -1) {
+            users[idx] = { ...users[idx], ...custom };
+          } else {
+            users.push(custom);
+          }
+        });
+
+        // Match user by Email, Email prefix, Phone number, Full Name, or UID
+        const user = users.find(u => {
+          const userEmail = (u.email || '').trim().replace(/\u00a0/g, '').toLowerCase();
+          const emailPrefix = userEmail.split('@')[0];
+          const userPhone = (u.phoneNumber || '').toString().replace(/\D/g, '');
+          const userName = (u.name || '').trim().toLowerCase();
+          const userUid = (u.uid || '').trim().toLowerCase();
+
+          const idMatches = (
+            userEmail === loginId ||
+            (emailPrefix && emailPrefix === loginId) ||
+            (userPhone && loginDigits && userPhone === loginDigits) ||
+            (userName && userName === loginId) ||
+            (userUid && userUid === loginId)
+          );
+
+          if (!idMatches) return false;
+
+          const dbPass = (u.password !== undefined && u.password !== null) ? String(u.password) : '';
+          const passMatches = (
+            dbPass === passwordInput ||
+            dbPass.trim() === passwordInput.trim() ||
+            dbPass.toLowerCase() === passwordInput.toLowerCase()
+          );
+
+          return passMatches;
+        });
+
         if (user) {
+          if (user.status === 'Disable') {
+            alert('This account has been disabled. Please contact the administrator.');
+            if (btn) {
+              btn.disabled = false;
+              btn.innerText = 'SIGN IN';
+            }
+            return false;
+          }
+
           sessionStorage.setItem('loggedInUser', JSON.stringify(user));
           window.location.href = 'index.html';
         } else {
-          alert('Invalid email or password.');
+          alert('Invalid ID/Email or password.');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'SIGN IN';
+          }
+        }
+      } catch (error) {
+        console.error('Sign in error:', error);
+        alert('An error occurred during sign in. Please try again.');
+        if (btn) {
           btn.disabled = false;
           btn.innerText = 'SIGN IN';
         }
-      } catch (error) {
-        console.error(error);
-        alert('An error occurred during sign in. Please try again.');
-        btn.disabled = false;
-        btn.innerText = 'SIGN IN';
       }
       return false;
     }

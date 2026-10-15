@@ -325,7 +325,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Password (for first-time use only)</label>
-              <input type="text" id="userPasswordInput" class="form-input" placeholder="Password" />
+              <input type="text" id="userPasswordInput" class="form-input" placeholder="Enter password" autocomplete="new-password" />
             </div>
             <div class="form-group">
               <label class="form-label">Phone Number</label>
@@ -1591,7 +1591,7 @@
       document.getElementById('userDeptInput').value = '';
       document.getElementById('userStateInput').value = '';
       document.getElementById('userEmailInput').value = '';
-      document.getElementById('userPasswordInput').value = '123456';
+      document.getElementById('userPasswordInput').value = '';
       document.getElementById('userPhoneInput').value = '';
       
       // Default radios
@@ -1633,13 +1633,23 @@
       }
       
       const uid = document.getElementById('editUserUid').value;
-      const name = document.getElementById('userNameInput').value;
-      const organization = document.getElementById('userOrgInput').value;
-      const department = document.getElementById('userDeptInput').value;
-      const state = document.getElementById('userStateInput').value;
-      const email = document.getElementById('userEmailInput').value;
-      const password = document.getElementById('userPasswordInput').value;
-      const phoneNumber = document.getElementById('userPhoneInput').value;
+      const name = document.getElementById('userNameInput').value.trim();
+      const organization = document.getElementById('userOrgInput').value.trim();
+      const department = document.getElementById('userDeptInput').value.trim();
+      const state = document.getElementById('userStateInput').value.trim();
+      const email = document.getElementById('userEmailInput').value.trim();
+      let password = document.getElementById('userPasswordInput').value.trim();
+      const phoneNumber = document.getElementById('userPhoneInput').value.trim();
+
+      if (!uid && !password) {
+        alert('Please enter a password for the new user.');
+        return false;
+      }
+
+      if (uid && !password) {
+        const existingUser = allUsers.find(u => u.uid === uid);
+        if (existingUser) password = existingUser.password;
+      }
       
       const adminRadios = document.getElementsByName('userIsAdmin');
       let admin = 'false';
