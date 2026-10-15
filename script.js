@@ -13,7 +13,10 @@ const next = document.querySelector(".slider-arrow.next");
 const yearEl = document.getElementById("copy-year");
 const toast = document.querySelector(".forgewell-toast");
 
-if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+if (yearEl) {
+  const currentYear = new Date().getFullYear();
+  yearEl.textContent = currentYear > 2015 ? `2015-${currentYear}` : "2015-2026";
+}
 
 /* ---- Toast ---- */
 let toastTimer = 0;

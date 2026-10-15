@@ -1246,9 +1246,25 @@ p { color: var(--text-dim); line-height: 1.8; }
   transition: color var(--tr);
 }
 .contact-ft li:hover { color: var(--theme-primary); }
-.contact-ft span { display: inline-block; margin-right: 8px; color: var(--theme-primary); }
-.contact-ft .iso { text-align: center; }
-.contact-ft .iso img { margin-inline: auto; border-radius: var(--radius-sm); opacity: .85; }
+.contact-ft .iso {
+  text-align: left;
+  margin-top: 18px;
+  list-style: none;
+}
+.contact-ft .iso img {
+  display: inline-block;
+  margin: 0;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  padding: 5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  opacity: .95;
+  transition: transform var(--tr), box-shadow var(--tr);
+}
+.contact-ft .iso img:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 214, 144, 0.35);
+}
 
 .link-widget a, .newsletter-widget > a {
   display: block;
