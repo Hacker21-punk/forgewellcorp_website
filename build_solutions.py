@@ -591,7 +591,6 @@ def process_file(source_path, title):
               <li><a href="/#trueprogress">Tabor Electronics</a></li>
             </ul>
           </li>
-          <li><a href="/#blog" title="">Blog</a></li>
           <li><a href="/contact" title="">Contact</a></li>
         </ul>
         """
@@ -613,13 +612,13 @@ def process_file(source_path, title):
             btn.insert_before(BeautifulSoup(toggle_html, "html.parser"))
             break
 
-    # Mobile menu appearance toggle & remove IT Solutions
+    # Mobile menu appearance toggle & remove IT Solutions & Blog
     mobile_menu = soup.find("div", class_="mobileMenu")
     if mobile_menu:
         for a in mobile_menu.find_all("a"):
             href = a.get("href", "")
             t = a.text.strip().lower()
-            if "it-solutions" in href or t == "it solutions":
+            if "it-solutions" in href or t == "it solutions" or "/blog" in href or t == "blog":
                 parent_li = a.find_parent("li")
                 if parent_li: parent_li.decompose()
                 else: a.decompose()
