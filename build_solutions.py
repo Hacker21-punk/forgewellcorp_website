@@ -277,36 +277,56 @@ CUSTOM_CSS = """
     background: #00b67a;
   }
 
+  /* Header Actions Flexbox */
+  .header-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+  }
+
   /* Theme Toggle Button */
   .theme-toggle-btn {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(0, 0, 0, 0.12) !important;
-    background: #f8fafc !important;
-    color: #0f172a !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
     cursor: pointer !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    vertical-align: middle !important;
-    margin-right: 10px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    flex-shrink: 0 !important;
   }
   .theme-toggle-btn:hover {
-    background: #f1f5f9 !important;
+    background: rgba(0, 214, 144, 0.2) !important;
     border-color: #00d690 !important;
     color: #00d690 !important;
-    transform: translateY(-1px) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 14px rgba(0, 214, 144, 0.25) !important;
   }
   .theme-toggle-btn svg {
     width: 20px !important;
     height: 20px !important;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    stroke: currentColor !important;
+    stroke-width: 2 !important;
+    fill: none !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
   .theme-toggle-btn:hover svg {
-    transform: rotate(18deg) !important;
+    transform: rotate(20deg) !important;
+  }
+  [data-theme="dark"] .theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #f8fafc !important;
   }
 
   /* Theme Icon Toggling */
@@ -325,6 +345,70 @@ CUSTOM_CSS = """
     display: none !important;
   }
 
+  /* TrueProgress Login Button */
+  .trueprogress-login {
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 0 20px !important;
+    background: #00d690 !important;
+    border-radius: 20px !important;
+    color: #ffffff !important;
+    font-family: 'Quicksand', 'Nunito Sans', system-ui, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    white-space: nowrap !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 2px 10px rgba(0, 214, 144, 0.25) !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    flex-shrink: 0 !important;
+  }
+  .trueprogress-login:hover,
+  .trueprogress-login:focus-visible {
+    background: #00b87c !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 214, 144, 0.4) !important;
+  }
+  .trueprogress-login svg {
+    width: 17px !important;
+    height: 17px !important;
+    stroke: currentColor !important;
+    stroke-width: 2 !important;
+    fill: none !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    transition: transform 0.2s ease !important;
+    flex-shrink: 0 !important;
+  }
+  .trueprogress-login:hover svg {
+    transform: translateX(3px) !important;
+  }
+
+  /* Header Styling Unified with Home & Contact */
+  .middle-header,
+  .header-style-3 {
+    background-color: #1b2e4b !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+  nav ul li a {
+    color: #f8fafc !important;
+    font-weight: 600 !important;
+    transition: color 0.2s ease !important;
+  }
+  nav ul li a:hover {
+    color: #00d690 !important;
+  }
+  .logo img {
+    filter: none !important;
+  }
+
   /* Dark mode theme styles for solutions pages */
   [data-theme="dark"] body {
     background-color: #08080c !important;
@@ -332,21 +416,11 @@ CUSTOM_CSS = """
   }
   [data-theme="dark"] .middle-header,
   [data-theme="dark"] .header-style-3 {
-    background-color: #0f0f16 !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
+    background-color: #10192b !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
   [data-theme="dark"] nav ul li a {
-    color: #d4d0c8 !important;
-  }
-  [data-theme="dark"] .theme-toggle-btn {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
-    color: #f0ece0 !important;
-  }
-  [data-theme="dark"] .theme-toggle-btn:hover {
-    border-color: #00d690 !important;
-    color: #00d690 !important;
-    background: rgba(0, 214, 144, 0.12) !important;
+    color: #cbd5e1 !important;
   }
   [data-theme="dark"] nav ul li.solutions-nav-item > ul.solutions-dropdown-menu,
   [data-theme="dark"] nav ul li.product-nav-item > ul.product-dropdown-menu {
@@ -396,12 +470,8 @@ CUSTOM_CSS = """
   [data-theme="dark"] .wpo-benefits-section h2 {
     color: #f0ece0 !important;
   }
-  [data-theme="dark"] .logo img {
-    filter: brightness(0) invert(1) opacity(0.92) !important;
-  }
-  :root:not([data-theme="dark"]) .logo img,
-  [data-theme="light"] .logo img {
-    filter: brightness(0) opacity(0.92) !important;
+  .logo img {
+    filter: none !important;
   }
 
   /* Mobile responsiveness */
@@ -598,19 +668,54 @@ def process_file(source_path, title):
         nav.clear()
         nav.append(nav_soup)
 
-    # Theme support & Header TrueProgress button
+    # Theme support
     if soup.html:
         soup.html["data-theme"] = "light"
+    for old_theme in soup.find_all("script", src="/theme.js"):
+        old_theme.decompose()
     if soup.head:
         theme_script = soup.new_tag("script", src="/theme.js")
         soup.head.append(theme_script)
 
-    toggle_html = """<button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Switch to Dark Mode" title="Switch to Dark Mode"><svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>"""
-    for btn in soup.find_all("a", class_="theme-btn-s2"):
-        if "TrueProgress" in btn.text:
-            btn["href"] = "/login"
-            btn.insert_before(BeautifulSoup(toggle_html, "html.parser"))
-            break
+    # Adjust header grid layout and actions
+    header_content = soup.find("div", class_="header-content")
+    if header_content:
+        for div in header_content.find_all("div", recursive=True):
+            cl = div.get("class", [])
+            if any("col-xl-8" in c or "col-xl-7" in c for c in cl) and div.find("nav"):
+                div["class"] = ["col-xl-7", "col-lg-7", "d-lg-block", "d-none"]
+            elif any("col-xl-1" in c or "col-xl-2" in c or "col-xl-3" in c for c in cl) and div.find("div", class_="contact"):
+                div["class"] = ["col-xl-3", "col-lg-3", "col-md-8", "col-sm-8", "col-8"]
+
+    actions_html = """
+    <div class="header-actions">
+      <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+      <a class="theme-btn-s2 trueprogress-login" href="/login" title="TrueProgress Login">
+        TrueProgress
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/></svg>
+      </a>
+    </div>
+    """
+    for contact_div in soup.find_all("div", class_="contact"):
+        contact_div.clear()
+        wrapper = soup.new_tag("div", **{"class": "header-search-form-wrapper"})
+        wrapper.append(BeautifulSoup(actions_html, "html.parser"))
+        contact_div.append(wrapper)
 
     # Mobile menu appearance toggle & remove IT Solutions & Blog
     mobile_menu = soup.find("div", class_="mobileMenu")
@@ -622,6 +727,9 @@ def process_file(source_path, title):
                 parent_li = a.find_parent("li")
                 if parent_li: parent_li.decompose()
                 else: a.decompose()
+        for old_mob in mobile_menu.find_all("button", class_="mobile-theme-btn"):
+            p_li = old_mob.find_parent("li")
+            if p_li: p_li.decompose()
         ul_resp = mobile_menu.find("ul", class_="responsivemenu")
         if ul_resp:
             mobile_toggle_html = """<li style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid rgba(0,0,0,0.08);"><span style="font-weight:600; font-size:15px;">Appearance</span><button class="theme-toggle-btn mobile-theme-btn" type="button" aria-label="Toggle theme" style="margin:0;"><svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button></li>"""
@@ -692,7 +800,11 @@ def process_file(source_path, title):
     for r in soup.find_all("next-route-announcer"):
         r.decompose()
 
-    # Append custom CSS & JS
+    # Append custom CSS & JS (clean up any previous instances first)
+    for old_css in soup.find_all("style", id="custom-solutions-css"):
+        old_css.decompose()
+    for old_js in soup.find_all("script", id="custom-solutions-js"):
+        old_js.decompose()
     css_soup = BeautifulSoup(CUSTOM_CSS, "html.parser")
     soup.head.append(css_soup)
 
