@@ -598,6 +598,29 @@
       color: var(--primary) !important;
     }
 
+    /* Footer Contact Links & Icons */
+    .contact-ft .contact-link {
+      color: inherit !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      text-decoration: none !important;
+      transition: color 0.2s ease !important;
+    }
+    .contact-ft .contact-link:hover {
+      color: var(--primary) !important;
+    }
+    .contact-ft .contact-icon {
+      font-size: 22px !important;
+      line-height: 1 !important;
+      color: var(--primary) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin-right: 12px !important;
+      vertical-align: middle !important;
+      flex-shrink: 0 !important;
+    }
+
     /* Mobile Responsive */
     @media (max-width: 991px) {
       .contact-info-grid {
@@ -817,7 +840,7 @@
           <h3 class="card-title">Telephone Inquiries</h3>
           <p class="card-desc">Direct line access to our engineering support and operations coordination center.</p>
           <div class="phone-lines">
-            <a class="card-action" href="tel:+919755675433">+91 9755675433</a>
+            <a class="card-action" href="tel:+917554331833">+91 (0)755-4331833</a>
           </div>
           <div class="office-hours-badge">
             <span class="indicator"></span> Mon - Sat: 9:00 AM - 6:00 PM
@@ -926,12 +949,11 @@
             <div class="col col-md-6 col-sm-12 col-12 col-lg-4">
               <div class="widget market-widget wpo-service-link-widget">
                 <div class="widget-title"><h3>Contact</h3></div>
-                <p style="font-weight: bold; font-size: 18px;">Crafting the Next level of Industrial &amp; Defense Solutions</p>
                 <div class="contact-ft">
                   <ul>
-                    <li style="font-weight: bold;"><i class="fi ti-location-pin" style="color: rgb(0, 182, 122);"></i>23-B, Sector - D, <br>Govindpura Industrial Area, Near CIPET, JK Road, Bhopal, Madhya Pradesh 462023, India</li>
-                    <li style="font-weight: bold;"><i class="fi ti-mobile" style="color: rgb(0, 182, 122);"></i>+91-9755675433</li>
-                    <li style="font-weight: bold;"><i class="fi flaticon-email" style="color: rgb(0, 182, 122);"></i>sales@forgewellcorp.com</li>
+                    <li style="font-weight: bold;">23-B, Sector - D, <br>Govindpura Industrial Area, Near CIPET, JK Road, Bhopal, Madhya Pradesh 462023, India</li>
+                    <li style="font-weight: bold;"><a href="tel:+917554331833" class="contact-link"><span class="contact-icon" aria-hidden="true">☎</span>+91 (0)755-4331833</a></li>
+                    <li style="font-weight: bold;"><a href="mailto:sales@forgewellcorp.com" class="contact-link"><span class="contact-icon" aria-hidden="true">✉</span>sales@forgewellcorp.com</a></li>
                     <li class="iso" style="font-weight: bold; margin-top: 18px; text-align: left;"><img src="/assets/remote/ISO-9001-2015_aqyWly6lD.jpeg" width="100" height="100" style="border-radius: 6px; background: #fff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);" alt="ISO 9001:2015 Certification"></li>
                   </ul>
                 </div>

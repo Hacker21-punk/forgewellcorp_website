@@ -474,6 +474,29 @@ CUSTOM_CSS = """
     filter: none !important;
   }
 
+  /* Footer Contact Links & Icons */
+  .contact-ft .contact-link {
+    color: inherit !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease !important;
+  }
+  .contact-ft .contact-link:hover {
+    color: #00d690 !important;
+  }
+  .contact-ft .contact-icon {
+    font-size: 22px !important;
+    line-height: 1 !important;
+    color: #00d690 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-right: 12px !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+  }
+
   /* Mobile responsiveness */
   @media (max-width: 991px) {
     nav ul li.solutions-nav-item > ul.solutions-dropdown-menu {
@@ -758,6 +781,25 @@ def process_file(source_path, title):
                     classes = [cls for cls in classes if not cls.startswith("col-lg-")]
                     classes.append("col-lg-4")
                     c["class"] = classes
+
+        # Remove tagline from contact widget
+        for p in footer.find_all("p"):
+            if "crafting the next level" in p.text.lower():
+                p.decompose()
+
+        # Update contact-ft list
+        contact_ft = footer.find("div", class_="contact-ft")
+        if contact_ft:
+            new_contact_html = """
+            <ul>
+              <li style="font-weight: bold;">23-B, Sector - D, <br>Govindpura Industrial Area, Near CIPET, JK Road, Bhopal, Madhya Pradesh 462023, India</li>
+              <li style="font-weight: bold;"><a href="tel:+917554331833" class="contact-link"><span class="contact-icon" aria-hidden="true">☎</span>+91 (0)755-4331833</a></li>
+              <li style="font-weight: bold;"><a href="mailto:sales@forgewellcorp.com" class="contact-link"><span class="contact-icon" aria-hidden="true">✉</span>sales@forgewellcorp.com</a></li>
+              <li class="iso" style="font-weight: bold; margin-top: 18px; text-align: left;"><img src="/assets/remote/ISO-9001-2015_aqyWly6lD.jpeg" width="100" height="100" style="border-radius: 6px; background: #fff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);" alt="ISO 9001:2015 Certification"></li>
+            </ul>
+            """
+            contact_ft.clear()
+            contact_ft.append(BeautifulSoup(new_contact_html, "html.parser"))
 
         for a in footer.find_all("a"):
             t = a.text.strip().lower()

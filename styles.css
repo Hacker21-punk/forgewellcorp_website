@@ -1257,6 +1257,27 @@ p { color: var(--text-dim); line-height: 1.8; }
   transition: color var(--tr);
 }
 .contact-ft li:hover { color: var(--theme-primary); }
+.contact-ft .contact-link {
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  transition: color var(--tr);
+}
+.contact-ft .contact-link:hover {
+  color: var(--theme-primary);
+}
+.contact-ft .contact-icon {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--theme-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
 .contact-ft .iso {
   text-align: left;
   margin-top: 18px;
