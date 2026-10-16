@@ -22,6 +22,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
+  <script src="assets/recycleBin.js"></script>
 </head>
 <body>
   <div class="dashboard-wrapper">
@@ -103,6 +104,13 @@
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                   </svg>
                 </button>
+                <button class="profile-dropdown-action-btn" id="dropdownRecycleBinBtn" type="button" style="display: none;" onclick="openRecycleBinModal()">
+                  <span>Recycle Bin</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
 
                 <button class="profile-dropdown-logout-btn" id="logoutBtn">
                   Logout
@@ -118,7 +126,7 @@
         </header>
 
         <!-- Breadcrumb -->
-        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
           <ul class="breadcrumb-list">
             <li class="breadcrumb-item" style="cursor: pointer;">
               <a href="index.html" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit;">
@@ -135,6 +143,18 @@
               <span id="breadcrumbSurveyName" style="color: #374151;">Survey Name</span>
             </li>
           </ul>
+          <!-- Admin action in survey breadcrumb -->
+          <div id="breadcrumbAdminActions" style="display: none; gap: 0.75rem; align-items: center;">
+            <button class="btn-breadcrumb-action" id="recycleBinBtn" type="button" onclick="openRecycleBinModal()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              Recycle Bin
+            </button>
+          </div>
         </nav>
 
         <!-- Action row above table -->
@@ -218,6 +238,57 @@
     </div>
   </div>
 
+  <!-- MODAL: Recycle Bin -->
+  <div class="modal-overlay" id="recycleBinModal">
+    <div class="modal-container" style="max-width: 840px; width: 92%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <h3 class="modal-title">Recycle Bin</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeRecycleBinModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
+          Deleted items across TrueProgress (surveys, users, videos, landmarks) are preserved here. You can restore them anytime or delete them permanently.
+        </p>
+        <div class="bin-filter-bar">
+          <!-- Dynamically populated filter buttons -->
+        </div>
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="users-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align: left; width: 110px;">Type</th>
+                <th style="text-align: left;">Item &amp; Details</th>
+                <th style="text-align: left; width: 160px;">Deleted Date</th>
+                <th style="text-align: right; width: 190px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="recycleBinTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div id="recycleBinEmptyMsg" style="text-align: center; padding: 2rem; color: var(--text-tertiary); display: none;">
+          Recycle Bin is empty
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-recycle-restore-all" id="restoreAllBinBtn" onclick="handleRestoreAllBin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            Restore All
+          </button>
+          <button type="button" class="btn-action-delete" id="emptyRecycleBinBtn" style="border-radius: var(--radius-sm); font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="handleEmptyRecycleBin()">Empty Recycle Bin</button>
+        </div>
+        <button type="button" class="btn-modal-cancel" onclick="closeRecycleBinModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let surveyId = null;
     let surveyName = '';
@@ -254,6 +325,10 @@
 
       if (currentUser.admin === "true") {
         document.getElementById('dropdownRole').innerText = "Admin";
+        const adminActs = document.getElementById('breadcrumbAdminActions');
+        if (adminActs) adminActs.style.display = 'flex';
+        const dropBin = document.getElementById('dropdownRecycleBinBtn');
+        if (dropBin) dropBin.style.display = 'flex';
       } else {
         document.getElementById('dropdownRole').innerText = "User";
       }
@@ -510,10 +585,26 @@
 
         checkedBoxes.forEach(cb => {
           const id = cb.value;
-          if (id.startsWith('vid-')) {
+          const videoObj = surveyVideos.find(v => v.id === id);
+          const isCustom = id.startsWith('vid-');
+
+          if (window.TrueProgressBin) {
+            window.TrueProgressBin.addItem({
+              type: 'video',
+              id: id,
+              name: videoObj ? videoObj.name : ('Video ' + id),
+              subtitle: 'Survey: ' + (surveyName || 'Survey') + (videoObj && videoObj.createdAt ? ' • ' + videoObj.createdAt : ''),
+              data: videoObj || { id: id, survey: surveyId },
+              meta: { isCustom: isCustom, surveyId: surveyId, surveyName: surveyName }
+            });
+          }
+
+          if (isCustom) {
             custom = custom.filter(v => v.id !== id);
           } else {
-            deleted.push(id);
+            if (!deleted.includes(id)) {
+              deleted.push(id);
+            }
           }
         });
 
@@ -523,6 +614,60 @@
         fetchVideos();
       }
     }
+
+    // ===== Recycle Bin Functionality =====
+    function openRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.add('show');
+        renderRecycleBin();
+      }
+    }
+
+    function closeRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.remove('show');
+      }
+    }
+
+    async function renderRecycleBin() {
+      if (window.TrueProgressBin) {
+        window.TrueProgressBin.renderModal({
+          modalId: 'recycleBinModal',
+          onUpdate: async function () {
+            await fetchVideos();
+          }
+        });
+      }
+    }
+
+    async function handleRestoreAllBin() {
+      if (!window.TrueProgressBin) return;
+      const filter = window.TrueProgressBin.activeFilter;
+      const count = window.TrueProgressBin.getBinItems().length;
+      if (count === 0) return;
+      if (confirm('Are you sure you want to restore all items in the Recycle Bin?')) {
+        window.TrueProgressBin.restoreAll(filter);
+        await fetchVideos();
+        renderRecycleBin();
+      }
+    }
+
+    async function handleEmptyRecycleBin() {
+      if (!window.TrueProgressBin) return;
+      if (confirm('Are you sure you want to permanently delete all items in the Recycle Bin? This action cannot be undone.')) {
+        window.TrueProgressBin.emptyBin();
+        await fetchVideos();
+        renderRecycleBin();
+      }
+    }
+
+    window.addEventListener('tp_item_restored', function (e) {
+      if (e.detail && (e.detail.type === 'video' || e.detail.type === 'survey')) {
+        fetchVideos();
+      }
+    });
 
     // Go to Watch Page
     function watchSelectedVideos() {

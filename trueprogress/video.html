@@ -24,6 +24,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
+  <script src="assets/recycleBin.js"></script>
 </head>
 <body>
   <div class="dashboard-wrapper">
@@ -103,6 +104,13 @@
                   </svg>
                   <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                  </svg>
+                </button>
+                <button class="profile-dropdown-action-btn" id="dropdownRecycleBinBtn" type="button" style="display: none;" onclick="openRecycleBinModal()">
+                  <span>Recycle Bin</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                   </svg>
                 </button>
 
@@ -467,6 +475,8 @@
 
       if (currentUser.admin === "true") {
         document.getElementById('dropdownRole').innerText = "Admin";
+        const dropBin = document.getElementById('dropdownRecycleBinBtn');
+        if (dropBin) dropBin.style.display = "flex";
       } else {
         document.getElementById('dropdownRole').innerText = "User";
       }
@@ -665,9 +675,10 @@
 
             <div class="breakpoints-footer" style="margin-top: 0.5rem; padding-top: 0.5rem;">
               <span class="total-landmarks-label" id="totalLandmarksCount_${id}" style="font-size: 0.75rem;">Total Landmarks: 0</span>
-              <div style="display: flex; gap: 0.5rem;">
+              <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                 <button class="btn-csv-export" id="btnCsvExport_${id}" onclick="exportLandmarksCsv('${id}')" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Export CSV</button>
                 <button class="btn-delete-all" id="btnDeleteAll_${id}" onclick="deleteAllLandmarks('${id}')" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete ALL</button>
+                <button class="btn-action-normal" id="btnRecycleBin_${id}" onclick="openRecycleBinModal()" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm);">Recycle Bin</button>
               </div>
             </div>
           </div>
@@ -680,6 +691,7 @@
           document.getElementById(`adminBreakpointForm_${id}`).style.display = "block";
           document.getElementById(`btnDeleteAll_${id}`).style.display = "block";
           document.getElementById(`btnCsvExport_${id}`).style.display = "block";
+          if (document.getElementById(`btnRecycleBin_${id}`)) document.getElementById(`btnRecycleBin_${id}`).style.display = "block";
         } else {
           document.getElementById(`landmarksTitle_${id}`).innerText = "Landmarks";
         }
@@ -1140,7 +1152,27 @@
 
     function deleteLandmark(event, id, idx) {
       event.stopPropagation();
+      if (!videoLandmarks[id] || !videoLandmarks[id][idx]) return;
+      const lm = videoLandmarks[id][idx];
+      const videoName = videoObjects[id] ? videoObjects[id].name : 'video';
+
       if (confirm('Are you sure you want to delete this landmark?')) {
+        if (window.TrueProgressBin) {
+          const totalSecs = Math.floor(lm.time || 0);
+          const mins = Math.floor(totalSecs / 60);
+          const secs = totalSecs % 60;
+          const timeCode = `${mins}:${secs.toString().padStart(2, '0')}`;
+          
+          window.TrueProgressBin.addItem({
+            type: 'landmark',
+            id: id + '_lm_' + idx + '_' + Math.floor(lm.time || 0),
+            name: lm.display || lm.name || 'Landmark',
+            subtitle: `Video: ${videoName} • KM: ${lm.km || 'N/A'} • At: ${timeCode}`,
+            data: { ...lm, videoId: id },
+            meta: { videoId: id, videoName: videoName, timeCode: timeCode }
+          });
+        }
+
         videoLandmarks[id].splice(idx, 1);
         updateLandmarksUI(id);
       }
@@ -1415,7 +1447,27 @@
         alert('Permission denied.');
         return;
       }
+      if (!videoLandmarks[id] || videoLandmarks[id].length === 0) return;
+      const videoName = videoObjects[id] ? videoObjects[id].name : 'video';
+
       if (confirm('Are you sure you want to delete all landmarks for this video run?')) {
+        if (window.TrueProgressBin) {
+          videoLandmarks[id].forEach((lm, idx) => {
+            const totalSecs = Math.floor(lm.time || 0);
+            const mins = Math.floor(totalSecs / 60);
+            const secs = totalSecs % 60;
+            const timeCode = `${mins}:${secs.toString().padStart(2, '0')}`;
+            window.TrueProgressBin.addItem({
+              type: 'landmark',
+              id: id + '_lm_' + idx + '_' + Math.floor(lm.time || 0),
+              name: lm.display || lm.name || 'Landmark',
+              subtitle: `Video: ${videoName} • KM: ${lm.km || 'N/A'} • At: ${timeCode}`,
+              data: { ...lm, videoId: id },
+              meta: { videoId: id, videoName: videoName, timeCode: timeCode }
+            });
+          });
+        }
+
         videoLandmarks[id] = [];
         updateLandmarksUI(id);
       }
@@ -1746,6 +1798,82 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
+    // ===== Recycle Bin Functionality =====
+    function openRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.add('show');
+        renderRecycleBin();
+      }
+    }
+
+    function closeRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.remove('show');
+      }
+    }
+
+    async function renderRecycleBin() {
+      if (window.TrueProgressBin) {
+        window.TrueProgressBin.renderModal({
+          modalId: 'recycleBinModal',
+          onUpdate: function () {
+            activeVideoIds.forEach(vidId => {
+              const key = `landmarks_${vidId}`;
+              const overrides = localStorage.getItem(key);
+              if (overrides) {
+                videoLandmarks[vidId] = JSON.parse(overrides);
+                updateLandmarksUI(vidId);
+              }
+            });
+          }
+        });
+      }
+    }
+
+    function handleRestoreAllBin() {
+      if (!window.TrueProgressBin) return;
+      const filter = window.TrueProgressBin.activeFilter;
+      const count = window.TrueProgressBin.getBinItems().length;
+      if (count === 0) return;
+      if (confirm('Are you sure you want to restore all items in the Recycle Bin?')) {
+        window.TrueProgressBin.restoreAll(filter);
+        activeVideoIds.forEach(vidId => {
+          const key = `landmarks_${vidId}`;
+          const overrides = localStorage.getItem(key);
+          if (overrides) {
+            videoLandmarks[vidId] = JSON.parse(overrides);
+            updateLandmarksUI(vidId);
+          }
+        });
+        renderRecycleBin();
+      }
+    }
+
+    function handleEmptyRecycleBin() {
+      if (!window.TrueProgressBin) return;
+      if (confirm('Are you sure you want to permanently delete all items in the Recycle Bin? This action cannot be undone.')) {
+        window.TrueProgressBin.emptyBin();
+        renderRecycleBin();
+      }
+    }
+
+    window.addEventListener('tp_item_restored', (e) => {
+      const restored = e.detail;
+      if (restored && restored.type === 'landmark' && restored.meta && restored.meta.videoId) {
+        const vidId = restored.meta.videoId;
+        if (videoLandmarks[vidId]) {
+          const key = `landmarks_${vidId}`;
+          const overrides = localStorage.getItem(key);
+          if (overrides) {
+            videoLandmarks[vidId] = JSON.parse(overrides);
+            updateLandmarksUI(vidId);
+          }
+        }
+      }
+    });
+
     // Register Service Worker for offline capability & asset caching
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
       window.addEventListener('load', () => {
@@ -1753,5 +1881,56 @@
       });
     }
   </script>
+
+  <!-- MODAL: Recycle Bin -->
+  <div class="modal-overlay" id="recycleBinModal">
+    <div class="modal-container" style="max-width: 840px; width: 92%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <h3 class="modal-title">Recycle Bin</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeRecycleBinModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
+          Deleted items across TrueProgress (surveys, users, videos, landmarks) are preserved here. You can restore them anytime or delete them permanently.
+        </p>
+        <div class="bin-filter-bar">
+          <!-- Dynamically populated filter buttons -->
+        </div>
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="users-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align: left; width: 110px;">Type</th>
+                <th style="text-align: left;">Item &amp; Details</th>
+                <th style="text-align: left; width: 160px;">Deleted Date</th>
+                <th style="text-align: right; width: 190px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="recycleBinTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div id="recycleBinEmptyMsg" style="text-align: center; padding: 2rem; color: var(--text-tertiary); display: none;">
+          Recycle Bin is empty
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-recycle-restore-all" id="restoreAllBinBtn" onclick="handleRestoreAllBin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            Restore All
+          </button>
+          <button type="button" class="btn-action-delete" id="emptyRecycleBinBtn" style="border-radius: var(--radius-sm); font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="handleEmptyRecycleBin()">Empty Recycle Bin</button>
+        </div>
+        <button type="button" class="btn-modal-cancel" onclick="closeRecycleBinModal()">Close</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
