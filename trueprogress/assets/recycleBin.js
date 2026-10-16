@@ -7,6 +7,7 @@
   'use strict';
 
   var STORAGE_BIN = 'tp_recycle_bin';
+
   var STORAGE_CUSTOM_SURVEYS = 'custom_surveys';
   var STORAGE_DELETED_SURVEYS = 'deleted_surveys';
   var STORAGE_DELETED_CUSTOM_SURVEYS = 'deleted_custom_surveys';
@@ -16,10 +17,15 @@
   var STORAGE_CUSTOM_USERS = 'custom_users';
   var STORAGE_DELETED_USERS = 'deleted_users';
   var STORAGE_EDITED_USERS = 'edited_users';
+  var STORAGE_PERM_DELETED_USERS = 'permanently_deleted_users';
 
   var STORAGE_CUSTOM_VIDEOS = 'custom_videos';
   var STORAGE_DELETED_VIDEOS = 'deleted_videos';
   var STORAGE_EDITED_VIDEOS = 'edited_videos';
+  var STORAGE_PERM_DELETED_VIDEOS = 'permanently_deleted_videos';
+
+  var STORAGE_DELETED_LANDMARKS = 'deleted_landmarks';
+  var STORAGE_PERM_DELETED_LANDMARKS = 'permanently_deleted_landmarks';
 
   function safeJsonParse(val, fallback) {
     if (!val) return fallback;
@@ -64,7 +70,6 @@
     getBinItems: function () {
       var raw = localStorage.getItem(STORAGE_BIN);
       var items = safeJsonParse(raw, []);
-      // Sort descending by deletedAt
       items.sort(function (a, b) {
         var tA = a.deletedAt ? new Date(a.deletedAt).getTime() : 0;
         var tB = b.deletedAt ? new Date(b.deletedAt).getTime() : 0;
@@ -79,7 +84,94 @@
     },
 
     /**
-     * Add any deleted item to the Recycle Bin
+     * Get all deleted IDs of a given type from both the active bin and permanent delete stores.
+     * Guaranteed to never leak deleted items into platform tables.
+     */
+    getDeletedIds: function (type) {
+      var items = this.getBinItems();
+      var set = new Set();
+
+      // IDs from the current recycle bin
+      items.forEach(function (it) {
+        if (it.type === type && it.id) {
+          set.add(String(it.id));
+        }
+      });
+
+      // IDs from explicit deletion tracking keys
+      if (type === 'survey') {
+        var delSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_SURVEYS), []);
+        delSurveys.forEach(function (id) { set.add(String(id)); });
+        var permSurveys = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
+        permSurveys.forEach(function (id) { set.add(String(id)); });
+      } else if (type === 'user') {
+        var delUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_USERS), []);
+        delUsers.forEach(function (uid) { set.add(String(uid)); });
+        var permUsers = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_USERS), []);
+        permUsers.forEach(function (uid) { set.add(String(uid)); });
+      } else if (type === 'video') {
+        var delVideos = safeJsonParse(localStorage.getItem(STORAGE_DELETED_VIDEOS), []);
+        delVideos.forEach(function (id) { set.add(String(id)); });
+        var permVideos = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_VIDEOS), []);
+        permVideos.forEach(function (id) { set.add(String(id)); });
+      }
+
+      return Array.from(set);
+    },
+
+    isDeleted: function (type, id) {
+      if (!id) return false;
+      var strId = String(id);
+      var deletedIds = this.getDeletedIds(type);
+      return deletedIds.indexOf(strId) > -1;
+    },
+
+    /**
+     * Check if a specific landmark is in the recycle bin or permanently deleted
+     */
+    isLandmarkDeleted: function (videoId, lm) {
+      if (!videoId || !lm) return false;
+      var items = this.getBinItems();
+      var lmName = (lm.name || lm.display || '').trim().toLowerCase();
+      var lmTime = parseFloat(lm.time) || 0;
+
+      // Check bin items
+      var inBin = items.some(function (it) {
+        if (it.type !== 'landmark') return false;
+        var itVidId = (it.meta && it.meta.videoId) || (it.data && it.data.videoId);
+        if (itVidId && itVidId !== videoId) return false;
+        var itData = it.data || {};
+        var itName = (itData.name || itData.display || it.name || '').trim().toLowerCase();
+        var itTime = parseFloat(itData.time !== undefined ? itData.time : it.meta && it.meta.time) || 0;
+        
+        // Exact name match and time within 0.5s or time within 0.1s
+        if (itName && lmName && itName === lmName && Math.abs(itTime - lmTime) < 0.5) {
+          return true;
+        }
+        if (Math.abs(itTime - lmTime) < 0.05) {
+          return true;
+        }
+        return false;
+      });
+
+      if (inBin) return true;
+
+      // Check permanently deleted landmarks
+      var permLm = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_LANDMARKS), []);
+      var inPerm = permLm.some(function (p) {
+        if (p.videoId && p.videoId !== videoId) return false;
+        var pName = (p.name || '').trim().toLowerCase();
+        var pTime = parseFloat(p.time) || 0;
+        if (pName && lmName && pName === lmName && Math.abs(pTime - lmTime) < 0.5) return true;
+        if (Math.abs(pTime - lmTime) < 0.05) return true;
+        return false;
+      });
+
+      return inPerm;
+    },
+
+    /**
+     * Add any deleted item to the Recycle Bin and synchronously remove it from active storage
      * @param {Object} params { type: 'survey'|'user'|'video'|'landmark', id, name, subtitle, data, meta }
      */
     addItem: function (params) {
@@ -112,8 +204,87 @@
       } else {
         items.unshift(record);
       }
-
       this.saveBinItems(items);
+
+      // --- Atomically purge item from active datasets and record in deletion keys ---
+      var id = params.id;
+      var type = params.type;
+
+      if (type === 'survey') {
+        var isCustom = id.startsWith('custom-') || (params.meta && params.meta.isCustom);
+        
+        // Ensure added to deleted_surveys
+        var delSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_SURVEYS), []);
+        if (!delSurveys.includes(id)) {
+          delSurveys.push(id);
+          localStorage.setItem(STORAGE_DELETED_SURVEYS, JSON.stringify(delSurveys));
+        }
+
+        // Remove from custom_surveys
+        var customSurveys = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_SURVEYS), []);
+        customSurveys = customSurveys.filter(function (s) { return s.id !== id; });
+        localStorage.setItem(STORAGE_CUSTOM_SURVEYS, JSON.stringify(customSurveys));
+
+        // Remove from edited_surveys
+        var editedSurveys = safeJsonParse(localStorage.getItem(STORAGE_EDITED_SURVEYS), []);
+        editedSurveys = editedSurveys.filter(function (e) { return e.id !== id; });
+        localStorage.setItem(STORAGE_EDITED_SURVEYS, JSON.stringify(editedSurveys));
+
+        if (isCustom && params.data) {
+          var delCustom = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_SURVEYS), []);
+          if (!delCustom.some(function (s) { return s.id === id; })) {
+            delCustom.push(params.data);
+            localStorage.setItem(STORAGE_DELETED_CUSTOM_SURVEYS, JSON.stringify(delCustom));
+          }
+        }
+      } else if (type === 'user') {
+        var delUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_USERS), []);
+        if (!delUsers.includes(id)) {
+          delUsers.push(id);
+          localStorage.setItem(STORAGE_DELETED_USERS, JSON.stringify(delUsers));
+        }
+
+        var customUsers = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_USERS), []);
+        customUsers = customUsers.filter(function (u) { return u.uid !== id; });
+        localStorage.setItem(STORAGE_CUSTOM_USERS, JSON.stringify(customUsers));
+
+        var editedUsers = safeJsonParse(localStorage.getItem(STORAGE_EDITED_USERS), []);
+        editedUsers = editedUsers.filter(function (u) { return u.uid !== id; });
+        localStorage.setItem(STORAGE_EDITED_USERS, JSON.stringify(editedUsers));
+      } else if (type === 'video') {
+        var delVideos = safeJsonParse(localStorage.getItem(STORAGE_DELETED_VIDEOS), []);
+        if (!delVideos.includes(id)) {
+          delVideos.push(id);
+          localStorage.setItem(STORAGE_DELETED_VIDEOS, JSON.stringify(delVideos));
+        }
+
+        var customVideos = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_VIDEOS), []);
+        customVideos = customVideos.filter(function (v) { return v.id !== id; });
+        localStorage.setItem(STORAGE_CUSTOM_VIDEOS, JSON.stringify(customVideos));
+
+        var editedVideos = safeJsonParse(localStorage.getItem(STORAGE_EDITED_VIDEOS), []);
+        editedVideos = editedVideos.filter(function (v) { return v.id !== id; });
+        localStorage.setItem(STORAGE_EDITED_VIDEOS, JSON.stringify(editedVideos));
+      } else if (type === 'landmark') {
+        var videoId = (params.meta && params.meta.videoId) || (params.data && params.data.videoId);
+        if (videoId) {
+          var lmKey = 'landmarks_' + videoId;
+          var landmarks = safeJsonParse(localStorage.getItem(lmKey), []);
+          var targetLm = params.data || {};
+          var targetName = (targetLm.name || targetLm.display || params.name || '').trim().toLowerCase();
+          var targetTime = parseFloat(targetLm.time !== undefined ? targetLm.time : params.meta && params.meta.time) || 0;
+
+          landmarks = landmarks.filter(function (l) {
+            var lName = (l.name || l.display || '').trim().toLowerCase();
+            var lTime = parseFloat(l.time) || 0;
+            if (lName && targetName && lName === targetName && Math.abs(lTime - targetTime) < 0.5) return false;
+            if (Math.abs(lTime - targetTime) < 0.05) return false;
+            return true;
+          });
+          localStorage.setItem(lmKey, JSON.stringify(landmarks));
+        }
+      }
+
       return record;
     },
 
@@ -140,37 +311,44 @@
       try {
         if (type === 'survey') {
           var isCustom = id.startsWith('custom-') || meta.isCustom;
+          
+          // Remove from deleted_surveys & perm_deleted_surveys
+          var delSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_SURVEYS), []);
+          delSurveys = delSurveys.filter(function (val) { return val !== id; });
+          localStorage.setItem(STORAGE_DELETED_SURVEYS, JSON.stringify(delSurveys));
+
+          var permSurveys = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
+          permSurveys = permSurveys.filter(function (val) { return val !== id; });
+          localStorage.setItem(STORAGE_PERM_DELETED_SURVEYS, JSON.stringify(permSurveys));
+
+          var delCustom = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_SURVEYS), []);
+          delCustom = delCustom.filter(function (s) { return s.id !== id; });
+          localStorage.setItem(STORAGE_DELETED_CUSTOM_SURVEYS, JSON.stringify(delCustom));
+
           if (isCustom) {
             var customSurveys = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_SURVEYS), []);
             if (!customSurveys.some(function (s) { return s.id === id; })) {
               customSurveys.push(data);
               localStorage.setItem(STORAGE_CUSTOM_SURVEYS, JSON.stringify(customSurveys));
             }
-            var delCustom = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_SURVEYS), []);
-            delCustom = delCustom.filter(function (s) { return s.id !== id; });
-            localStorage.setItem(STORAGE_DELETED_CUSTOM_SURVEYS, JSON.stringify(delCustom));
-          } else {
-            var delSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_SURVEYS), []);
-            delSurveys = delSurveys.filter(function (val) { return val !== id; });
-            localStorage.setItem(STORAGE_DELETED_SURVEYS, JSON.stringify(delSurveys));
+          }
 
-            var permSurveys = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
-            permSurveys = permSurveys.filter(function (val) { return val !== id; });
-            localStorage.setItem(STORAGE_PERM_DELETED_SURVEYS, JSON.stringify(permSurveys));
-
-            if (meta.isEdited && data) {
-              var editedSurveys = safeJsonParse(localStorage.getItem(STORAGE_EDITED_SURVEYS), []);
-              var edIdx = editedSurveys.findIndex(function (e) { return e.id === id; });
-              if (edIdx > -1) editedSurveys[edIdx] = data;
-              else editedSurveys.push(data);
-              localStorage.setItem(STORAGE_EDITED_SURVEYS, JSON.stringify(editedSurveys));
-            }
+          if (meta.isEdited && data) {
+            var editedSurveys = safeJsonParse(localStorage.getItem(STORAGE_EDITED_SURVEYS), []);
+            var edIdx = editedSurveys.findIndex(function (e) { return e.id === id; });
+            if (edIdx > -1) editedSurveys[edIdx] = data;
+            else editedSurveys.push(data);
+            localStorage.setItem(STORAGE_EDITED_SURVEYS, JSON.stringify(editedSurveys));
           }
         } else if (type === 'user') {
           // Restore user
           var deletedUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_USERS), []);
           deletedUsers = deletedUsers.filter(function (val) { return val !== id; });
           localStorage.setItem(STORAGE_DELETED_USERS, JSON.stringify(deletedUsers));
+
+          var permUsers = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_USERS), []);
+          permUsers = permUsers.filter(function (val) { return val !== id; });
+          localStorage.setItem(STORAGE_PERM_DELETED_USERS, JSON.stringify(permUsers));
 
           var isCustomUser = id.startsWith('user-') || meta.isCustom;
           if (isCustomUser) {
@@ -193,6 +371,10 @@
           deletedVideos = deletedVideos.filter(function (val) { return val !== id; });
           localStorage.setItem(STORAGE_DELETED_VIDEOS, JSON.stringify(deletedVideos));
 
+          var permVideos = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_VIDEOS), []);
+          permVideos = permVideos.filter(function (val) { return val !== id; });
+          localStorage.setItem(STORAGE_PERM_DELETED_VIDEOS, JSON.stringify(permVideos));
+
           var isCustomVid = id.startsWith('vid-') || meta.isCustom;
           if (isCustomVid) {
             var customVideos = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_VIDEOS), []);
@@ -214,9 +396,24 @@
           if (videoId) {
             var lmKey = 'landmarks_' + videoId;
             var landmarks = safeJsonParse(localStorage.getItem(lmKey), []);
-            landmarks.push(data);
-            landmarks.sort(function (a, b) { return (a.time || 0) - (b.time || 0); });
-            localStorage.setItem(lmKey, JSON.stringify(landmarks));
+            var restoredLm = Object.assign({}, data);
+            
+            // Check if already in landmarks array
+            var alreadyExists = landmarks.some(function (l) {
+              return (l.name === restoredLm.name) && Math.abs(parseFloat(l.time) - parseFloat(restoredLm.time)) < 0.1;
+            });
+            if (!alreadyExists) {
+              landmarks.push(restoredLm);
+              landmarks.sort(function (a, b) { return (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0); });
+              localStorage.setItem(lmKey, JSON.stringify(landmarks));
+            }
+
+            // Remove from perm deleted landmarks
+            var permLm = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_LANDMARKS), []);
+            permLm = permLm.filter(function (p) {
+              return !(p.videoId === videoId && p.name === restoredLm.name && Math.abs((p.time || 0) - (restoredLm.time || 0)) < 0.1);
+            });
+            localStorage.setItem(STORAGE_PERM_DELETED_LANDMARKS, JSON.stringify(permLm));
           }
         }
 
@@ -257,7 +454,7 @@
     },
 
     /**
-     * Permanently delete a single item from the bin
+     * Permanently delete a single item from the bin so it never shows in bin AND never shows on platform
      */
     permanentlyDelete: function (binId) {
       var items = this.getBinItems();
@@ -265,21 +462,70 @@
       if (idx === -1) return false;
 
       var item = items[idx];
+      var id = item.id;
 
-      // If it's a default survey, record in permanently_deleted_surveys
-      if (item.type === 'survey' && !item.id.startsWith('custom-')) {
+      if (item.type === 'survey') {
         var permSurveys = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
-        if (!permSurveys.includes(item.id)) {
-          permSurveys.push(item.id);
+        if (!permSurveys.includes(id)) {
+          permSurveys.push(id);
           localStorage.setItem(STORAGE_PERM_DELETED_SURVEYS, JSON.stringify(permSurveys));
         }
-      }
 
-      // If it's a custom survey, also remove from deleted_custom_surveys
-      if (item.type === 'survey' && item.id.startsWith('custom-')) {
+        // Keep in deleted_surveys so active tables never load it
+        var delSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_SURVEYS), []);
+        if (!delSurveys.includes(id)) {
+          delSurveys.push(id);
+          localStorage.setItem(STORAGE_DELETED_SURVEYS, JSON.stringify(delSurveys));
+        }
+
         var delCustom = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_SURVEYS), []);
-        delCustom = delCustom.filter(function (s) { return s.id !== item.id; });
+        delCustom = delCustom.filter(function (s) { return s.id !== id; });
         localStorage.setItem(STORAGE_DELETED_CUSTOM_SURVEYS, JSON.stringify(delCustom));
+
+        var customSurveys = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_SURVEYS), []);
+        customSurveys = customSurveys.filter(function (s) { return s.id !== id; });
+        localStorage.setItem(STORAGE_CUSTOM_SURVEYS, JSON.stringify(customSurveys));
+      } else if (item.type === 'user') {
+        var permUsers = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_USERS), []);
+        if (!permUsers.includes(id)) {
+          permUsers.push(id);
+          localStorage.setItem(STORAGE_PERM_DELETED_USERS, JSON.stringify(permUsers));
+        }
+
+        var delUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_USERS), []);
+        if (!delUsers.includes(id)) {
+          delUsers.push(id);
+          localStorage.setItem(STORAGE_DELETED_USERS, JSON.stringify(delUsers));
+        }
+
+        var customUsers = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_USERS), []);
+        customUsers = customUsers.filter(function (u) { return u.uid !== id; });
+        localStorage.setItem(STORAGE_CUSTOM_USERS, JSON.stringify(customUsers));
+      } else if (item.type === 'video') {
+        var permVideos = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_VIDEOS), []);
+        if (!permVideos.includes(id)) {
+          permVideos.push(id);
+          localStorage.setItem(STORAGE_PERM_DELETED_VIDEOS, JSON.stringify(permVideos));
+        }
+
+        var delVideos = safeJsonParse(localStorage.getItem(STORAGE_DELETED_VIDEOS), []);
+        if (!delVideos.includes(id)) {
+          delVideos.push(id);
+          localStorage.setItem(STORAGE_DELETED_VIDEOS, JSON.stringify(delVideos));
+        }
+
+        var customVideos = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_VIDEOS), []);
+        customVideos = customVideos.filter(function (v) { return v.id !== id; });
+        localStorage.setItem(STORAGE_CUSTOM_VIDEOS, JSON.stringify(customVideos));
+      } else if (item.type === 'landmark') {
+        var permLm = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_LANDMARKS), []);
+        var lmObj = item.data || {};
+        permLm.push({
+          videoId: (item.meta && item.meta.videoId) || lmObj.videoId,
+          name: lmObj.name || lmObj.display || item.name,
+          time: lmObj.time !== undefined ? lmObj.time : (item.meta && item.meta.time)
+        });
+        localStorage.setItem(STORAGE_PERM_DELETED_LANDMARKS, JSON.stringify(permLm));
       }
 
       items.splice(idx, 1);
@@ -293,18 +539,11 @@
      */
     emptyBin: function () {
       var items = this.getBinItems();
-      var permSurveys = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
-
-      items.forEach(function (it) {
-        if (it.type === 'survey' && !it.id.startsWith('custom-')) {
-          if (!permSurveys.includes(it.id)) {
-            permSurveys.push(it.id);
-          }
-        }
-      });
-
-      localStorage.setItem(STORAGE_PERM_DELETED_SURVEYS, JSON.stringify(permSurveys));
-      localStorage.setItem(STORAGE_DELETED_CUSTOM_SURVEYS, JSON.stringify([]));
+      var self = this;
+      while (items.length > 0) {
+        self.permanentlyDelete(items[0].binId);
+        items = self.getBinItems();
+      }
       this.saveBinItems([]);
       this.showToast('Recycle Bin emptied.', 'info');
     },
@@ -345,13 +584,63 @@
     },
 
     /**
-     * Synchronize legacy deletions from older sessions so that nothing is missed.
+     * Complete Bidirectional Synchronization:
+     * 1. Guarantees that EVERY item in tp_recycle_bin is purged from active stores and added to deleted keys.
+     * 2. Imports any legacy deletions into tp_recycle_bin (unless permanently deleted).
      */
-    syncLegacyDeletions: function () {
+    syncAll: function () {
       var items = this.getBinItems();
       var hasChanges = false;
 
-      // 1. Sync legacy deleted_custom_surveys
+      // Ensure every item currently in tp_recycle_bin is absent from active stores
+      var delSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_SURVEYS), []);
+      var customSurveys = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_SURVEYS), []);
+      var delUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_USERS), []);
+      var customUsers = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_USERS), []);
+      var delVideos = safeJsonParse(localStorage.getItem(STORAGE_DELETED_VIDEOS), []);
+      var customVideos = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_VIDEOS), []);
+
+      items.forEach(function (it) {
+        if (it.type === 'survey') {
+          if (!delSurveys.includes(it.id)) delSurveys.push(it.id);
+          customSurveys = customSurveys.filter(function (s) { return s.id !== it.id; });
+        } else if (it.type === 'user') {
+          if (!delUsers.includes(it.id)) delUsers.push(it.id);
+          customUsers = customUsers.filter(function (u) { return u.uid !== it.id; });
+        } else if (it.type === 'video') {
+          if (!delVideos.includes(it.id)) delVideos.push(it.id);
+          customVideos = customVideos.filter(function (v) { return v.id !== it.id; });
+        } else if (it.type === 'landmark') {
+          var vidId = (it.meta && it.meta.videoId) || (it.data && it.data.videoId);
+          if (vidId) {
+            var lmKey = 'landmarks_' + vidId;
+            var lms = safeJsonParse(localStorage.getItem(lmKey), []);
+            var lmData = it.data || {};
+            var lmName = (lmData.name || lmData.display || it.name || '').trim().toLowerCase();
+            var lmTime = parseFloat(lmData.time !== undefined ? lmData.time : (it.meta && it.meta.time)) || 0;
+            var initialLen = lms.length;
+            lms = lms.filter(function (l) {
+              var lName = (l.name || l.display || '').trim().toLowerCase();
+              var lTime = parseFloat(l.time) || 0;
+              if (lName && lmName && lName === lmName && Math.abs(lTime - lmTime) < 0.5) return false;
+              if (Math.abs(lTime - lmTime) < 0.05) return false;
+              return true;
+            });
+            if (lms.length !== initialLen) {
+              localStorage.setItem(lmKey, JSON.stringify(lms));
+            }
+          }
+        }
+      });
+
+      localStorage.setItem(STORAGE_DELETED_SURVEYS, JSON.stringify(delSurveys));
+      localStorage.setItem(STORAGE_CUSTOM_SURVEYS, JSON.stringify(customSurveys));
+      localStorage.setItem(STORAGE_DELETED_USERS, JSON.stringify(delUsers));
+      localStorage.setItem(STORAGE_CUSTOM_USERS, JSON.stringify(customUsers));
+      localStorage.setItem(STORAGE_DELETED_VIDEOS, JSON.stringify(delVideos));
+      localStorage.setItem(STORAGE_CUSTOM_VIDEOS, JSON.stringify(customVideos));
+
+      // Import legacy deleted custom surveys if not in bin
       var deletedCustomSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_SURVEYS), []);
       deletedCustomSurveys.forEach(function (s) {
         if (!items.some(function (it) { return it.id === s.id && it.type === 'survey'; })) {
@@ -369,11 +658,10 @@
         }
       });
 
-      // 2. Sync legacy deleted default surveys
-      var deletedSurveys = safeJsonParse(localStorage.getItem(STORAGE_DELETED_SURVEYS), []);
-      var permanentlyDeleted = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
-      deletedSurveys.forEach(function (id) {
-        if (permanentlyDeleted.includes(id)) return;
+      // Import legacy deleted default surveys
+      var permSurveys = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
+      delSurveys.forEach(function (id) {
+        if (permSurveys.includes(id)) return;
         if (!items.some(function (it) { return it.id === id && it.type === 'survey'; })) {
           items.push({
             binId: 'bin_survey_' + id + '_' + Date.now(),
@@ -389,9 +677,10 @@
         }
       });
 
-      // 3. Sync legacy deleted users
-      var deletedUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_USERS), []);
-      deletedUsers.forEach(function (uid) {
+      // Import legacy deleted users
+      var permUsers = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_USERS), []);
+      delUsers.forEach(function (uid) {
+        if (permUsers.includes(uid)) return;
         if (!items.some(function (it) { return it.id === uid && it.type === 'user'; })) {
           items.push({
             binId: 'bin_user_' + uid + '_' + Date.now(),
@@ -402,6 +691,25 @@
             deletedAt: new Date().toISOString(),
             data: { uid: uid },
             meta: { isCustom: uid.startsWith('user-') }
+          });
+          hasChanges = true;
+        }
+      });
+
+      // Import legacy deleted videos
+      var permVideos = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_VIDEOS), []);
+      delVideos.forEach(function (vidId) {
+        if (permVideos.includes(vidId)) return;
+        if (!items.some(function (it) { return it.id === vidId && it.type === 'video'; })) {
+          items.push({
+            binId: 'bin_video_' + vidId + '_' + Date.now(),
+            type: 'video',
+            id: vidId,
+            name: 'Video ' + vidId,
+            subtitle: 'Deleted Video',
+            deletedAt: new Date().toISOString(),
+            data: { id: vidId },
+            meta: { isCustom: vidId.startsWith('vid-') }
           });
           hasChanges = true;
         }
@@ -452,7 +760,8 @@
       }
 
       if (filterBar) {
-        var filters = [
+        var binSelf = this;
+        var filterConfigs = [
           { key: 'all', label: 'All Items' },
           { key: 'survey', label: 'Surveys' },
           { key: 'user', label: 'Users' },
@@ -460,82 +769,44 @@
           { key: 'landmark', label: 'Landmarks' }
         ];
 
-        var self = this;
         filterBar.innerHTML = '';
-        filters.forEach(function (f) {
-          var count = counts[f.key] || 0;
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'bin-filter-pill' + (activeFilter === f.key ? ' active' : '');
-          btn.innerHTML = escapeHtml(f.label) + ' <span class="bin-filter-count">' + count + '</span>';
-          btn.onclick = function () {
-            self.activeFilter = f.key;
-            self.renderModal(options);
+        filterConfigs.forEach(function (fc) {
+          var pill = document.createElement('button');
+          pill.type = 'button';
+          pill.className = 'bin-filter-pill' + (activeFilter === fc.key ? ' active' : '');
+          pill.innerHTML = escapeHtml(fc.label) + ' <span class="bin-filter-count">' + (counts[fc.key] || 0) + '</span>';
+          pill.onclick = function () {
+            binSelf.activeFilter = fc.key;
+            binSelf.renderModal(options);
           };
-          filterBar.appendChild(btn);
+          filterBar.appendChild(pill);
         });
       }
 
-      // Update table header if needed
-      var tableThead = modal.querySelector('table thead');
-      if (tableThead) {
-        tableThead.innerHTML = '<tr>' +
-          '<th style="text-align: left; width: 110px;">Type</th>' +
-          '<th style="text-align: left;">Item &amp; Details</th>' +
-          '<th style="text-align: left; width: 160px;">Deleted Date</th>' +
-          '<th style="text-align: right; width: 190px;">Action</th>' +
-          '</tr>';
-      }
-
-      // Populate table body
       var tbody = modal.querySelector('#recycleBinTableBody');
       var emptyMsg = modal.querySelector('#recycleBinEmptyMsg');
-      var emptyBtn = modal.querySelector('#emptyRecycleBinBtn');
-      var restoreAllBtn = modal.querySelector('#restoreAllBinBtn');
+      var tableContainer = modal.querySelector('.table-container');
 
       if (!tbody) return;
       tbody.innerHTML = '';
 
       if (filteredItems.length === 0) {
-        tbody.parentElement.style.display = 'none';
+        if (tableContainer) tableContainer.style.display = 'none';
         if (emptyMsg) {
           emptyMsg.style.display = 'block';
           emptyMsg.innerHTML = '<div class="bin-empty-state">' +
             '<div class="bin-empty-icon">' +
               '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' +
             '</div>' +
-            '<h4 style="margin: 0 0 0.5rem; color: var(--text-primary); font-size: 1rem;">No Deleted Items</h4>' +
-            '<p style="margin: 0; font-size: 0.85rem; color: var(--text-tertiary);">' +
-              (activeFilter === 'all' ? 'Your Recycle Bin is currently empty.' : 'No deleted ' + activeFilter + 's found.') +
-            '</p>' +
+            '<div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">No deleted items</div>' +
+            '<div style="font-size: 0.8125rem;">The Recycle Bin is currently empty' + (activeFilter !== 'all' ? ' for ' + binSelf.getTypeDisplayName(activeFilter) + 's.' : '.') + '</div>' +
           '</div>';
-        }
-        if (emptyBtn) {
-          emptyBtn.disabled = true;
-          emptyBtn.style.opacity = '0.5';
-          emptyBtn.style.cursor = 'not-allowed';
-        }
-        if (restoreAllBtn) {
-          restoreAllBtn.disabled = true;
-          restoreAllBtn.style.opacity = '0.5';
-          restoreAllBtn.style.cursor = 'not-allowed';
         }
         return;
       }
 
-      tbody.parentElement.style.display = 'table';
+      if (tableContainer) tableContainer.style.display = 'block';
       if (emptyMsg) emptyMsg.style.display = 'none';
-
-      if (emptyBtn) {
-        emptyBtn.disabled = false;
-        emptyBtn.style.opacity = '1';
-        emptyBtn.style.cursor = 'pointer';
-      }
-      if (restoreAllBtn) {
-        restoreAllBtn.disabled = false;
-        restoreAllBtn.style.opacity = '1';
-        restoreAllBtn.style.cursor = 'pointer';
-      }
 
       var binSelf = this;
       filteredItems.forEach(function (item) {
@@ -543,8 +814,8 @@
         tr.style.borderBottom = '1px solid var(--surface-border)';
 
         var badgeClass = binSelf.getTypeBadgeClass(item.type);
-        var badgeIcon = binSelf.getTypeIconSvg(item.type);
         var badgeLabel = binSelf.getTypeDisplayName(item.type);
+        var badgeIcon = binSelf.getTypeIconSvg(item.type);
 
         tr.innerHTML =
           '<td style="padding: 0.75rem 0.5rem; vertical-align: middle;">' +
@@ -622,11 +893,11 @@
     }
   };
 
-  // Run initial legacy sync
+  // Run full bidirectional synchronization on initialization
   try {
-    TrueProgressBin.syncLegacyDeletions();
+    TrueProgressBin.syncAll();
   } catch (e) {
-    console.error('Error during legacy recycle bin sync:', e);
+    console.error('Error during recycle bin syncAll:', e);
   }
 
   window.TrueProgressBin = TrueProgressBin;

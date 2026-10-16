@@ -822,10 +822,18 @@
           // Load custom landmarks overrides if any
           const key = `landmarks_${id}`;
           const overrides = localStorage.getItem(key);
+          let rawLandmarks = [];
           if (overrides) {
-            videoLandmarks[id] = JSON.parse(overrides);
+            rawLandmarks = JSON.parse(overrides);
           } else {
-            videoLandmarks[id] = videoObjects[id].landmarks || [];
+            rawLandmarks = videoObjects[id].landmarks || [];
+          }
+
+          // Strictly filter out any landmark that is in the recycle bin or permanently deleted
+          if (window.TrueProgressBin) {
+            videoLandmarks[id] = rawLandmarks.filter(lm => !window.TrueProgressBin.isLandmarkDeleted(id, lm));
+          } else {
+            videoLandmarks[id] = rawLandmarks;
           }
 
           updateLandmarksUI(id);
@@ -1855,23 +1863,13 @@
       if (!window.TrueProgressBin) return;
       if (confirm('Are you sure you want to permanently delete all items in the Recycle Bin? This action cannot be undone.')) {
         window.TrueProgressBin.emptyBin();
+        loadVideoData();
         renderRecycleBin();
       }
     }
 
     window.addEventListener('tp_item_restored', (e) => {
-      const restored = e.detail;
-      if (restored && restored.type === 'landmark' && restored.meta && restored.meta.videoId) {
-        const vidId = restored.meta.videoId;
-        if (videoLandmarks[vidId]) {
-          const key = `landmarks_${vidId}`;
-          const overrides = localStorage.getItem(key);
-          if (overrides) {
-            videoLandmarks[vidId] = JSON.parse(overrides);
-            updateLandmarksUI(vidId);
-          }
-        }
-      }
+      loadVideoData();
     });
 
     // Register Service Worker for offline capability & asset caching

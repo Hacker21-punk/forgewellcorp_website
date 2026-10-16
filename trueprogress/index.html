@@ -573,16 +573,20 @@
 
         // Get custom surveys from localStorage
         const customSurveysStr = localStorage.getItem('custom_surveys');
-        const deletedSurveysStr = localStorage.getItem('deleted_surveys');
-
         const customSurveys = customSurveysStr ? JSON.parse(customSurveysStr) : [];
+
+        // All deleted survey IDs from universal Recycle Bin & legacy stores
+        const binDeletedSurveys = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('survey') : [];
+        const deletedSurveysStr = localStorage.getItem('deleted_surveys');
         const deletedSurveys = deletedSurveysStr ? JSON.parse(deletedSurveysStr) : [];
+        const allDeletedSurveyIds = new Set([...deletedSurveys, ...binDeletedSurveys]);
 
         // Apply edits / deletions to default list
         const editedSurveysStr = localStorage.getItem('edited_surveys');
         const editedSurveys = editedSurveysStr ? JSON.parse(editedSurveysStr) : [];
 
-        surveysList = defaultSurveys.filter(s => !deletedSurveys.includes(s.id));
+        // Filter default surveys
+        surveysList = defaultSurveys.filter(s => !allDeletedSurveyIds.has(s.id));
 
         // Merge edited details
         surveysList = surveysList.map(s => {
@@ -590,8 +594,9 @@
           return edited ? { ...s, ...edited } : s;
         });
 
-        // Add completely new custom ones
-        surveysList = [...surveysList, ...customSurveys];
+        // Add completely new custom ones (strictly filtering out deleted ones)
+        const activeCustomSurveys = customSurveys.filter(s => !allDeletedSurveyIds.has(s.id));
+        surveysList = [...surveysList, ...activeCustomSurveys];
       } catch (error) {
         console.error(error);
         alert('Error fetching surveys database.');
@@ -603,7 +608,22 @@
       try {
         const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
         if (!response.ok) throw new Error('Failed to load videos data');
-        allVideos = await response.json();
+        const defaultVideos = await response.json();
+
+        const binDeletedVideos = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('video') : [];
+        const deletedVideos = JSON.parse(localStorage.getItem('deleted_videos') || '[]');
+        const allDeletedVideoIds = new Set([...deletedVideos, ...binDeletedVideos]);
+        const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+
+        let activeVideos = defaultVideos.filter(v => !allDeletedVideoIds.has(v.id));
+        activeVideos = activeVideos.map(v => {
+          const edited = editedVideos.find(e => e.id === v.id);
+          return edited ? { ...v, ...edited } : v;
+        });
+
+        const activeCustomVideos = customVideos.filter(v => !allDeletedVideoIds.has(v.id));
+        allVideos = [...activeVideos, ...activeCustomVideos];
       } catch (error) {
         console.error('Error fetching videos:', error);
       }
@@ -616,17 +636,20 @@
         if (!response.ok) throw new Error('Failed to load users data');
         let baseUsers = await response.json();
 
-        // Apply edits / creations / deletions from localStorage
+        // Apply edits / creations / deletions from localStorage & universal bin
+        const binDeletedUsers = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('user') : [];
+        const deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
+        const allDeletedUserIds = new Set([...deletedUsers, ...binDeletedUsers]);
+
         const customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
         const editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
-        const deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
 
         // Start with base users (excluding deleted ones)
-        allUsers = baseUsers.filter(u => !deletedUsers.includes(u.uid));
+        allUsers = baseUsers.filter(u => !allDeletedUserIds.has(u.uid));
 
         // Merge edited users
         editedUsers.forEach(edited => {
-          if (deletedUsers.includes(edited.uid)) return;
+          if (allDeletedUserIds.has(edited.uid)) return;
           const idx = allUsers.findIndex(u => u.uid === edited.uid);
           if (idx > -1) {
             allUsers[idx] = { ...allUsers[idx], ...edited };
@@ -637,7 +660,7 @@
 
         // Add custom users
         customUsers.forEach(custom => {
-          if (deletedUsers.includes(custom.uid)) return;
+          if (allDeletedUserIds.has(custom.uid)) return;
           const idx = allUsers.findIndex(u => u.uid === custom.uid);
           if (idx > -1) {
             allUsers[idx] = { ...allUsers[idx], ...custom };

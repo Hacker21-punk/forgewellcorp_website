@@ -349,11 +349,13 @@
 
         // Load custom overrides from localStorage
         const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        const binDeletedVideos = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('video') : [];
         const deletedVideos = JSON.parse(localStorage.getItem('deleted_videos') || '[]');
+        const allDeletedVideoIds = new Set([...deletedVideos, ...binDeletedVideos]);
         const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
 
         // Filter default videos belonging to this survey
-        let filtered = defaultVideos.filter(v => v.survey === surveyId && !deletedVideos.includes(v.id));
+        let filtered = defaultVideos.filter(v => v.survey === surveyId && !allDeletedVideoIds.has(v.id));
 
         // Apply edits
         filtered = filtered.map(v => {
@@ -361,8 +363,8 @@
           return edited ? { ...v, ...edited } : v;
         });
 
-        // Add custom new ones
-        const customForSurvey = customVideos.filter(v => v.survey === surveyId);
+        // Add custom new ones (strictly filtering out deleted ones)
+        const customForSurvey = customVideos.filter(v => v.survey === surveyId && !allDeletedVideoIds.has(v.id));
         surveyVideos = [...filtered, ...customForSurvey];
 
         renderTable();
