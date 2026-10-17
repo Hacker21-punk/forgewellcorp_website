@@ -333,6 +333,24 @@
         document.getElementById('dropdownRole').innerText = "User";
       }
 
+      // Check access permission for this survey
+      const hasSurveyConfig = currentUser.survey && Array.isArray(currentUser.survey);
+      const wildcardAccess = hasSurveyConfig && currentUser.survey.map(s => s.trim()).includes('*');
+      if (!wildcardAccess) {
+        if (hasSurveyConfig) {
+          const hasAccess = currentUser.survey.map(s => s.trim().toLowerCase()).includes(surveyName.trim().toLowerCase());
+          if (!hasAccess) {
+            alert('You do not have permission to view this survey.');
+            window.location.href = 'index.html';
+            return;
+          }
+        } else if (currentUser.admin !== "true") {
+          alert('You do not have permission to view this survey.');
+          window.location.href = 'index.html';
+          return;
+        }
+      }
+
       loadPageData();
     }
 

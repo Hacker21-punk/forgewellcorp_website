@@ -7,8 +7,8 @@
 */
 "use strict";
 
-const CACHE = "forgewell-v4";
-const ASSET_CACHE = "forgewell-assets-v4";
+const CACHE = "forgewell-v5";
+const ASSET_CACHE = "forgewell-assets-v5";
 const PRECACHE = [
   "./",
   "index.html",

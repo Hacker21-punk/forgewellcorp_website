@@ -182,6 +182,7 @@
             <table class="data-table">
                <thead>
                  <tr>
+                   <th style="width: 70px;">S.No.</th>
                    <th>
                      <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
                        Name
@@ -370,7 +371,16 @@
 
           <!-- Survey checkboxes -->
           <div class="form-group" style="margin-top: 1.5rem;">
-            <label class="form-label" style="font-weight: 600; margin-bottom: 0.5rem;">Assign Survey</label>
+            <div class="survey-assign-header">
+              <label class="form-label" style="font-weight: 600; margin-bottom: 0;">Assign Survey</label>
+              <div class="survey-select-all-wrap">
+                <label class="survey-select-all-label">
+                  <input type="checkbox" id="selectAllSurveysCheckbox" onchange="toggleSelectAllSurveys(this.checked)" />
+                  <span>Select All</span>
+                </label>
+                <button type="button" class="btn-survey-toggle" onclick="toggleSelectAllSurveys(false)">Deselect All</button>
+              </div>
+            </div>
             <div id="surveyAssignGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
               <!-- Dynamically populated checkbox chips -->
             </div>
@@ -507,19 +517,19 @@
       status: ''
     };
 
+    function getInitials(name) {
+      if (!name) return '';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
     // Verify session
     const userSession = sessionStorage.getItem('loggedInUser');
     if (!userSession) {
       window.location.href = 'login.html';
     } else {
       currentUser = JSON.parse(userSession);
-      
-      function getInitials(name) {
-        if (!name) return '';
-        const parts = name.trim().split(/\s+/);
-        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-      }
       
       // Update UI Header details
       document.getElementById('profileName').innerText = getInitials(currentUser.name);
@@ -668,6 +678,15 @@
             allUsers.push(custom);
           }
         });
+
+        // Sync currentUser with allUsers in case edits were made in localStorage
+        if (currentUser) {
+          const syncedCurrent = allUsers.find(u => u.uid === currentUser.uid || (u.email && currentUser.email && u.email.trim().toLowerCase() === currentUser.email.trim().toLowerCase()));
+          if (syncedCurrent) {
+            currentUser = { ...currentUser, ...syncedCurrent };
+            sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+          }
+        }
       } catch (error) {
         console.error('Error fetching users:', error);
       }
@@ -681,7 +700,7 @@
         const matchingUserNames = [];
         allUsers.forEach(user => {
           if (user.survey && Array.isArray(user.survey)) {
-            const hasAccess = user.survey.some(s => s.trim().toLowerCase() === surveyNameLower);
+            const hasAccess = user.survey.some(s => s.trim() === '*' || s.trim().toLowerCase() === surveyNameLower);
             if (hasAccess) {
               matchingUserNames.push(user.name);
             }
@@ -699,7 +718,7 @@
       if (currentView === 'users') {
         headersHtml = `
           <tr>
-            <th>Users</th>
+            <th style="width: 70px;">S.No.</th>
             <th>
               <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
                 Name
@@ -752,6 +771,7 @@
       if (currentUser.admin === "true") {
         headersHtml = `
           <tr>
+            <th style="width: 70px;">S.No.</th>
             <th>
               <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
                 Name
@@ -793,9 +813,10 @@
           </tr>
         `;
       } else {
-        // Non-admin headers: Name, Department, Video Count, Survey Length, Created On, Status
+        // Non-admin headers: S.No., Name, Department, Video Count, Survey Length, Created On, Status
         headersHtml = `
           <tr>
+            <th style="width: 70px;">S.No.</th>
             <th>
               <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
                 Name
@@ -895,11 +916,15 @@
       // Filter surveys based on user access and active filters
       const allowedSurveys = surveysList.filter(survey => {
         // 1. User Access check
-        if (currentUser.admin !== "true") {
-          const wildcardAccess = currentUser.survey && currentUser.survey.map(s => s.trim()).includes('*');
-          if (!wildcardAccess) {
-            const hasAccess = currentUser.survey && currentUser.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
+        const hasSurveyConfig = currentUser && currentUser.survey && Array.isArray(currentUser.survey);
+        const wildcardAccess = hasSurveyConfig && currentUser.survey.map(s => s.trim()).includes('*');
+
+        if (!wildcardAccess) {
+          if (hasSurveyConfig) {
+            const hasAccess = currentUser.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
             if (!hasAccess) return false;
+          } else if (!currentUser || currentUser.admin !== "true") {
+            return false;
           }
         }
 
@@ -952,14 +977,15 @@
       });
 
       if (allowedSurveys.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="${currentUser.admin === 'true' ? '8' : '6'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="${currentUser && currentUser.admin === 'true' ? '9' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
         return;
       }
 
-      allowedSurveys.forEach(survey => {
+      allowedSurveys.forEach((survey, index) => {
         const row = document.createElement('tr');
         row.id = `survey-row-${survey.id}`;
         
+        const snoCell = `<td>${index + 1}</td>`;
         const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name)}">${escapeHtml(survey.name)}</a></td>`;
         const deptCell = `<td>${escapeHtml(survey.department)}</td>`;
         const lengthCell = `<td>${escapeHtml(survey.survey_length || '')}</td>`;
@@ -1032,9 +1058,9 @@
         }
 
         if (currentUser.admin === "true") {
-          row.innerHTML = nameCell + deptCell + lengthCell + videoCell + userCell + dateCell + statusCell + actionCell;
+          row.innerHTML = snoCell + nameCell + deptCell + lengthCell + videoCell + userCell + dateCell + statusCell + actionCell;
         } else {
-          row.innerHTML = nameCell + deptCell + videoCell + lengthCell + dateCell + statusCell;
+          row.innerHTML = snoCell + nameCell + deptCell + videoCell + lengthCell + dateCell + statusCell;
         }
         tableBody.appendChild(row);
       });
@@ -1295,6 +1321,7 @@
       closeSurveyModal();
       await fetchSurveys();
       buildSurveyUserMap();
+      populateSurveyCheckboxes();
       renderSurveysTable();
     }
 
@@ -1339,6 +1366,7 @@
 
         await fetchSurveys();
         buildSurveyUserMap();
+        populateSurveyCheckboxes();
         renderSurveysTable();
       }
     }
@@ -1367,6 +1395,7 @@
             await fetchSurveys();
             await fetchUsers();
             buildSurveyUserMap();
+            populateSurveyCheckboxes();
             if (currentView === 'users') {
               renderUsersTable();
             } else {
@@ -1387,6 +1416,7 @@
         await fetchSurveys();
         await fetchUsers();
         buildSurveyUserMap();
+        populateSurveyCheckboxes();
         if (currentView === 'users') {
           renderUsersTable();
         } else {
@@ -1403,6 +1433,7 @@
         await fetchSurveys();
         await fetchUsers();
         buildSurveyUserMap();
+        populateSurveyCheckboxes();
         renderRecycleBin();
       }
     }
@@ -1502,7 +1533,11 @@
       if (!grid) return;
       grid.innerHTML = '';
       
-      surveysList.forEach(survey => {
+      const sortedSurveys = [...surveysList].sort((a, b) => {
+        return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true });
+      });
+
+      sortedSurveys.forEach(survey => {
         const label = document.createElement('label');
         label.className = 'survey-chip';
         
@@ -1517,12 +1552,56 @@
           } else {
             label.classList.remove('checked');
           }
+          syncSelectAllCheckboxState();
         });
         
         label.appendChild(checkbox);
         label.appendChild(document.createTextNode(' ' + survey.name));
         grid.appendChild(label);
       });
+      syncSelectAllCheckboxState();
+    }
+
+    function toggleSelectAllSurveys(shouldSelect) {
+      const checkboxes = document.querySelectorAll('.survey-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = shouldSelect;
+        const chip = cb.closest('.survey-chip');
+        if (chip) {
+          if (shouldSelect) {
+            chip.classList.add('checked');
+          } else {
+            chip.classList.remove('checked');
+          }
+        }
+      });
+      const selectAll = document.getElementById('selectAllSurveysCheckbox');
+      if (selectAll) {
+        selectAll.checked = shouldSelect;
+        selectAll.indeterminate = false;
+      }
+    }
+
+    function syncSelectAllCheckboxState() {
+      const selectAll = document.getElementById('selectAllSurveysCheckbox');
+      if (!selectAll) return;
+      const checkboxes = Array.from(document.querySelectorAll('.survey-checkbox'));
+      if (checkboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+      }
+      const checkedCount = checkboxes.filter(cb => cb.checked).length;
+      if (checkedCount === checkboxes.length) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+      } else if (checkedCount === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+      }
     }
 
     function openEditUserModal(uid) {
@@ -1562,12 +1641,20 @@
       }
       
       // Set survey checkboxes
+      const hasExplicitSurveyList = Array.isArray(user.survey);
       const assignedSurveys = (user.survey || []).map(s => s.trim().toLowerCase());
+      const hasWildcard = assignedSurveys.includes('*');
       
       const chips = document.querySelectorAll('.survey-chip');
       chips.forEach(chip => {
         const checkbox = chip.querySelector('input[type="checkbox"]');
-        const isAssigned = assignedSurveys.includes(checkbox.value.trim().toLowerCase());
+        let isAssigned = false;
+        if (hasExplicitSurveyList) {
+          isAssigned = hasWildcard || assignedSurveys.includes(checkbox.value.trim().toLowerCase());
+        } else if (user.admin === 'true') {
+          // If admin has no explicit restriction configured yet, start with all selected
+          isAssigned = true;
+        }
         checkbox.checked = isAssigned;
         if (isAssigned) {
           chip.classList.add('checked');
@@ -1575,6 +1662,7 @@
           chip.classList.remove('checked');
         }
       });
+      syncSelectAllCheckboxState();
       
       if (userModal) userModal.classList.add('show');
     }
@@ -1612,6 +1700,7 @@
         checkbox.checked = false;
         chip.classList.remove('checked');
       });
+      syncSelectAllCheckboxState();
       
       if (userModal) userModal.classList.add('show');
     }
@@ -1700,6 +1789,25 @@
           editedUsers.push(userUpdate);
         }
         localStorage.setItem('edited_users', JSON.stringify(editedUsers));
+
+        // If the edited user is the current logged-in user, immediately sync currentUser
+        if (currentUser && (currentUser.uid === uid || (currentUser.email && email && currentUser.email.trim().toLowerCase() === email.trim().toLowerCase()))) {
+          currentUser = { ...currentUser, ...userUpdate };
+          sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+          
+          if (document.getElementById('profileName')) {
+            document.getElementById('profileName').innerText = getInitials(currentUser.name);
+          }
+          if (document.getElementById('dropdownName')) {
+            document.getElementById('dropdownName').innerText = currentUser.name || '';
+          }
+          if (document.getElementById('dropdownPhone')) {
+            document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
+          }
+          if (document.getElementById('dropdownEmail')) {
+            document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
+          }
+        }
       } else {
         // Create User
         const newUser = {
