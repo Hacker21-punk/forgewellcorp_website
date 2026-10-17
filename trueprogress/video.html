@@ -394,42 +394,49 @@
     // URL Query Params Parsing
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
-    surveyId = urlParams.get('survey');
-    surveyName = urlParams.get('surveyName');
+    surveyId = urlParams.get('survey') || '';
+    surveyName = urlParams.get('surveyName') || 'Survey';
     const videoNamesParam = urlParams.get('videoNames');
 
-    if (!idParam || !surveyId || !surveyName || !videoNamesParam) {
+    if (!idParam) {
       window.location.href = 'index.html';
     }
 
-    activeVideoIds = idParam.split(',').map(s => s.trim());
-    activeVideoNames = videoNamesParam.split(',').map(s => s.trim());
+    activeVideoIds = idParam ? idParam.split(',').map(s => s.trim()).filter(Boolean) : [];
+    activeVideoNames = videoNamesParam ? videoNamesParam.split(',').map(s => s.trim()) : activeVideoIds.map((_, i) => `Video ${i + 1}`);
 
-    document.getElementById('breadcrumbSurveyLink').innerText = surveyName;
-    document.getElementById('breadcrumbSurveyLink').href = `survey.html?id=${surveyId}&name=${encodeURIComponent(surveyName)}`;
+    const bcSurvey = document.getElementById('breadcrumbSurveyLink');
+    if (bcSurvey) {
+      bcSurvey.innerText = surveyName;
+      bcSurvey.href = surveyId ? `survey.html?id=${surveyId}&name=${encodeURIComponent(surveyName)}` : 'index.html';
+    }
     
-    const breadcrumbVideoText = activeVideoNames.join(' - ');
-    document.getElementById('breadcrumbVideoName').innerText = breadcrumbVideoText;
+    const breadcrumbVideoText = activeVideoNames.join(' - ') || 'Video Player';
+    const bcVideo = document.getElementById('breadcrumbVideoName');
+    if (bcVideo) bcVideo.innerText = breadcrumbVideoText;
 
     // Session verification
+    function isUserAdmin(u = currentUser) {
+      return Boolean(u && (u.admin === "true" || u.admin === true));
+    }
+
     const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
     if (!userSession) {
       window.location.href = 'login.html';
-      return;
     } else {
       currentUser = JSON.parse(userSession);
       function getInitials(name) {
-        if (!name) return '';
+        if (!name) return 'AV';
         const parts = name.trim().split(/\s+/);
         if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
       }
       document.getElementById('profileName').innerText = getInitials(currentUser.name);
-      document.getElementById('dropdownName').innerText = currentUser.name;
+      document.getElementById('dropdownName').innerText = currentUser.name || '';
       document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
       document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
 
-      if (currentUser.admin === "true") {
+      if (isUserAdmin()) {
         document.getElementById('dropdownRole').innerText = "Admin";
       } else {
         document.getElementById('dropdownRole').innerText = "User";
@@ -471,7 +478,7 @@
         const card = document.createElement('div');
         card.className = 'player-column';
 
-        const isAdmin = (currentUser && currentUser.admin === "true");
+        const isAdmin = isUserAdmin();
         let topControlsHtml = '';
         if (activeVideoIds.length > 1) {
           // Comparative mode: only file upload block, no Landmarks/KM dropdowns in column (Admin only)
@@ -639,7 +646,7 @@
         container.appendChild(card);
 
         // Show admin breakpoint panel if current user is admin
-        if (currentUser.admin === "true") {
+        if (isUserAdmin()) {
           document.getElementById(`landmarksTitle_${id}`).innerText = "Add Landmark / Breakpoint";
           document.getElementById(`adminBreakpointForm_${id}`).style.display = "block";
           document.getElementById(`btnDeleteAll_${id}`).style.display = "block";
@@ -1054,7 +1061,7 @@
       }
 
       listEl.innerHTML = '';
-      const isAdmin = (currentUser.admin === "true");
+      const isAdmin = isUserAdmin();
 
       videoLandmarks[id].forEach((lm, idx) => {
         const display = lm.display || lm.name || `Landmark ${idx + 1}`;
@@ -1393,7 +1400,7 @@
     // Add Landmark Breakpoint
     function handleAddBreakpoint(event, id) {
       event.preventDefault();
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return false;
       }
@@ -1447,7 +1454,7 @@
     }
 
     function deleteAllLandmarks(id) {
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return;
       }
@@ -1478,7 +1485,7 @@
     }
 
     function exportLandmarksCsv(id) {
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return;
       }
@@ -1521,7 +1528,7 @@
 
     // Upload CSV / Excel landmarks list (.csv, .xlsx, .xls only)
     function uploadLandmarksFile(id) {
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return;
       }

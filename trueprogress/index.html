@@ -464,7 +464,7 @@
       const adminControls = document.getElementById('adminControls');
       const adminUserControls = document.getElementById('adminUserControls');
       
-      if (currentUser && currentUser.admin === 'true') {
+      if (isUserAdmin()) {
         if (currentView === 'surveys') {
           if (adminControls) adminControls.style.display = 'block';
           if (adminUserControls) adminUserControls.style.display = 'none';
@@ -511,8 +511,12 @@
     // Backward compatibility fallback
     let activeFilters = {};
 
+    function isUserAdmin(u = currentUser) {
+      return Boolean(u && (u.admin === "true" || u.admin === true));
+    }
+
     function getInitials(name) {
-      if (!name) return '';
+      if (!name) return 'AV';
       const parts = name.trim().split(/\s+/);
       if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -522,7 +526,6 @@
     const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
     if (!userSession) {
       window.location.href = 'login.html';
-      return;
     } else {
       currentUser = JSON.parse(userSession);
       
@@ -530,11 +533,11 @@
       document.getElementById('profileName').innerText = getInitials(currentUser.name);
 
       // Update Dropdown details
-      document.getElementById('dropdownName').innerText = currentUser.name;
+      document.getElementById('dropdownName').innerText = currentUser.name || '';
       document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
       document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
 
-      if (currentUser.admin === "true") {
+      if (isUserAdmin()) {
         document.getElementById('dropdownRole').innerText = "Admin";
         document.getElementById('breadcrumbAdminActions').style.display = "flex";
         document.getElementById('adminControls').style.display = "block";
@@ -690,12 +693,17 @@
     function buildSurveyUserMap() {
       surveyUserMap = {};
       surveysList.forEach(survey => {
-        const surveyNameLower = survey.name.trim().toLowerCase();
+        if (!survey || !survey.id) return;
+        const surveyNameLower = (survey.name || '').trim().toLowerCase();
         const matchingUserNames = [];
         allUsers.forEach(user => {
-          if (user.survey && Array.isArray(user.survey)) {
-            const hasAccess = user.survey.some(s => s.trim() === '*' || s.trim().toLowerCase() === surveyNameLower);
-            if (hasAccess) {
+          if (user && user.survey && Array.isArray(user.survey)) {
+            const hasAccess = user.survey.some(s => {
+              if (!s) return false;
+              const sStr = String(s).trim();
+              return sStr === '*' || sStr.toLowerCase() === surveyNameLower;
+            });
+            if (hasAccess && user.name) {
               matchingUserNames.push(user.name);
             }
           }
@@ -765,7 +773,7 @@
         return;
       }
 
-      if (currentUser && currentUser.admin === "true") {
+      if (isUserAdmin()) {
         headersHtml = `
           <tr>
             <th style="width: 70px;">S.No.</th>
@@ -863,14 +871,18 @@
 
     function getAuthorizedSurveys() {
       return surveysList.filter(survey => {
+        if (!survey) return false;
+        if (isUserAdmin()) return true;
+
         const hasSurveyConfig = currentUser && currentUser.survey && Array.isArray(currentUser.survey);
-        const wildcardAccess = hasSurveyConfig && currentUser.survey.map(s => s.trim()).includes('*');
+        const wildcardAccess = hasSurveyConfig && currentUser.survey.some(s => s && String(s).trim() === '*');
 
         if (!wildcardAccess) {
           if (hasSurveyConfig) {
-            const hasAccess = currentUser.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
+            const surveyNameLower = (survey.name || '').trim().toLowerCase();
+            const hasAccess = currentUser.survey.some(s => s && String(s).trim().toLowerCase() === surveyNameLower);
             if (!hasAccess) return false;
-          } else if (!currentUser || currentUser.admin !== "true") {
+          } else {
             return false;
           }
         }
@@ -995,11 +1007,11 @@
         });
       } else {
         // Default alphabetical by name
-        filteredSurveys.sort((a, b) => a.name.localeCompare(b.name));
+        filteredSurveys.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true }));
       }
 
       if (filteredSurveys.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="${currentUser && currentUser.admin === 'true' ? '9' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found matching the filter.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="${isUserAdmin() ? '9' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found matching the filter.</td></tr>`;
         updateFilterButtonStates();
         return;
       }
@@ -1009,8 +1021,8 @@
         row.id = `survey-row-${survey.id}`;
         
         const snoCell = `<td>${index + 1}</td>`;
-        const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name)}">${escapeHtml(survey.name)}</a></td>`;
-        const deptCell = `<td>${escapeHtml(survey.department)}</td>`;
+        const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name || '')}">${escapeHtml(survey.name || 'Survey')}</a></td>`;
+        const deptCell = `<td>${escapeHtml(survey.department || '')}</td>`;
         const lengthCell = `<td>${escapeHtml(survey.survey_length || '')}</td>`;
 
         // Video Count
@@ -1029,10 +1041,10 @@
         }
         
         const dateCell = `<td>${formatSurveyDate(survey.createdAt)}</td>`;
-        const statusCell = `<td><span class="status-badge ${survey.status}">${survey.status}</span></td>`;
+        const statusCell = `<td><span class="status-badge ${survey.status || 'active'}">${survey.status || 'Active'}</span></td>`;
 
         let actionCell = '';
-        if (currentUser.admin === "true") {
+        if (isUserAdmin()) {
           actionCell = `
             <td>
               <div class="action-btn-group">
@@ -1055,7 +1067,7 @@
           `;
         }
 
-        if (currentUser.admin === "true") {
+        if (isUserAdmin()) {
           row.innerHTML = snoCell + nameCell + deptCell + lengthCell + videoCell + userCell + dateCell + statusCell + actionCell;
         } else {
           row.innerHTML = snoCell + nameCell + deptCell + videoCell + lengthCell + dateCell + statusCell;
@@ -1460,7 +1472,7 @@
 
     async function handleSaveSurvey(event) {
       event.preventDefault();
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return false;
       }
@@ -1513,7 +1525,7 @@
     }
 
     async function handleDeleteSurvey(id) {
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return;
       }
@@ -1699,7 +1711,7 @@
     }
 
     async function processSurveyProjectUpload() {
-      if (!currentUser || currentUser.admin !== 'true') {
+      if (!isUserAdmin()) {
         alert('Permission denied. Admin privileges required.');
         return;
       }
@@ -1996,7 +2008,7 @@
     }
 
     function openEditUserModal(uid) {
-      if (currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert("Permission denied.");
         return;
       }
@@ -2059,7 +2071,7 @@
     }
 
     function openCreateUserModal() {
-      if (currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert("Permission denied.");
         return;
       }
@@ -2108,7 +2120,7 @@
 
     async function handleSaveUser(event) {
       event.preventDefault();
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return false;
       }
@@ -2231,7 +2243,7 @@
     }
 
     async function handleDeleteUser(uid) {
-      if (!currentUser || currentUser.admin !== "true") {
+      if (!isUserAdmin()) {
         alert('Permission denied.');
         return;
       }
