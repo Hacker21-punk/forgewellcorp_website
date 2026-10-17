@@ -166,60 +166,81 @@
           <div class="table-container">
             <table class="data-table">
                <thead>
-                 <tr>
-                   <th style="width: 70px;">S.No.</th>
-                   <th>
-                     <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
-                       Name
-                       <svg id="filter-icon-name" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
-                       </svg>
-                     </div>
-                   </th>
-                   <th>
-                     <div class="header-content" onclick="toggleFilterPopover(event, 'department')">
-                       Department
-                       <svg id="filter-icon-department" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
-                       </svg>
-                     </div>
-                   </th>
-                   <th>
-                     <div class="header-content" onclick="toggleFilterPopover(event, 'survey_length')">
-                       Survey Length
-                       <svg id="filter-icon-survey_length" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
-                       </svg>
-                     </div>
-                   </th>
-                   <th>
-                     <div class="header-content" onclick="toggleFilterPopover(event, 'video_count')">
-                       Video Count
-                       <svg id="filter-icon-video_count" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
-                       </svg>
-                     </div>
-                   </th>
-                   <th>
-                     <div class="header-content" onclick="toggleFilterPopover(event, 'user_count')">
-                       User Count
-                       <svg id="filter-icon-user_count" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
-                       </svg>
-                     </div>
-                   </th>
-                   <th>Created On</th>
-                   <th>
-                     <div class="header-content" onclick="toggleFilterPopover(event, 'status')">
-                       Status
-                       <svg id="filter-icon-status" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path>
-                       </svg>
-                     </div>
-                   </th>
-                   <th id="actionHeader" style="display: none;">Action</th>
-                 </tr>
-               </thead>
+                  <tr>
+                    <th style="width: 70px;">S.No.</th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Name</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-name" data-column="name" onclick="openExcelFilter(event, 'name')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Department</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-department" data-column="department" onclick="openExcelFilter(event, 'department')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Survey Length</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-survey_length" data-column="survey_length" onclick="openExcelFilter(event, 'survey_length')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Video Count</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-video_count" data-column="video_count" onclick="openExcelFilter(event, 'video_count')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">User Count</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-user_count" data-column="user_count" onclick="openExcelFilter(event, 'user_count')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Created On</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-createdAt" data-column="createdAt" onclick="openExcelFilter(event, 'createdAt')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Status</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-status" data-column="status" onclick="openExcelFilter(event, 'status')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th id="actionHeader" style="display: none;">Action</th>
+                  </tr>
+                </thead>
               <tbody id="tableBody">
                 <!-- Dynamically populated -->
               </tbody>
@@ -540,15 +561,36 @@
       renderSurveysTable();
     }
 
-    // Active Column Filters State
-    let activeFilters = {
-      name: '',
-      department: '',
-      survey_length: '',
-      video_count: '',
-      user_count: '',
-      status: ''
+    // Excel Column AutoFilter & Sort State
+    let excelFilterState = {
+      surveys: {},
+      users: {}
     };
+
+    let excelSortState = {
+      surveys: { column: null, direction: 'asc' },
+      users: { column: null, direction: 'asc' }
+    };
+
+    let currentExcelFilterPopoverColumn = null;
+    let currentExcelFilterItems = [];
+
+    const COLUMN_LABELS = {
+      name: 'Name',
+      department: 'Department',
+      survey_length: 'Survey Length',
+      video_count: 'Video Count',
+      user_count: 'User Count',
+      createdAt: 'Created On',
+      status: 'Status',
+      email: 'Email',
+      organization: 'Organization',
+      state: 'State',
+      admin: 'Is Admin'
+    };
+
+    // Backward compatibility fallback
+    let activeFilters = {};
 
     function getInitials(name) {
       if (!name) return '';
@@ -741,6 +783,44 @@
       });
     }
 
+    function isExcelColumnFiltered(colKey) {
+      const viewState = excelFilterState[currentView];
+      return Boolean(viewState && viewState[colKey] instanceof Set);
+    }
+
+    function makeExcelHeaderTh(colKey, label, options = {}) {
+      const isFiltered = isExcelColumnFiltered(colKey);
+      const widthAttr = options.width ? ` style="${options.width}"` : '';
+      const filterBtnClass = `excel-filter-btn${isFiltered ? ' is-filtered' : ''}`;
+      const titleAttr = isFiltered ? 'Filter applied (click to edit)' : 'Click to filter or sort';
+
+      return `
+        <th${widthAttr}>
+          <div class="excel-header-cell">
+            <span class="excel-header-title">${escapeHtml(label)}</span>
+            <button type="button" class="${filterBtnClass}" id="excel-btn-${colKey}" data-column="${colKey}" onclick="openExcelFilter(event, '${colKey}')" title="${titleAttr}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
+          </div>
+        </th>
+      `;
+    }
+
+    function updateFilterButtonStates() {
+      document.querySelectorAll('.excel-filter-btn').forEach(btn => {
+        const colKey = btn.dataset.column;
+        if (colKey && isExcelColumnFiltered(colKey)) {
+          btn.classList.add('is-filtered');
+          btn.title = 'Filter applied (click to edit)';
+        } else if (colKey) {
+          btn.classList.remove('is-filtered');
+          btn.title = 'Click to filter or sort';
+        }
+      });
+    }
+
     function renderTableHeader() {
       const thead = document.querySelector('.data-table thead');
       if (!thead) return;
@@ -750,48 +830,13 @@
         headersHtml = `
           <tr>
             <th style="width: 70px;">S.No.</th>
-            <th>
-              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
-                Name
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
-                Email
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
-                Organization
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
-                Department
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" style="display: flex; align-items: center; gap: 0.25rem;">
-                State
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
-            </th>
-            <th>Status</th>
-            <th>Is Admin</th>
+            ${makeExcelHeaderTh('name', 'Name')}
+            ${makeExcelHeaderTh('email', 'Email')}
+            ${makeExcelHeaderTh('organization', 'Organization')}
+            ${makeExcelHeaderTh('department', 'Department')}
+            ${makeExcelHeaderTh('state', 'State')}
+            ${makeExcelHeaderTh('status', 'Status')}
+            ${makeExcelHeaderTh('admin', 'Is Admin')}
             <th>Action</th>
           </tr>
         `;
@@ -799,47 +844,17 @@
         return;
       }
 
-      if (currentUser.admin === "true") {
+      if (currentUser && currentUser.admin === "true") {
         headersHtml = `
           <tr>
             <th style="width: 70px;">S.No.</th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
-                Name
-                <svg id="filter-icon-name" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'department')">
-                Department
-                <svg id="filter-icon-department" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'survey_length')">
-                Survey Length
-                <svg id="filter-icon-survey_length" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'video_count')">
-                Video Count
-                <svg id="filter-icon-video_count" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'user_count')">
-                User Count
-                <svg id="filter-icon-user_count" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>Created On</th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'status')">
-                Status
-                <svg id="filter-icon-status" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
+            ${makeExcelHeaderTh('name', 'Name')}
+            ${makeExcelHeaderTh('department', 'Department')}
+            ${makeExcelHeaderTh('survey_length', 'Survey Length')}
+            ${makeExcelHeaderTh('video_count', 'Video Count')}
+            ${makeExcelHeaderTh('user_count', 'User Count')}
+            ${makeExcelHeaderTh('createdAt', 'Created On')}
+            ${makeExcelHeaderTh('status', 'Status')}
             <th>Action</th>
           </tr>
         `;
@@ -848,41 +863,98 @@
         headersHtml = `
           <tr>
             <th style="width: 70px;">S.No.</th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'name')">
-                Name
-                <svg id="filter-icon-name" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'department')">
-                Department
-                <svg id="filter-icon-department" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'video_count')">
-                Video Count
-                <svg id="filter-icon-video_count" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'survey_length')">
-                Survey Length
-                <svg id="filter-icon-survey_length" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
-            <th>Created On</th>
-            <th>
-              <div class="header-content" onclick="toggleFilterPopover(event, 'status')">
-                Status
-                <svg id="filter-icon-status" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"></path></svg>
-              </div>
-            </th>
+            ${makeExcelHeaderTh('name', 'Name')}
+            ${makeExcelHeaderTh('department', 'Department')}
+            ${makeExcelHeaderTh('video_count', 'Video Count')}
+            ${makeExcelHeaderTh('survey_length', 'Survey Length')}
+            ${makeExcelHeaderTh('createdAt', 'Created On')}
+            ${makeExcelHeaderTh('status', 'Status')}
           </tr>
         `;
       }
       thead.innerHTML = headersHtml;
+    }
+
+    function formatSurveyDate(createdOn) {
+      if (!createdOn || createdOn === 'N/A') return 'N/A';
+      let date = null;
+      if (typeof createdOn === 'number') {
+        date = new Date(createdOn);
+      } else if (typeof createdOn === 'object' && createdOn.seconds) {
+        date = new Date(createdOn.seconds * 1000);
+      } else if (typeof createdOn === 'string') {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(createdOn)) {
+          date = new Date(createdOn + 'T00:00:00');
+        } else {
+          date = new Date(createdOn);
+        }
+      }
+      if (date && !isNaN(date.getTime())) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}/${date.getFullYear()}`;
+      }
+      return String(createdOn);
+    }
+
+    function getNormalizedColumnValue(item, colKey, view) {
+      if (!item) return '(Blanks)';
+
+      if (view === 'users') {
+        switch (colKey) {
+          case 'name': return (item.name || '').trim() || '(Blanks)';
+          case 'email': return (item.email || '').trim() || '(Blanks)';
+          case 'organization': return (item.organization || '').trim() || '(Blanks)';
+          case 'department': return (item.department || '').trim() || '(Blanks)';
+          case 'state': return (item.state || '').trim() || '(Blanks)';
+          case 'status': return item.status !== 'Disable' ? 'Active' : 'Disabled';
+          case 'admin': return (item.admin === 'true' || item.admin === true) ? 'Yes' : 'No';
+          default: return (item[colKey] ? String(item[colKey]).trim() : '') || '(Blanks)';
+        }
+      }
+
+      // surveys view
+      switch (colKey) {
+        case 'name':
+          return (item.name || '').trim() || '(Blanks)';
+        case 'department':
+          return (item.department || '').trim() || '(Blanks)';
+        case 'survey_length':
+          return (item.survey_length || '').trim() || '(Blanks)';
+        case 'video_count': {
+          const matchingVideos = allVideos.filter(v => v.survey === item.id);
+          const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (item.video_count !== undefined ? item.video_count : (item.total_surveys || 0));
+          return String(videoCount);
+        }
+        case 'user_count': {
+          const dynamicUsers = surveyUserMap[item.id] || [];
+          return String(dynamicUsers.length);
+        }
+        case 'createdAt': {
+          return formatSurveyDate(item.createdAt);
+        }
+        case 'status':
+          return (item.status || 'Active').trim() || '(Blanks)';
+        default:
+          return (item[colKey] ? String(item[colKey]).trim() : '') || '(Blanks)';
+      }
+    }
+
+    function getAuthorizedSurveys() {
+      return surveysList.filter(survey => {
+        const hasSurveyConfig = currentUser && currentUser.survey && Array.isArray(currentUser.survey);
+        const wildcardAccess = hasSurveyConfig && currentUser.survey.map(s => s.trim()).includes('*');
+
+        if (!wildcardAccess) {
+          if (hasSurveyConfig) {
+            const hasAccess = currentUser.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
+            if (!hasAccess) return false;
+          } else if (!currentUser || currentUser.admin !== "true") {
+            return false;
+          }
+        }
+        return true;
+      });
     }
 
     function renderSurveysTable() {
@@ -896,18 +968,43 @@
       tableBody.innerHTML = '';
 
       if (currentView === 'users') {
-        const sortedUsers = [...allUsers].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-        
-        sortedUsers.forEach((user, idx) => {
+        const activeFilters = excelFilterState.users || {};
+        const filteredUsers = allUsers.filter(user => {
+          for (const [col, allowedSet] of Object.entries(activeFilters)) {
+            if (allowedSet instanceof Set) {
+              const val = getNormalizedColumnValue(user, col, 'users');
+              if (!allowedSet.has(val)) return false;
+            }
+          }
+          return true;
+        });
+
+        const sortConfig = excelSortState.users;
+        if (sortConfig && sortConfig.column) {
+          filteredUsers.sort((a, b) => {
+            const valA = getNormalizedColumnValue(a, sortConfig.column, 'users');
+            const valB = getNormalizedColumnValue(b, sortConfig.column, 'users');
+            const cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+            return sortConfig.direction === 'desc' ? -cmp : cmp;
+          });
+        } else {
+          filteredUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        }
+
+        if (filteredUsers.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #9ca3af; padding: 2rem;">No users match the current filter.</td></tr>`;
+          updateFilterButtonStates();
+          return;
+        }
+
+        filteredUsers.forEach((user, idx) => {
           const row = document.createElement('tr');
-          
-          // Determine status badge (status field is usually empty or Active, check userDisable)
           const isActive = user.status !== 'Disable';
           const statusBadge = isActive 
             ? `<span class="status-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Active</span>`
             : `<span class="status-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Disabled</span>`;
             
-          const isAdminBadge = user.admin === 'true'
+          const isAdminBadge = (user.admin === 'true' || user.admin === true)
             ? `<span class="admin-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Yes</span>`
             : `<span class="admin-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">No</span>`;
 
@@ -941,78 +1038,52 @@
           `;
           tableBody.appendChild(row);
         });
+        updateFilterButtonStates();
         return;
       }
 
-      // Filter surveys based on user access and active filters
-      const allowedSurveys = surveysList.filter(survey => {
-        // 1. User Access check
-        const hasSurveyConfig = currentUser && currentUser.survey && Array.isArray(currentUser.survey);
-        const wildcardAccess = hasSurveyConfig && currentUser.survey.map(s => s.trim()).includes('*');
+      // Filter surveys based on user access and excel column filters
+      const allowedSurveys = getAuthorizedSurveys();
+      const activeFilters = excelFilterState.surveys || {};
 
-        if (!wildcardAccess) {
-          if (hasSurveyConfig) {
-            const hasAccess = currentUser.survey.map(s => s.trim().toLowerCase()).includes(survey.name.trim().toLowerCase());
-            if (!hasAccess) return false;
-          } else if (!currentUser || currentUser.admin !== "true") {
-            return false;
+      const filteredSurveys = allowedSurveys.filter(survey => {
+        for (const [col, allowedSet] of Object.entries(activeFilters)) {
+          if (allowedSet instanceof Set) {
+            const val = getNormalizedColumnValue(survey, col, 'surveys');
+            if (!allowedSet.has(val)) return false;
           }
         }
-
-        // 2. Column Search filters
-        if (activeFilters.name && !survey.name.toLowerCase().includes(activeFilters.name.toLowerCase())) {
-          return false;
-        }
-        if (activeFilters.department && !survey.department.toLowerCase().includes(activeFilters.department.toLowerCase())) {
-          return false;
-        }
-        if (activeFilters.survey_length && !(survey.survey_length || '').toLowerCase().includes(activeFilters.survey_length.toLowerCase())) {
-          return false;
-        }
-
-        // Video Count calculation
-        const matchingVideos = allVideos.filter(v => v.survey === survey.id);
-        const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (survey.video_count !== undefined ? survey.video_count : (survey.total_surveys || 0));
-        if (activeFilters.video_count && !String(videoCount).includes(activeFilters.video_count)) {
-          return false;
-        }
-
-        // User Count calculation (dynamic from users.json)
-        const dynamicUsers = surveyUserMap[survey.id] || [];
-        const userCountNum = dynamicUsers.length;
-        if (activeFilters.user_count && !String(userCountNum).includes(activeFilters.user_count)) {
-          return false;
-        }
-
-        // Status calculation
-        if (activeFilters.status && !survey.status.toLowerCase().includes(activeFilters.status.toLowerCase())) {
-          return false;
-        }
-
         return true;
       });
 
-      // Sort alphabetically by name to match the original site
-      allowedSurveys.sort((a, b) => a.name.localeCompare(b.name));
-
-      // Style active filter icons
-      Object.keys(activeFilters).forEach(col => {
-        const icon = document.getElementById(`filter-icon-${col}`);
-        if (icon) {
-          if (activeFilters[col]) {
-            icon.classList.add('active-filter-icon');
+      // Sort surveys
+      const sortConfig = excelSortState.surveys;
+      if (sortConfig && sortConfig.column) {
+        filteredSurveys.sort((a, b) => {
+          const valA = getNormalizedColumnValue(a, sortConfig.column, 'surveys');
+          const valB = getNormalizedColumnValue(b, sortConfig.column, 'surveys');
+          const numA = Number(valA);
+          const numB = Number(valB);
+          let cmp = 0;
+          if (!isNaN(numA) && !isNaN(numB) && valA !== '(Blanks)' && valB !== '(Blanks)') {
+            cmp = numA - numB;
           } else {
-            icon.classList.remove('active-filter-icon');
+            cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
           }
-        }
-      });
+          return sortConfig.direction === 'desc' ? -cmp : cmp;
+        });
+      } else {
+        // Default alphabetical by name
+        filteredSurveys.sort((a, b) => a.name.localeCompare(b.name));
+      }
 
-      if (allowedSurveys.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="${currentUser && currentUser.admin === 'true' ? '9' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found for your account.</td></tr>`;
+      if (filteredSurveys.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="${currentUser && currentUser.admin === 'true' ? '9' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found matching the filter.</td></tr>`;
+        updateFilterButtonStates();
         return;
       }
 
-      allowedSurveys.forEach((survey, index) => {
+      filteredSurveys.forEach((survey, index) => {
         const row = document.createElement('tr');
         row.id = `survey-row-${survey.id}`;
         
@@ -1036,32 +1107,7 @@
           userCell = `<td>0 Users</td>`;
         }
         
-        // Format Created On date to DD/MM/YYYY
-        let createdOn = survey.createdAt || 'N/A';
-        if (typeof createdOn === 'number') {
-          const date = new Date(createdOn);
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          createdOn = `${day}/${month}/${date.getFullYear()}`;
-        } else if (typeof createdOn === 'object' && createdOn.seconds) {
-          const date = new Date(createdOn.seconds * 1000);
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          createdOn = `${day}/${month}/${date.getFullYear()}`;
-        } else if (typeof createdOn === 'string' && createdOn !== 'N/A') {
-          let date;
-          if (/^\d{4}-\d{2}-\d{2}$/.test(createdOn)) {
-            date = new Date(createdOn + 'T00:00:00');
-          } else {
-            date = new Date(createdOn);
-          }
-          if (!isNaN(date.getTime())) {
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            createdOn = `${day}/${month}/${date.getFullYear()}`;
-          }
-        }
-        const dateCell = `<td>${createdOn}</td>`;
+        const dateCell = `<td>${formatSurveyDate(survey.createdAt)}</td>`;
         const statusCell = `<td><span class="status-badge ${survey.status}">${survey.status}</span></td>`;
 
         let actionCell = '';
@@ -1095,90 +1141,278 @@
         }
         tableBody.appendChild(row);
       });
+
+      updateFilterButtonStates();
     }
 
     const renderUsersTable = renderSurveysTable;
 
-    // Toggle Filter Popover
-    function toggleFilterPopover(event, column) {
+    // Excel Filter Popover Management
+    function openExcelFilter(event, colKey) {
       event.stopPropagation();
-      let popover = document.getElementById('filterPopover');
+      closeUsersPopover();
+
+      let popover = document.getElementById('excelFilterPopover');
       if (!popover) {
         popover = document.createElement('div');
-        popover.id = 'filterPopover';
-        popover.className = 'filter-popover';
+        popover.id = 'excelFilterPopover';
+        popover.className = 'excel-filter-popover';
         document.body.appendChild(popover);
       }
 
-      // Close other popovers
-      closeUsersPopover();
-
-      // If clicking same column filter, close it
-      if (popover.style.display === 'flex' && popover.dataset.column === column) {
-        popover.style.display = 'none';
+      // If clicking same column filter when already open, toggle close
+      if (popover.style.display === 'flex' && currentExcelFilterPopoverColumn === colKey) {
+        closeExcelFilterPopover();
         return;
       }
 
-      popover.dataset.column = column;
+      currentExcelFilterPopoverColumn = colKey;
+      const colLabel = COLUMN_LABELS[colKey] || colKey;
+      const isNumeric = (colKey === 'video_count' || colKey === 'user_count');
+      const isFiltered = isExcelColumnFiltered(colKey);
+
+      // Collect distinct values from rows matching other active filters
+      const baseRows = (currentView === 'users' ? allUsers : getAuthorizedSurveys()).filter(row => {
+        const filters = excelFilterState[currentView] || {};
+        for (const [c, set] of Object.entries(filters)) {
+          if (c !== colKey && set instanceof Set) {
+            const val = getNormalizedColumnValue(row, c, currentView);
+            if (!set.has(val)) return false;
+          }
+        }
+        return true;
+      });
+
+      const counts = {};
+      baseRows.forEach(row => {
+        const val = getNormalizedColumnValue(row, colKey, currentView);
+        counts[val] = (counts[val] || 0) + 1;
+      });
+
+      const distinctValues = Object.keys(counts).sort((a, b) => {
+        if (a === '(Blanks)') return 1;
+        if (b === '(Blanks)') return -1;
+        if (isNumeric) {
+          const numA = Number(a);
+          const numB = Number(b);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        }
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      });
+
+      const currentActiveSet = (excelFilterState[currentView] || {})[colKey];
+      currentExcelFilterItems = distinctValues.map(val => ({
+        value: val,
+        display: val,
+        count: counts[val],
+        checked: currentActiveSet instanceof Set ? currentActiveSet.has(val) : true,
+        visible: true
+      }));
+
       popover.innerHTML = `
-        <input type="text" id="filterInput" placeholder="Filter ${column.replace('_', ' ')}..." value="${escapeHtml(activeFilters[column])}" />
-        <div class="filter-popover-footer">
-          <button class="btn-filter-clear" onclick="clearColumnFilter('${column}')">Clear</button>
-          <button class="btn-filter-apply" onclick="applyColumnFilter('${column}')">Apply</button>
+        <button type="button" class="excel-filter-menu-item" onclick="applyExcelSort('${colKey}', 'asc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h7M3 12h5M3 18h3M17 4v16m0 0l-3-3m3 3l3-3"></path>
+          </svg>
+          <span>${isNumeric ? 'Sort Smallest to Largest' : 'Sort A to Z'}</span>
+        </button>
+        <button type="button" class="excel-filter-menu-item" onclick="applyExcelSort('${colKey}', 'desc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h3M3 12h5M3 18h7M17 20V4m0 0l-3 3m3-3l3 3"></path>
+          </svg>
+          <span>${isNumeric ? 'Sort Largest to Smallest' : 'Sort Z to A'}</span>
+        </button>
+        <button type="button" class="excel-filter-menu-item" onclick="clearCurrentColumnFilter('${colKey}')" ${isFiltered ? '' : 'disabled'}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            <line x1="2" y1="2" x2="22" y2="22"></line>
+          </svg>
+          <span>Clear Filter From "${escapeHtml(colLabel)}"</span>
+        </button>
+        <div class="excel-filter-divider"></div>
+        <div class="excel-filter-search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="excelFilterSearchInput" placeholder="Search..." oninput="handleExcelSearchInput(event)" autocomplete="off" />
+        </div>
+        <div class="excel-filter-checklist-box">
+          <label class="excel-filter-select-all" for="excelSelectAllCheckbox">
+            <input type="checkbox" id="excelSelectAllCheckbox" onchange="toggleExcelSelectAll(event)" />
+            <span id="excelSelectAllLabel">(Select All)</span>
+          </label>
+          <div class="excel-filter-checklist-scroll" id="excelFilterChecklistScroll"></div>
+        </div>
+        <div class="excel-filter-footer-actions">
+          <button type="button" class="btn-excel-filter-ok" onclick="commitExcelFilter('${colKey}')">OK</button>
+          <button type="button" class="btn-excel-filter-cancel" onclick="closeExcelFilterPopover()">Cancel</button>
         </div>
       `;
 
-      // Position Popover below header
+      // Position popover
       popover.style.display = 'flex';
       popover.style.flexDirection = 'column';
-      
+
       const rect = event.currentTarget.getBoundingClientRect();
       const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      let left = rect.left + scrollLeft;
-      const popoverWidth = 200; // matching .filter-popover width in CSS
-      if (left + popoverWidth > window.innerWidth) {
-        left = window.innerWidth - popoverWidth - 16;
+      const popoverWidth = 260;
+      let left = rect.left + scrollLeft - 180;
+      if (left + popoverWidth > window.innerWidth - 12) {
+        left = window.innerWidth - popoverWidth - 12;
       }
-      if (left < 16) left = 16;
+      if (left < 12) left = 12;
 
       popover.style.left = `${left}px`;
-      popover.style.top = `${rect.bottom + scrollTop + 4}px`;
+      popover.style.top = `${rect.bottom + scrollTop + 6}px`;
 
-      // Focus input
-      const input = document.getElementById('filterInput');
-      input.focus();
+      renderExcelChecklistItemsDOM();
+      syncExcelSelectAllCheckbox();
 
-      // Trigger apply on Enter key
-      input.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') {
-          applyColumnFilter(column);
+      popover.onpointerdown = (e) => e.stopPropagation();
+    }
+
+    function handleExcelSearchInput(event) {
+      const query = event.target.value.trim().toLowerCase();
+      currentExcelFilterItems.forEach(item => {
+        item.visible = (query === '' || item.display.toLowerCase().includes(query));
+      });
+      
+      const selectAllLabel = document.getElementById('excelSelectAllLabel');
+      if (selectAllLabel) {
+        selectAllLabel.textContent = query === '' ? '(Select All)' : '(Select All Search Results)';
+      }
+
+      renderExcelChecklistItemsDOM();
+      syncExcelSelectAllCheckbox();
+    }
+
+    function toggleExcelSelectAll(event) {
+      const isChecked = event.target.checked;
+      currentExcelFilterItems.forEach(item => {
+        if (item.visible) {
+          item.checked = isChecked;
         }
       });
-
-      // Prevent closing popover when clicking inside it
-      popover.onmousedown = (e) => e.stopPropagation();
+      renderExcelChecklistItemsDOM();
+      syncExcelSelectAllCheckbox();
     }
 
-    function applyColumnFilter(column) {
-      const val = document.getElementById('filterInput').value.trim();
-      activeFilters[column] = val;
+    function handleExcelItemCheck(idx, checked) {
+      if (currentExcelFilterItems[idx]) {
+        currentExcelFilterItems[idx].checked = checked;
+        syncExcelSelectAllCheckbox();
+      }
+    }
+
+    function syncExcelSelectAllCheckbox() {
+      const selectAllCb = document.getElementById('excelSelectAllCheckbox');
+      if (!selectAllCb) return;
+
+      const visibleItems = currentExcelFilterItems.filter(i => i.visible);
+      if (visibleItems.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        selectAllCb.disabled = true;
+        return;
+      }
+
+      selectAllCb.disabled = false;
+      const checkedVisible = visibleItems.filter(i => i.checked).length;
+      if (checkedVisible === visibleItems.length) {
+        selectAllCb.checked = true;
+        selectAllCb.indeterminate = false;
+      } else if (checkedVisible === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+      } else {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = true;
+      }
+    }
+
+    function renderExcelChecklistItemsDOM() {
+      const container = document.getElementById('excelFilterChecklistScroll');
+      if (!container) return;
+
+      const visibleItems = currentExcelFilterItems
+        .map((item, idx) => ({ ...item, originalIndex: idx }))
+        .filter(item => item.visible);
+
+      if (visibleItems.length === 0) {
+        container.innerHTML = `<div style="padding: 0.6rem 0.2rem; font-size: 0.8rem; color: var(--text-tertiary); text-align: center;">No matches found</div>`;
+        return;
+      }
+
+      let html = '';
+      visibleItems.forEach(item => {
+        const isCheckedAttr = item.checked ? 'checked' : '';
+        const safeDisplay = escapeHtml(item.display);
+        html += `
+          <label class="excel-filter-item-label">
+            <div class="excel-filter-item-left">
+              <input type="checkbox" ${isCheckedAttr} onchange="handleExcelItemCheck(${item.originalIndex}, this.checked)" />
+              <span class="excel-filter-item-text" title="${safeDisplay}">${safeDisplay}</span>
+            </div>
+            <span class="excel-filter-item-count">(${item.count})</span>
+          </label>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function commitExcelFilter(colKey) {
+      if (!excelFilterState[currentView]) {
+        excelFilterState[currentView] = {};
+      }
+
+      const allChecked = currentExcelFilterItems.every(i => i.checked);
+      if (allChecked) {
+        delete excelFilterState[currentView][colKey];
+      } else {
+        const checkedValues = new Set(
+          currentExcelFilterItems.filter(i => i.checked).map(i => i.value)
+        );
+        excelFilterState[currentView][colKey] = checkedValues;
+      }
+
+      closeExcelFilterPopover();
       renderSurveysTable();
-      closeFilterPopover();
     }
 
-    function clearColumnFilter(column) {
-      activeFilters[column] = '';
+    function clearCurrentColumnFilter(colKey) {
+      if (excelFilterState[currentView]) {
+        delete excelFilterState[currentView][colKey];
+      }
+      closeExcelFilterPopover();
       renderSurveysTable();
-      closeFilterPopover();
     }
 
-    function closeFilterPopover() {
-      const popover = document.getElementById('filterPopover');
+    function applyExcelSort(colKey, direction) {
+      if (!excelSortState[currentView]) {
+        excelSortState[currentView] = {};
+      }
+      excelSortState[currentView] = { column: colKey, direction: direction };
+      closeExcelFilterPopover();
+      renderSurveysTable();
+    }
+
+    function closeExcelFilterPopover() {
+      const popover = document.getElementById('excelFilterPopover');
       if (popover) {
         popover.style.display = 'none';
       }
+      currentExcelFilterPopoverColumn = null;
+    }
+
+    // Retain legacy function names as fallbacks
+    function toggleFilterPopover(event, column) {
+      openExcelFilter(event, column);
+    }
+    function closeFilterPopover() {
+      closeExcelFilterPopover();
     }
 
     // Show Users Popover
@@ -1244,10 +1478,11 @@
     // Global listener to close popovers on pointerdown outside
     document.addEventListener('pointerdown', (e) => {
       const userPopover = document.getElementById('usersPopover');
-      const filterPopover = document.getElementById('filterPopover');
+      const excelPopover = document.getElementById('excelFilterPopover');
       if (userPopover && userPopover.contains(e.target)) return;
-      if (filterPopover && filterPopover.contains(e.target)) return;
-      closeFilterPopover();
+      if (excelPopover && excelPopover.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('.excel-filter-btn')) return;
+      closeExcelFilterPopover();
       closeUsersPopover();
     });
 

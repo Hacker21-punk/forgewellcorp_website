@@ -1839,84 +1839,281 @@ a {
   border-bottom: none;
 }
 
-/* ===== Column Filter Popover ===== */
-.filter-popover {
+/* ===== Excel-Style Column Header & Filter Button ===== */
+.data-table th {
+  user-select: none;
+  position: relative;
+}
+
+.excel-header-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.excel-header-title {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.excel-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  flex-shrink: 0;
+}
+
+.excel-filter-btn:hover {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: var(--blue-600);
+}
+
+.excel-filter-btn.is-filtered {
+  background: var(--blue-600) !important;
+  border-color: var(--blue-700) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.4);
+}
+
+.excel-filter-btn.is-filtered:hover {
+  background: var(--blue-700) !important;
+}
+
+.excel-filter-btn svg {
+  width: 12px;
+  height: 12px;
+  margin: 0 !important;
+  stroke-width: 2.2;
+}
+
+.excel-filter-btn.is-filtered svg {
+  color: #ffffff !important;
+}
+
+/* ===== Excel Filter Popover ===== */
+.excel-filter-popover {
   position: absolute;
-  background: var(--popover-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--popover-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xl);
-  padding: 0.85rem;
-  z-index: 9998;
-  width: 210px;
-  max-width: calc(100vw - 2rem);
+  z-index: 10000;
+  width: 260px;
+  max-width: calc(100vw - 24px);
+  background: var(--surface-card-solid, #ffffff);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.18), 0 4px 10px -2px rgba(0, 0, 0, 0.08);
+  padding: 0.65rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  font-family: 'Inter', sans-serif;
+  gap: 0.4rem;
+  font-family: 'DM Sans', 'Inter', -apple-system, sans-serif;
   color: var(--text-primary);
-  transition: background var(--transition-normal), border-color var(--transition-normal);
+  animation: excelPopoverFade 0.12s ease-out;
 }
 
-.filter-popover input {
-  padding: 0.55rem;
-  font-size: 0.8125rem;
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-sm);
-  outline: none;
-  width: 100%;
-  background: var(--input-bg);
-  color: var(--input-text);
+@keyframes excelPopoverFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.filter-popover input:focus {
-  border-color: var(--blue-500);
-  box-shadow: 0 0 0 2px var(--blue-glow);
-}
-
-.filter-popover-footer {
+.excel-filter-menu-item {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.excel-filter-menu-item:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--blue-600);
+}
+
+.excel-filter-menu-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.excel-filter-menu-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.excel-filter-menu-item:hover:not(:disabled) svg {
+  color: var(--blue-600);
+}
+
+.excel-filter-divider {
+  height: 1px;
+  background: var(--surface-border);
+  margin: 0.2rem 0;
+}
+
+.excel-filter-search-box {
+  position: relative;
+  display: flex;
   align-items: center;
 }
 
-.btn-filter-clear {
+.excel-filter-search-box svg {
+  position: absolute;
+  left: 0.6rem;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.excel-filter-search-box input {
+  width: 100%;
+  padding: 0.42rem 0.6rem 0.42rem 2rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 4px;
+  background: var(--surface-50, #f8fafc);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.excel-filter-search-box input:focus {
+  border-color: var(--blue-500);
+  background: var(--surface-card-solid, #ffffff);
+  box-shadow: 0 0 0 2px var(--blue-glow);
+}
+
+.excel-filter-checklist-box {
+  background: var(--surface-50, #f8fafc);
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.excel-filter-select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.35rem 0.3rem;
+  border-bottom: 1px dashed var(--surface-border);
+  margin-bottom: 0.3rem;
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-primary);
+}
+
+.excel-filter-checklist-scroll {
+  max-height: 155px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.excel-filter-item-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  padding: 0.28rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s ease;
+}
+
+.excel-filter-item-label:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.excel-filter-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.excel-filter-item-text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.excel-filter-item-count {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.excel-filter-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.btn-excel-filter-cancel {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   background: none;
-  border: none;
-  color: var(--red-500);
-  font-size: 0.75rem;
-  font-weight: 600;
+  border: 1px solid var(--surface-border);
+  border-radius: 4px;
+  color: var(--text-secondary);
   cursor: pointer;
-  padding: 0.25rem;
-  transition: opacity var(--transition-fast);
+  transition: all 0.15s ease;
 }
 
-.btn-filter-clear:hover {
-  opacity: 0.85;
-  text-decoration: underline;
+.btn-excel-filter-cancel:hover {
+  background: var(--surface-100);
 }
 
-.btn-filter-apply {
-  background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-500) 100%);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.35rem 0.7rem;
-  font-size: 0.75rem;
+.btn-excel-filter-ok {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.78rem;
   font-weight: 600;
+  background: var(--blue-600);
+  border: 1px solid var(--blue-700);
+  border-radius: 4px;
+  color: #ffffff;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all 0.15s ease;
 }
 
-.btn-filter-apply:hover {
-  box-shadow: var(--shadow-glow-blue);
-}
-
-.active-filter-icon {
-  color: var(--blue-500) !important;
-  fill: var(--blue-500) !important;
+.btn-excel-filter-ok:hover {
+  background: var(--blue-700);
 }
 
 /* ===== Shared Common Selectors Card ===== */
