@@ -16,11 +16,9 @@
   <script>
     (function() {
       try {
-        var t = localStorage.getItem('tp_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', t);
-      } catch (e) {
+        localStorage.setItem('tp_theme', 'light');
         document.documentElement.setAttribute('data-theme', 'light');
-      }
+      } catch (e) {}
     })();
   </script>
   <script src="assets/theme.js"></script>
@@ -45,28 +43,8 @@
             </span>
           </a>
 
-          <!-- Header Right Actions: Theme Toggle & Profile Menu -->
+          <!-- Header Right Actions: Profile Menu -->
           <div class="header-right-actions">
-            <!-- Theme Toggle Button -->
-            <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
-              <!-- Sun Icon (shown in dark mode) -->
-              <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-              <!-- Moon Icon (shown in light mode) -->
-              <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            </button>
-
             <!-- Profile Menu Container -->
             <div class="profile-menu-container">
               <div class="profile-btn-wrapper" id="profileMenuBtn">
@@ -434,9 +412,10 @@
     document.getElementById('breadcrumbVideoName').innerText = breadcrumbVideoText;
 
     // Session verification
-    const userSession = sessionStorage.getItem('loggedInUser');
+    const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
     if (!userSession) {
       window.location.href = 'login.html';
+      return;
     } else {
       currentUser = JSON.parse(userSession);
       function getInitials(name) {
@@ -653,7 +632,6 @@
               <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                 <button class="btn-csv-export" id="btnCsvExport_${id}" onclick="exportLandmarksCsv('${id}')" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Export CSV</button>
                 <button class="btn-delete-all" id="btnDeleteAll_${id}" onclick="deleteAllLandmarks('${id}')" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete ALL</button>
-                <button class="btn-action-normal" id="btnRecycleBin_${id}" onclick="openRecycleBinModal()" style="display: none; padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm);">Recycle Bin</button>
               </div>
             </div>
           </div>
@@ -666,7 +644,6 @@
           document.getElementById(`adminBreakpointForm_${id}`).style.display = "block";
           document.getElementById(`btnDeleteAll_${id}`).style.display = "block";
           document.getElementById(`btnCsvExport_${id}`).style.display = "block";
-          if (document.getElementById(`btnRecycleBin_${id}`)) document.getElementById(`btnRecycleBin_${id}`).style.display = "block";
         } else {
           document.getElementById(`landmarksTitle_${id}`).innerText = "Landmarks";
         }
@@ -1895,6 +1872,7 @@
     document.getElementById('logoutBtn').addEventListener('click', () => {
       if (confirm('Do you want to log out?')) {
         sessionStorage.clear();
+        localStorage.removeItem('loggedInUser');
         window.location.href = 'login.html';
       }
     });
@@ -1904,71 +1882,7 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    // ===== Recycle Bin Functionality =====
-    function openRecycleBinModal() {
-      const modal = document.getElementById('recycleBinModal');
-      if (modal) {
-        modal.classList.add('show');
-        renderRecycleBin();
-      }
-    }
 
-    function closeRecycleBinModal() {
-      const modal = document.getElementById('recycleBinModal');
-      if (modal) {
-        modal.classList.remove('show');
-      }
-    }
-
-    async function renderRecycleBin() {
-      if (window.TrueProgressBin) {
-        window.TrueProgressBin.renderModal({
-          modalId: 'recycleBinModal',
-          onUpdate: function () {
-            activeVideoIds.forEach(vidId => {
-              const key = `landmarks_${vidId}`;
-              const overrides = localStorage.getItem(key);
-              if (overrides) {
-                videoLandmarks[vidId] = JSON.parse(overrides);
-                updateLandmarksUI(vidId);
-              }
-            });
-          }
-        });
-      }
-    }
-
-    function handleRestoreAllBin() {
-      if (!window.TrueProgressBin) return;
-      const filter = window.TrueProgressBin.activeFilter;
-      const count = window.TrueProgressBin.getBinItems().length;
-      if (count === 0) return;
-      if (confirm('Are you sure you want to restore all items in the Recycle Bin?')) {
-        window.TrueProgressBin.restoreAll(filter);
-        activeVideoIds.forEach(vidId => {
-          const key = `landmarks_${vidId}`;
-          const overrides = localStorage.getItem(key);
-          if (overrides) {
-            videoLandmarks[vidId] = JSON.parse(overrides);
-            updateLandmarksUI(vidId);
-          }
-        });
-        renderRecycleBin();
-      }
-    }
-
-    function handleEmptyRecycleBin() {
-      if (!window.TrueProgressBin) return;
-      if (confirm('Are you sure you want to permanently delete all items in the Recycle Bin? This action cannot be undone.')) {
-        window.TrueProgressBin.emptyBin();
-        loadVideoData();
-        renderRecycleBin();
-      }
-    }
-
-    window.addEventListener('tp_item_restored', (e) => {
-      loadVideoData();
-    });
 
     // Register Service Worker for offline capability & asset caching
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
@@ -1977,56 +1891,5 @@
       });
     }
   </script>
-
-  <!-- MODAL: Recycle Bin -->
-  <div class="modal-overlay" id="recycleBinModal">
-    <div class="modal-container" style="max-width: 840px; width: 92%;">
-      <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          <h3 class="modal-title">Recycle Bin</h3>
-        </div>
-        <button class="modal-close-btn" onclick="closeRecycleBinModal()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
-        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
-          Deleted items across TrueProgress (surveys, users, videos, landmarks) are preserved here. You can restore them anytime or delete them permanently.
-        </p>
-        <div class="bin-filter-bar">
-          <!-- Dynamically populated filter buttons -->
-        </div>
-        <div class="table-container" style="overflow-x: auto;">
-          <table class="users-table" style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr>
-                <th style="text-align: left; width: 110px;">Type</th>
-                <th style="text-align: left;">Item &amp; Details</th>
-                <th style="text-align: left; width: 160px;">Deleted Date</th>
-                <th style="text-align: right; width: 190px;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="recycleBinTableBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-        <div id="recycleBinEmptyMsg" style="text-align: center; padding: 2rem; color: var(--text-tertiary); display: none;">
-          Recycle Bin is empty
-        </div>
-      </div>
-      <div class="modal-footer" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-          <button type="button" class="btn-recycle-restore-all" id="restoreAllBinBtn" onclick="handleRestoreAllBin()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-            Restore All
-          </button>
-          <button type="button" class="btn-action-delete" id="emptyRecycleBinBtn" style="border-radius: var(--radius-sm); font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="handleEmptyRecycleBin()">Empty Recycle Bin</button>
-        </div>
-        <button type="button" class="btn-modal-cancel" onclick="closeRecycleBinModal()">Close</button>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
