@@ -7,8 +7,8 @@
 */
 "use strict";
 
-const CACHE = "forgewell-v5";
-const ASSET_CACHE = "forgewell-assets-v5";
+const CACHE = "forgewell-v6";
+const ASSET_CACHE = "forgewell-assets-v6";
 const PRECACHE = [
   "./",
   "index.html",
@@ -29,6 +29,7 @@ const PRECACHE = [
   "trueprogress/assets/login.css",
   "trueprogress/assets/reset-password.css",
   "trueprogress/assets/trueprogress_logo.png",
+  "trueprogress/assets/xlsx.full.min.js",
   "trueprogress/backup%20details%20of%20trueprogress/users.json",
   "trueprogress/backup%20details%20of%20trueprogress/videos.json",
   "trueprogress/backup%20details%20of%20trueprogress/surveys.json"

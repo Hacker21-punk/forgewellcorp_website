@@ -25,6 +25,7 @@
   </script>
   <script src="assets/theme.js"></script>
   <script src="assets/recycleBin.js"></script>
+  <script src="assets/xlsx.full.min.js"></script>
 </head>
 <body>
   <div class="dashboard-wrapper">
@@ -88,31 +89,7 @@
                   <span class="detail-value" id="dropdownEmail">N/A</span>
                 </div>
 
-                <!-- Theme Toggle in Dropdown -->
-                <button class="profile-dropdown-action-btn" id="dropdownThemeToggleBtn" type="button">
-                  <span id="dropdownThemeText">Dark Mode</span>
-                  <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                  </svg>
-                  <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                  </svg>
-                </button>
-                <button class="profile-dropdown-action-btn" id="dropdownRecycleBinBtn" type="button" style="display: none;" onclick="openRecycleBinModal()">
-                  <span>Recycle Bin</span>
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
+
 
                 <button class="profile-dropdown-logout-btn" id="logoutBtn">
                   Logout
@@ -475,8 +452,6 @@
 
       if (currentUser.admin === "true") {
         document.getElementById('dropdownRole').innerText = "Admin";
-        const dropBin = document.getElementById('dropdownRecycleBinBtn');
-        if (dropBin) dropBin.style.display = "flex";
       } else {
         document.getElementById('dropdownRole').innerText = "User";
       }
@@ -526,8 +501,8 @@
               <div class="video-top-controls" style="grid-template-columns: 1fr; margin-bottom: 1rem;">
                 <div class="file-upload-container">
                   <label class="file-input-wrapper" id="fileInputLabel_${id}">
-                    Choose File
-                    <input type="file" id="landmarksFileInput_${id}" accept=".csv,.json" onchange="handleFileChange(this, '${id}')" />
+                    <span id="fileInputText_${id}">Choose File (.csv, .xlsx, .xls)</span>
+                    <input type="file" id="landmarksFileInput_${id}" accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleFileChange(this, '${id}')" />
                   </label>
                   <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
                 </div>
@@ -541,11 +516,11 @@
           const uploadHtml = isAdmin ? `
               <!-- File Upload -->
               <div class="search-select-wrapper">
-                <span class="search-select-label">Upload LandMarks File</span>
+                <span class="search-select-label">Upload LandMarks File (.csv, .xlsx, .xls)</span>
                 <div class="file-upload-container">
                   <label class="file-input-wrapper" id="fileInputLabel_${id}">
-                    Choose File
-                    <input type="file" id="landmarksFileInput_${id}" accept=".csv,.json" onchange="handleFileChange(this, '${id}')" />
+                    <span id="fileInputText_${id}">Choose File (.csv, .xlsx, .xls)</span>
+                    <input type="file" id="landmarksFileInput_${id}" accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleFileChange(this, '${id}')" />
                   </label>
                   <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
                 </div>
@@ -655,15 +630,15 @@
                 <div class="breakpoint-grid" style="gap: 0.5rem;">
                   <div class="search-select-wrapper">
                     <span class="search-select-label" style="font-size: 0.75rem;">Landmark Name</span>
-                    <input type="text" id="breakpointNameInput_${id}" class="form-input" placeholder="Name" required style="font-size: 0.8125rem; padding: 0.375rem;" />
+                    <input type="text" id="breakpointNameInput_${id}" class="form-input" placeholder="Name (optional)" style="font-size: 0.8125rem; padding: 0.375rem;" />
                   </div>
                   <div class="search-select-wrapper">
-                    <span class="search-select-label" style="font-size: 0.75rem;">Time (Auto)</span>
-                    <input type="text" id="breakpointTimeInput_${id}" class="form-input" value="0:00" readonly style="background-color: #f3f4f6; font-size: 0.8125rem; padding: 0.375rem;" />
+                    <span class="search-select-label" style="font-size: 0.75rem;">Time</span>
+                    <input type="text" id="breakpointTimeInput_${id}" class="form-input" value="0:00" placeholder="MM:SS" oninput="this.dataset.userEdited = 'true'" style="font-size: 0.8125rem; padding: 0.375rem;" />
                   </div>
                   <div class="search-select-wrapper">
                     <span class="search-select-label" style="font-size: 0.75rem;">KM Number</span>
-                    <input type="text" id="breakpointKmInput_${id}" class="form-input" placeholder="KM" required style="font-size: 0.8125rem; padding: 0.375rem;" />
+                    <input type="text" id="breakpointKmInput_${id}" class="form-input" placeholder="KM (optional)" style="font-size: 0.8125rem; padding: 0.375rem;" />
                   </div>
                 </div>
                 <button type="submit" class="btn-breakpoint-add" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; font-size: 0.8125rem; width: fit-content;">Add Breakpoint</button>
@@ -1284,10 +1259,10 @@
         timeDisplay.innerText = `${timeString} x ${speed}`;
       }
 
-      // Update admin breakpoint current time field
+      // Update admin breakpoint current time field if not actively being edited
       const currentFormattedTime = `${curMins}:${curSecs.toString().padStart(2, '0')}`;
       const timeInput = document.getElementById(`breakpointTimeInput_${id}`);
-      if (timeInput) {
+      if (timeInput && document.activeElement !== timeInput && timeInput.dataset.userEdited !== 'true') {
         timeInput.value = currentFormattedTime;
       }
     }
@@ -1419,6 +1394,25 @@
       }
     }
 
+    function parseTimeToSeconds(input) {
+      if (input === null || input === undefined) return 0;
+      if (typeof input === 'number') return isNaN(input) ? 0 : input;
+      const str = String(input).trim();
+      if (!str) return 0;
+
+      if (str.includes(':')) {
+        const parts = str.split(':').map(p => parseFloat(p.trim()) || 0);
+        if (parts.length === 3) {
+          return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+        } else if (parts.length === 2) {
+          return (parts[0] * 60) + parts[1];
+        }
+      }
+
+      const num = parseFloat(str);
+      return isNaN(num) ? 0 : num;
+    }
+
     // Add Landmark Breakpoint
     function handleAddBreakpoint(event, id) {
       event.preventDefault();
@@ -1427,12 +1421,27 @@
         return false;
       }
       const nameInput = document.getElementById(`breakpointNameInput_${id}`);
+      const timeInput = document.getElementById(`breakpointTimeInput_${id}`);
       const kmInput = document.getElementById(`breakpointKmInput_${id}`);
-      if (!nameInput || !kmInput) return;
+      if (!nameInput || !kmInput) return false;
 
-      const name = nameInput.value;
-      const km = kmInput.value;
-      const time = getCurrentTime(id);
+      let time = getCurrentTime(id);
+      if (timeInput && timeInput.value.trim() !== '') {
+        const parsed = parseTimeToSeconds(timeInput.value.trim());
+        if (!isNaN(parsed) && parsed >= 0) {
+          time = parsed;
+        }
+      }
+
+      const totalSecs = Math.floor(time || 0);
+      const curMins = Math.floor(totalSecs / 60);
+      const curSecs = totalSecs % 60;
+      const formattedTimeStr = `${curMins}:${curSecs.toString().padStart(2, '0')}`;
+
+      const rawName = nameInput.value.trim();
+      const rawKm = kmInput.value.trim();
+      const name = rawName || (rawKm ? `KM ${rawKm}` : `Landmark at ${formattedTimeStr}`);
+      const km = rawKm;
 
       const newLm = {
         name,
@@ -1444,10 +1453,20 @@
 
       if (!videoLandmarks[id]) videoLandmarks[id] = [];
       videoLandmarks[id].push(newLm);
+      videoLandmarks[id].sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
       updateLandmarksUI(id);
 
       nameInput.value = '';
       kmInput.value = '';
+      if (timeInput) {
+        delete timeInput.dataset.userEdited;
+        const curTime = getCurrentTime(id);
+        const m = Math.floor(curTime / 60);
+        const s = Math.floor(curTime % 60);
+        timeInput.value = `${m}:${s.toString().padStart(2, '0')}`;
+      }
+
+      return false;
     }
 
     function deleteAllLandmarks(id) {
@@ -1511,19 +1530,19 @@
       link.remove();
     }
 
-    // File input selection label toggle
+    // File input selection label toggle (preserves the <input> element)
     function handleFileChange(input, id) {
-      const label = document.getElementById(`fileInputLabel_${id}`);
-      if (label) {
+      const textSpan = document.getElementById(`fileInputText_${id}`);
+      if (textSpan) {
         if (input.files && input.files[0]) {
-          label.innerText = input.files[0].name;
+          textSpan.innerText = input.files[0].name;
         } else {
-          label.innerText = 'Choose File';
+          textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
         }
       }
     }
 
-    // Upload CSV/JSON landmarks list
+    // Upload CSV / Excel landmarks list (.csv, .xlsx, .xls only)
     function uploadLandmarksFile(id) {
       if (!currentUser || currentUser.admin !== "true") {
         alert('Permission denied.');
@@ -1536,60 +1555,139 @@
       }
 
       const file = fileInput.files[0];
-      const reader = new FileReader();
+      const fileName = file.name.toLowerCase();
+      const isCsv = fileName.endsWith('.csv');
+      const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
 
-      reader.onload = function(e) {
-        const text = e.target.result;
-        try {
-          if (file.name.endsWith('.json')) {
-            const parsed = JSON.parse(text);
-            if (Array.isArray(parsed)) {
-              videoLandmarks[id] = parsed.map(item => ({
-                name: item.name || item.display || 'Landmark',
-                display: item.display || item.name || 'Landmark',
-                time: parseFloat(item.time) || 0,
-                km: item.km || '',
-                videoId: id
-              }));
-              updateLandmarksUI(id);
-              alert('JSON landmarks loaded successfully.');
-            } else {
-              alert('JSON file must contain an array of landmarks.');
+      if (!isCsv && !isExcel) {
+        alert('Only .csv and Excel (.xlsx, .xls) files are supported.');
+        return;
+      }
+
+      if (isExcel) {
+        if (typeof XLSX === 'undefined') {
+          alert('Excel processing library is not loaded. Please reload the page.');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+              alert('The Excel file contains no sheets.');
+              return;
             }
-          } else if (file.name.endsWith('.csv')) {
-            const rows = text.split('\n');
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+            if (!rows || rows.length === 0) {
+              alert('The uploaded Excel file contains no data rows.');
+              return;
+            }
+
             const newLandmarks = [];
-            
-            for (let i = 1; i < rows.length; i++) {
-              const row = rows[i].trim();
-              if (!row) continue;
-              
-              const cols = row.split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
-              if (cols.length >= 3) {
-                newLandmarks.push({
-                  name: cols[0] || 'Landmark',
-                  display: cols[0] || 'Landmark',
-                  km: cols[1] || '',
-                  time: parseFloat(cols[2]) || 0,
-                  videoId: id
-                });
+            rows.forEach(row => {
+              let nameVal = '';
+              let kmVal = '';
+              let timeVal = '';
+
+              for (const [key, val] of Object.entries(row)) {
+                const k = key.trim().toLowerCase();
+                if (/name|landmark|title|label|desc/i.test(k) && !nameVal) {
+                  nameVal = String(val).trim();
+                } else if (/km|chainage|dist|kilo/i.test(k) && !kmVal) {
+                  kmVal = String(val).trim();
+                } else if (/time|second|sec|timestamp/i.test(k) && !timeVal) {
+                  timeVal = String(val).trim();
+                }
               }
-            }
+
+              const values = Object.values(row);
+              if (!nameVal && values[0] !== undefined) nameVal = String(values[0]).trim();
+              if (!kmVal && values[1] !== undefined) kmVal = String(values[1]).trim();
+              if (!timeVal && values[2] !== undefined) timeVal = String(values[2]).trim();
+
+              const timeSecs = parseTimeToSeconds(timeVal);
+
+              newLandmarks.push({
+                name: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
+                display: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
+                km: kmVal,
+                time: isNaN(timeSecs) ? 0 : timeSecs,
+                videoId: id
+              });
+            });
+
             if (newLandmarks.length > 0) {
+              newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
+              videoLandmarks[id] = newLandmarks;
+              updateLandmarksUI(id);
+              alert(`${newLandmarks.length} landmarks loaded successfully from Excel.`);
+            } else {
+              alert('Could not find valid landmark records in Excel file.');
+            }
+          } catch (error) {
+            console.error('Failed to parse Excel file:', error);
+            alert('Failed to parse Excel file: ' + error.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else if (isCsv) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const text = e.target.result;
+            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (lines.length <= 1) {
+              alert('CSV file is empty or contains only headers.');
+              return;
+            }
+            const newLandmarks = [];
+            const headerLine = lines[0];
+            const delimiter = headerLine.includes('\t') ? '\t' : (headerLine.includes(';') ? ';' : ',');
+            const headers = headerLine.split(delimiter).map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase());
+
+            let nameIdx = headers.findIndex(h => /name|landmark|title|label|desc/i.test(h));
+            let kmIdx = headers.findIndex(h => /km|chainage|dist|kilo/i.test(h));
+            let timeIdx = headers.findIndex(h => /time|second|sec|timestamp/i.test(h));
+
+            if (nameIdx === -1) nameIdx = 0;
+            if (kmIdx === -1) kmIdx = 1;
+            if (timeIdx === -1) timeIdx = 2;
+
+            for (let i = 1; i < lines.length; i++) {
+              const row = lines[i].trim();
+              if (!row) continue;
+              const cols = row.split(delimiter).map(c => c.replace(/^["']|["']$/g, '').trim());
+              const nameVal = cols[nameIdx] || '';
+              const kmVal = cols[kmIdx] || '';
+              const timeVal = cols[timeIdx] || '';
+              const timeSecs = parseTimeToSeconds(timeVal);
+
+              newLandmarks.push({
+                name: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
+                display: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
+                km: kmVal,
+                time: isNaN(timeSecs) ? 0 : timeSecs,
+                videoId: id
+              });
+            }
+
+            if (newLandmarks.length > 0) {
+              newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
               videoLandmarks[id] = newLandmarks;
               updateLandmarksUI(id);
               alert(`${newLandmarks.length} CSV landmarks loaded successfully.`);
             } else {
               alert('Could not find valid landmark records in CSV.');
             }
+          } catch (error) {
+            console.error('Failed to parse CSV file:', error);
+            alert('Failed to parse CSV file: ' + error.message);
           }
-        } catch (error) {
-          console.error(error);
-          alert('Failed to parse file: ' + error.message);
-        }
-      };
-
-      reader.readAsText(file);
+        };
+        reader.readAsText(file);
+      }
     }
 
     // Shared Comparative Control Dock Methods

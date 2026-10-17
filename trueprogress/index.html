@@ -23,6 +23,7 @@
   </script>
   <script src="assets/theme.js"></script>
   <script src="assets/recycleBin.js"></script>
+  <script src="assets/xlsx.full.min.js"></script>
 </head>
 <body>
   <div class="dashboard-wrapper">
@@ -86,31 +87,7 @@
                   <span class="detail-value" id="dropdownEmail">N/A</span>
                 </div>
 
-                <!-- Theme Toggle in Dropdown -->
-                <button class="profile-dropdown-action-btn" id="dropdownThemeToggleBtn" type="button">
-                  <span id="dropdownThemeText">Dark Mode</span>
-                  <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                  </svg>
-                  <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                  </svg>
-                </button>
-                <button class="profile-dropdown-action-btn" id="dropdownRecycleBinBtn" type="button" style="display: none;" onclick="openRecycleBinModal()">
-                  <span>Recycle Bin</span>
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
+
 
                 <button class="profile-dropdown-logout-btn" id="logoutBtn">
                   Logout
@@ -153,6 +130,14 @@
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
               Create Backup
+            </button>
+            <button class="btn-breadcrumb-action" id="uploadProjectBtn" onclick="openUploadProjectModal()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload Survey Project
             </button>
             <button class="btn-breadcrumb-action" id="recycleBinBtn">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -445,6 +430,54 @@
     </div>
   </div>
 
+  <!-- MODAL: Upload Survey Project -->
+  <div class="modal-overlay" id="uploadProjectModal">
+    <div class="modal-container" style="max-width: 520px; width: 92%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <h3 class="modal-title">Upload Survey Project</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeUploadProjectModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding-top: 1rem;">
+        <div style="background-color: var(--input-bg, #f8fafc); border: 1px solid var(--surface-border, #e2e8f0); border-radius: var(--radius-md, 8px); padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.8125rem; font-weight: 700; color: var(--text-color); text-transform: uppercase; letter-spacing: 0.04em;">Supported File Format</span>
+            <span style="background: rgba(37, 99, 235, 0.12); color: #2563eb; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 9999px;">
+              Excel (.xlsx, .xls) only
+            </span>
+          </div>
+          <p style="font-size: 0.8125rem; color: var(--text-secondary, #64748b); margin: 0; line-height: 1.45;">
+            Upload an Excel workbook containing survey project details. Only <strong>.xlsx</strong> and <strong>.xls</strong> formats are supported.
+          </p>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; display: block;">Select Project File</label>
+          <div class="file-upload-container" style="border: 2px dashed var(--surface-border, #cbd5e1); border-radius: var(--radius-md, 8px); padding: 1.5rem 1rem; text-align: center; background: var(--surface-card, #fff);">
+            <label class="file-input-wrapper" style="border-right: none; background: #2563eb; color: #fff; border-radius: var(--radius-sm, 6px); display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.25rem; cursor: pointer; font-size: 0.875rem; font-weight: 600;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span>Choose Excel File</span>
+              <input type="file" id="surveyProjectFileInput" accept=".xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleSurveyProjectFileChange(this)" style="display: none;" />
+            </label>
+            <div id="surveyProjectFileName" style="margin-top: 0.75rem; font-size: 0.8125rem; color: var(--text-secondary, #64748b); font-weight: 500; word-break: break-all;">No file chosen</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn-modal-cancel" onclick="closeUploadProjectModal()">Cancel</button>
+        <button type="button" class="btn-modal-submit" id="submitUploadProjectBtn" onclick="processSurveyProjectUpload()" style="background-color: #14124c; border-color: #14124c;">Import Project</button>
+      </div>
+    </div>
+  </div>
+
 
 
 
@@ -544,8 +577,6 @@
         document.getElementById('breadcrumbAdminActions').style.display = "flex";
         document.getElementById('adminControls').style.display = "block";
         document.getElementById('actionHeader').style.display = "table-cell";
-        const dropBin = document.getElementById('dropdownRecycleBinBtn');
-        if (dropBin) dropBin.style.display = "flex";
       } else {
         document.getElementById('dropdownRole').innerText = "User";
       }
@@ -1450,16 +1481,298 @@
 
 
 
-    // Backup Generation (JSON Download)
-    document.getElementById('createBackupBtn').addEventListener('click', () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(surveysList, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `surveys_backup_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+    // Backup Generation (Excel Download)
+    document.getElementById('createBackupBtn').addEventListener('click', async () => {
+      try {
+        if (typeof XLSX === 'undefined') {
+          alert('Excel processing library is not loaded. Please reload the page.');
+          return;
+        }
+
+        // Gather all surveys
+        let surveysToExport = surveysList;
+        if (!surveysToExport || surveysToExport.length === 0) {
+          surveysToExport = await fetchSurveys();
+        }
+
+        // Gather all videos
+        let videosToExport = [];
+        try {
+          videosToExport = await fetchVideos();
+        } catch (e) {
+          console.warn('Could not fetch videos for backup:', e);
+        }
+
+        // Gather all users
+        let usersToExport = [];
+        try {
+          usersToExport = await fetchUsers();
+        } catch (e) {
+          console.warn('Could not fetch users for backup:', e);
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        // 1. Surveys Sheet
+        const surveysData = (surveysToExport || []).map((s, idx) => ({
+          'S.No.': idx + 1,
+          'ID': s.id || '',
+          'Survey Name': s.name || '',
+          'Department': s.department || '',
+          'Survey Length': s.survey_length || '',
+          'Video Count': s.video_count !== undefined ? s.video_count : (s.videos ? s.videos.length : 0),
+          'Status': s.status || 'Active',
+          'Created At': s.createdAt || ''
+        }));
+        const wsSurveys = XLSX.utils.json_to_sheet(surveysData);
+        XLSX.utils.book_append_sheet(wb, wsSurveys, 'Surveys');
+
+        // 2. Videos Sheet
+        const videosData = (videosToExport || []).map((v, idx) => ({
+          'S.No.': idx + 1,
+          'ID': v.id || '',
+          'Survey ID': v.surveyId || '',
+          'Video Name': v.name || '',
+          'Video URL': v.videoURL || '',
+          'Length (km)': v.length || '',
+          'Created At': v.createdAt || ''
+        }));
+        const wsVideos = XLSX.utils.json_to_sheet(videosData);
+        XLSX.utils.book_append_sheet(wb, wsVideos, 'Videos');
+
+        // 3. Users Sheet
+        const usersData = (usersToExport || []).map((u, idx) => ({
+          'S.No.': idx + 1,
+          'UID': u.uid || '',
+          'Name': u.name || '',
+          'Email': u.email || '',
+          'Phone': u.phone || '',
+          'Organization': u.organization || '',
+          'Department': u.department || '',
+          'Is Admin': u.admin === 'true' || u.admin === true ? 'Yes' : 'No',
+          'Assigned Surveys': Array.isArray(u.assignedSurveys) ? u.assignedSurveys.join(', ') : (u.assignedSurveys || '')
+        }));
+        const wsUsers = XLSX.utils.json_to_sheet(usersData);
+        XLSX.utils.book_append_sheet(wb, wsUsers, 'Users');
+
+        // 4. Metadata Sheet
+        const metaData = [
+          { 'Property': 'Backup Date', 'Value': new Date().toISOString() },
+          { 'Property': 'System', 'Value': 'TrueProgress Dashboard' },
+          { 'Property': 'Total Surveys', 'Value': surveysData.length },
+          { 'Property': 'Total Videos', 'Value': videosData.length },
+          { 'Property': 'Total Users', 'Value': usersData.length }
+        ];
+        const wsMeta = XLSX.utils.json_to_sheet(metaData);
+        XLSX.utils.book_append_sheet(wb, wsMeta, 'Metadata');
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `trueprogress_backup_${todayStr}.xlsx`);
+      } catch (err) {
+        console.error('Failed to create Excel backup:', err);
+        alert('Failed to create Excel backup: ' + err.message);
+      }
     });
+
+    // Upload Survey Project Modal and Import Handlers
+    function openUploadProjectModal() {
+      const modal = document.getElementById('uploadProjectModal');
+      const fileInput = document.getElementById('surveyProjectFileInput');
+      const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      if (fileInput) fileInput.value = '';
+      if (fileNameDisplay) fileNameDisplay.innerText = 'No file chosen';
+      if (modal) modal.classList.add('show');
+    }
+
+    function closeUploadProjectModal() {
+      const modal = document.getElementById('uploadProjectModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function handleSurveyProjectFileChange(input) {
+      const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      if (!fileNameDisplay) return;
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        if (ext !== '.xlsx' && ext !== '.xls') {
+          alert('Only Excel files (.xlsx, .xls) are supported.');
+          input.value = '';
+          fileNameDisplay.innerText = 'No file chosen';
+          return;
+        }
+        fileNameDisplay.innerHTML = `<strong>Selected:</strong> ${escapeHtml(file.name)} (${(file.size / 1024).toFixed(1)} KB)`;
+      } else {
+        fileNameDisplay.innerText = 'No file chosen';
+      }
+    }
+
+    async function processSurveyProjectUpload() {
+      if (!currentUser || currentUser.admin !== 'true') {
+        alert('Permission denied. Admin privileges required.');
+        return;
+      }
+      const fileInput = document.getElementById('surveyProjectFileInput');
+      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        alert('Please choose an Excel file (.xlsx, .xls) first.');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (ext !== '.xlsx' && ext !== '.xls') {
+        alert('Only Excel files (.xlsx, .xls) are supported.');
+        return;
+      }
+
+      if (typeof XLSX === 'undefined') {
+        alert('Excel processing library is not loaded. Please reload the page.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+            alert('The uploaded Excel workbook contains no sheets.');
+            return;
+          }
+
+          // Check for Surveys sheet or use first sheet
+          let surveysSheet = null;
+          let videosSheet = null;
+
+          for (const name of workbook.SheetNames) {
+            const lower = name.toLowerCase().trim();
+            if (lower === 'surveys' || lower === 'survey') {
+              surveysSheet = workbook.Sheets[name];
+            } else if (lower === 'videos' || lower === 'video') {
+              videosSheet = workbook.Sheets[name];
+            }
+          }
+
+          if (!surveysSheet) {
+            surveysSheet = workbook.Sheets[workbook.SheetNames[0]];
+          }
+
+          const surveyRows = XLSX.utils.sheet_to_json(surveysSheet, { defval: '' });
+          if (!surveyRows || surveyRows.length === 0) {
+            alert('Could not find any survey records in the Excel file.');
+            return;
+          }
+
+          // Parse Surveys
+          const importedSurveys = [];
+          surveyRows.forEach((row, idx) => {
+            let id = '';
+            let name = '';
+            let dept = '';
+            let len = '';
+            let vCount = 0;
+            let status = 'Active';
+            let createdAt = '';
+
+            for (const [k, v] of Object.entries(row)) {
+              const key = k.trim().toLowerCase();
+              const val = String(v).trim();
+              if (key === 'id' || key === 'survey id') id = val;
+              else if (/survey\s*name|name|title/i.test(key) && !name) name = val;
+              else if (/department|dept/i.test(key) && !dept) dept = val;
+              else if (/survey\s*length|length|distance/i.test(key) && !len) len = val;
+              else if (/video\s*count|videos/i.test(key)) vCount = parseInt(val, 10) || 0;
+              else if (/status/i.test(key)) status = val || 'Active';
+              else if (/created/i.test(key)) createdAt = val;
+            }
+
+            if (!name) {
+              const vals = Object.values(row).filter(x => x !== '');
+              if (vals.length > 0) name = String(vals[0]);
+            }
+
+            if (name) {
+              importedSurveys.push({
+                id: id || `survey_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 5)}`,
+                name: name,
+                department: dept || 'General',
+                survey_length: len || '0 KM',
+                video_count: vCount || 0,
+                status: status || 'Active',
+                createdAt: createdAt || new Date().toISOString()
+              });
+            }
+          });
+
+          if (importedSurveys.length === 0) {
+            alert('No valid survey rows found in the uploaded file.');
+            return;
+          }
+
+          // Merge into custom_surveys in localStorage
+          const existingCustomSurveys = JSON.parse(localStorage.getItem('custom_surveys') || '[]');
+          const binDeletedSurveys = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('survey') : [];
+          const deletedSurveys = JSON.parse(localStorage.getItem('deleted_surveys') || '[]');
+          const deletedSet = new Set([...deletedSurveys, ...binDeletedSurveys]);
+
+          importedSurveys.forEach(imported => {
+            deletedSet.delete(imported.id);
+            const existIdx = existingCustomSurveys.findIndex(s => s.id === imported.id || s.name.trim().toLowerCase() === imported.name.trim().toLowerCase());
+            if (existIdx >= 0) {
+              existingCustomSurveys[existIdx] = { ...existingCustomSurveys[existIdx], ...imported };
+            } else {
+              existingCustomSurveys.push(imported);
+            }
+          });
+
+          localStorage.setItem('custom_surveys', JSON.stringify(existingCustomSurveys));
+          localStorage.setItem('deleted_surveys', JSON.stringify(Array.from(deletedSet)));
+
+          // Parse Videos if Videos sheet present
+          let importedVideosCount = 0;
+          if (videosSheet) {
+            const videoRows = XLSX.utils.sheet_to_json(videosSheet, { defval: '' });
+            if (videoRows && videoRows.length > 0) {
+              const existingCustomVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+              videoRows.forEach((row, vIdx) => {
+                let vId = row['ID'] || row['id'] || `video_${Date.now()}_${vIdx}`;
+                let vSurveyId = row['Survey ID'] || row['surveyId'] || '';
+                let vName = row['Video Name'] || row['name'] || 'Survey Video';
+                let vUrl = row['Video URL'] || row['videoURL'] || row['url'] || '';
+                let vLen = row['Length (km)'] || row['length'] || '';
+                let vCreatedAt = row['Created At'] || row['createdAt'] || new Date().toISOString();
+
+                if (vName || vUrl) {
+                  const evIdx = existingCustomVideos.findIndex(v => v.id === vId);
+                  const vObj = { id: vId, surveyId: vSurveyId, name: vName, videoURL: vUrl, length: vLen, createdAt: vCreatedAt };
+                  if (evIdx >= 0) {
+                    existingCustomVideos[evIdx] = { ...existingCustomVideos[evIdx], ...vObj };
+                  } else {
+                    existingCustomVideos.push(vObj);
+                  }
+                  importedVideosCount++;
+                }
+              });
+              localStorage.setItem('custom_videos', JSON.stringify(existingCustomVideos));
+            }
+          }
+
+          // Reload surveys data and refresh UI
+          await fetchSurveys();
+          buildSurveyUserMap();
+          if (currentView === 'surveys') {
+            renderSurveysTable();
+          }
+
+          closeUploadProjectModal();
+          alert(`Successfully imported ${importedSurveys.length} survey(s)${importedVideosCount > 0 ? ` and ${importedVideosCount} video(s)` : ''} from Excel.`);
+        } catch (error) {
+          console.error('Failed to import survey project:', error);
+          alert('Failed to import survey project: ' + error.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
 
     // Recycle Bin modal open
     document.getElementById('recycleBinBtn').addEventListener('click', () => {
