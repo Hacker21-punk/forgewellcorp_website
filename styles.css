@@ -649,6 +649,9 @@ p { color: var(--text-dim); line-height: 1.8; }
   visibility: hidden;
   transition: opacity 1.2s ease, visibility 1.2s ease, transform 1.2s ease;
   will-change: opacity, transform;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .slide.is-active { opacity: 1; visibility: visible; }
 .slide:not(.is-active) { transform: scale(1.03); }
@@ -657,9 +660,6 @@ p { color: var(--text-dim); line-height: 1.8; }
   display: flex;
   align-items: center;
   width: 100%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 .slide-quantum { background-image: url("assets/slider/quantum.jpg"); }
 .slide-tactical { background-image: url("assets/slider/tactical.webp"); }
@@ -667,7 +667,11 @@ p { color: var(--text-dim); line-height: 1.8; }
 .slide-monitoring { background-image: url("assets/slider/monitoring.jpeg"); }
 .slide-control { background-image: url("assets/slider/control.jpg"); }
 .slide-survey { background-image: url("assets/slider/survey.jpeg"); }
-.slide-bim { background-image: url("assets/slider/bim.webp"); }
+.slide-bim {
+  background-image: url("assets/slider/bim.webp");
+  background-position: center;
+  background-size: cover;
+}
 .slide-software { background-image: url("assets/slider/software.jpg"); }
 
 :root:not([data-theme="dark"]) .slide-inner::before,
