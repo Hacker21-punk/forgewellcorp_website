@@ -679,7 +679,7 @@ def process_file(source_path, title):
             <a href="/#trueprogress" title="">Product</a>
             <ul class="product-dropdown-menu">
               <li><a href="/login">TrueProgress</a></li>
-              <li><a href="/#trueprogress">Dashboard Builder</a></li>
+              <li><a href="/#trueprogress">Yokogawa</a></li>
               <li><a href="/#trueprogress">Pico Tech</a></li>
               <li><a href="/#trueprogress">Tabor Electronics</a></li>
             </ul>
@@ -806,6 +806,9 @@ def process_file(source_path, title):
             href = a.get("href", "")
             if "trueprogress" in t:
                 a["href"] = "/login"
+            elif "dashboard builder" in t:
+                a.string = "Yokogawa"
+                a["href"] = "/#trueprogress"
             elif "quantum" in t:
                 a["href"] = "/solutions/quantum-&-physics"
             elif "tactical" in t:
