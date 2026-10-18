@@ -117,6 +117,15 @@
               </svg>
               Upload Survey Project
             </button>
+            <button class="btn-breadcrumb-action" id="recycleBinBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              Recycle Bin
+            </button>
           </div>
         </nav>
 
@@ -369,6 +378,57 @@
     </div>
   </div>
 
+
+  <!-- MODAL: Recycle Bin -->
+  <div class="modal-overlay" id="recycleBinModal">
+    <div class="modal-container" style="max-width: 840px; width: 92%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <h3 class="modal-title">Recycle Bin</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeRecycleBinModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
+          Deleted items across TrueProgress (surveys, users, videos, landmarks) are preserved here. You can restore them anytime or delete them permanently.
+        </p>
+        <div class="bin-filter-bar">
+          <!-- Dynamically populated filter buttons -->
+        </div>
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="users-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align: left; width: 110px;">Type</th>
+                <th style="text-align: left;">Item &amp; Details</th>
+                <th style="text-align: left; width: 160px;">Deleted Date</th>
+                <th style="text-align: right; width: 190px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="recycleBinTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div id="recycleBinEmptyMsg" style="text-align: center; padding: 2rem; color: var(--text-tertiary); display: none;">
+          Recycle Bin is empty
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-recycle-restore-all" id="restoreAllBinBtn" onclick="handleRestoreAllBin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            Restore All
+          </button>
+          <button type="button" class="btn-action-delete" id="emptyRecycleBinBtn" style="border-radius: var(--radius-sm); font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="handleEmptyRecycleBin()">Empty Recycle Bin</button>
+        </div>
+        <button type="button" class="btn-modal-cancel" onclick="closeRecycleBinModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: Upload Survey Project -->
   <div class="modal-overlay" id="uploadProjectModal">
@@ -675,6 +735,26 @@
           }
         });
 
+        // Enrich any user in recycle bin that only has a placeholder name
+        if (window.TrueProgressBin) {
+          const binItems = window.TrueProgressBin.getBinItems();
+          let binUpdated = false;
+          binItems.forEach(item => {
+            if (item.type === 'user' && (!item.data || !item.data.name || item.name.startsWith('User '))) {
+              const foundInBase = baseUsers.find(bu => bu.uid === item.id);
+              if (foundInBase) {
+                item.name = foundInBase.name || item.name;
+                item.subtitle = (foundInBase.email || 'No email') + ' • ' + (foundInBase.organization || foundInBase.department || 'Account');
+                item.data = { ...foundInBase, ...(item.data || {}) };
+                binUpdated = true;
+              }
+            }
+          });
+          if (binUpdated) {
+            window.TrueProgressBin.saveBinItems(binItems);
+          }
+        }
+
         // Sync currentUser with allUsers in case edits were made in localStorage
         if (currentUser) {
           const syncedCurrent = allUsers.find(u => u.uid === currentUser.uid || (u.email && currentUser.email && u.email.trim().toLowerCase() === currentUser.email.trim().toLowerCase()));
@@ -684,6 +764,7 @@
             localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
           }
         }
+        window.allUsers = allUsers;
       } catch (error) {
         console.error('Error fetching users:', error);
       }
@@ -1572,6 +1653,73 @@
 
 
 
+    // ===== Recycle Bin Functionality =====
+    function openRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.add('show');
+        renderRecycleBin();
+      }
+    }
+
+    function closeRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.remove('show');
+      }
+    }
+
+    async function renderRecycleBin() {
+      if (window.TrueProgressBin) {
+        window.TrueProgressBin.renderModal({
+          modalId: 'recycleBinModal',
+          onUpdate: async function () {
+            await fetchSurveys();
+            await fetchUsers();
+            buildSurveyUserMap();
+            populateSurveyCheckboxes();
+            if (currentView === 'users') {
+              renderUsersTable();
+            } else {
+              renderSurveysTable();
+            }
+          }
+        });
+      }
+    }
+
+    async function handleRestoreAllBin() {
+      if (!window.TrueProgressBin) return;
+      const filter = window.TrueProgressBin.activeFilter;
+      const count = window.TrueProgressBin.getBinItems().length;
+      if (count === 0) return;
+      if (confirm('Are you sure you want to restore all items in the Recycle Bin?')) {
+        window.TrueProgressBin.restoreAll(filter);
+        await fetchSurveys();
+        await fetchUsers();
+        buildSurveyUserMap();
+        populateSurveyCheckboxes();
+        if (currentView === 'users') {
+          renderUsersTable();
+        } else {
+          renderSurveysTable();
+        }
+        renderRecycleBin();
+      }
+    }
+
+    async function handleEmptyRecycleBin() {
+      if (!window.TrueProgressBin) return;
+      if (confirm('Are you sure you want to permanently delete all items in the Recycle Bin? This action cannot be undone.')) {
+        window.TrueProgressBin.emptyBin();
+        await fetchSurveys();
+        await fetchUsers();
+        buildSurveyUserMap();
+        populateSurveyCheckboxes();
+        renderRecycleBin();
+      }
+    }
+
     // View Control: All Users
     document.getElementById('allUsersBtn').addEventListener('click', () => {
       // Close dropdown first
@@ -1878,6 +2026,25 @@
     }
 
 
+
+    // Recycle Bin modal open
+    const rBinBtn = document.getElementById('recycleBinBtn');
+    if (rBinBtn) {
+      rBinBtn.addEventListener('click', () => {
+        openRecycleBinModal();
+      });
+    }
+
+    window.addEventListener('tp_item_restored', async function () {
+      await fetchSurveys();
+      await fetchUsers();
+      buildSurveyUserMap();
+      if (currentView === 'users') {
+        renderUsersTable();
+      } else {
+        renderSurveysTable();
+      }
+    });
 
     // Dropdown toggle logic
     const profileMenuBtn = document.getElementById('profileMenuBtn');
@@ -2269,13 +2436,19 @@
             data: userToDelete || { uid: uid },
             meta: { isCustom: isCustom, isEdited: isEdited }
           });
+          window.TrueProgressBin.showToast('User moved to Recycle Bin', 'info');
         }
 
-        // 1. Remove from custom_users if present
+        // 1. Remove from custom_users if present and backup to deleted_custom_users
         const customIdx = customUsers.findIndex(u => u.uid === uid);
         if (customIdx > -1) {
-          customUsers.splice(customIdx, 1);
+          const removed = customUsers.splice(customIdx, 1)[0];
           localStorage.setItem('custom_users', JSON.stringify(customUsers));
+          let deletedCustomUsers = JSON.parse(localStorage.getItem('deleted_custom_users') || '[]');
+          if (!deletedCustomUsers.some(u => (u.uid || u.id) === uid)) {
+            deletedCustomUsers.push(removed);
+            localStorage.setItem('deleted_custom_users', JSON.stringify(deletedCustomUsers));
+          }
         }
 
         // 2. Remove from edited_users if present

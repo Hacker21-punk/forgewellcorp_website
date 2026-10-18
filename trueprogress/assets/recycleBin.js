@@ -16,6 +16,7 @@
 
   var STORAGE_CUSTOM_USERS = 'custom_users';
   var STORAGE_DELETED_USERS = 'deleted_users';
+  var STORAGE_DELETED_CUSTOM_USERS = 'deleted_custom_users';
   var STORAGE_EDITED_USERS = 'edited_users';
   var STORAGE_PERM_DELETED_USERS = 'permanently_deleted_users';
 
@@ -238,6 +239,8 @@
           }
         }
       } else if (type === 'user') {
+        var isCustomUser = id.startsWith('user-') || (params.meta && params.meta.isCustom);
+
         var delUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_USERS), []);
         if (!delUsers.includes(id)) {
           delUsers.push(id);
@@ -251,6 +254,14 @@
         var editedUsers = safeJsonParse(localStorage.getItem(STORAGE_EDITED_USERS), []);
         editedUsers = editedUsers.filter(function (u) { return u.uid !== id; });
         localStorage.setItem(STORAGE_EDITED_USERS, JSON.stringify(editedUsers));
+
+        if (isCustomUser && params.data) {
+          var delCustomUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_USERS), []);
+          if (!delCustomUsers.some(function (u) { return u.uid === id; })) {
+            delCustomUsers.push(params.data);
+            localStorage.setItem(STORAGE_DELETED_CUSTOM_USERS, JSON.stringify(delCustomUsers));
+          }
+        }
       } else if (type === 'video') {
         var delVideos = safeJsonParse(localStorage.getItem(STORAGE_DELETED_VIDEOS), []);
         if (!delVideos.includes(id)) {
@@ -352,6 +363,10 @@
 
           var isCustomUser = id.startsWith('user-') || meta.isCustom;
           if (isCustomUser) {
+            var delCustomUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_USERS), []);
+            delCustomUsers = delCustomUsers.filter(function (u) { return (u.uid || u.id) !== id; });
+            localStorage.setItem(STORAGE_DELETED_CUSTOM_USERS, JSON.stringify(delCustomUsers));
+
             var customUsers = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_USERS), []);
             if (!customUsers.some(function (u) { return u.uid === id; })) {
               customUsers.push(data);
@@ -497,6 +512,10 @@
           delUsers.push(id);
           localStorage.setItem(STORAGE_DELETED_USERS, JSON.stringify(delUsers));
         }
+
+        var delCustomUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_USERS), []);
+        delCustomUsers = delCustomUsers.filter(function (u) { return (u.uid || u.id) !== id; });
+        localStorage.setItem(STORAGE_DELETED_CUSTOM_USERS, JSON.stringify(delCustomUsers));
 
         var customUsers = safeJsonParse(localStorage.getItem(STORAGE_CUSTOM_USERS), []);
         customUsers = customUsers.filter(function (u) { return u.uid !== id; });
@@ -672,6 +691,26 @@
             deletedAt: new Date().toISOString(),
             data: { id: id },
             meta: { isCustom: false }
+          });
+          hasChanges = true;
+        }
+      });
+
+      // Import legacy deleted custom users if not in bin
+      var deletedCustomUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_USERS), []);
+      deletedCustomUsers.forEach(function (u) {
+        var uUid = u.uid || u.id;
+        if (!uUid) return;
+        if (!items.some(function (it) { return it.id === uUid && it.type === 'user'; })) {
+          items.push({
+            binId: 'bin_user_' + uUid + '_' + Date.now(),
+            type: 'user',
+            id: uUid,
+            name: u.name || ('User ' + uUid.substring(0, 8)),
+            subtitle: (u.email || 'No email') + ' • ' + (u.organization || u.department || 'User Account'),
+            deletedAt: new Date().toISOString(),
+            data: u,
+            meta: { isCustom: true }
           });
           hasChanges = true;
         }
