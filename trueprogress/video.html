@@ -547,12 +547,18 @@
           if (isAdmin) {
             topControlsHtml = `
               <div class="video-top-controls" style="grid-template-columns: 1fr; margin-bottom: 1rem;">
-                <div class="file-upload-container">
-                  <label class="file-input-wrapper" id="fileInputLabel_${id}">
+                <div class="file-upload-container" id="fileUploadContainer_${id}">
+                  <label class="file-input-wrapper" id="fileInputLabel_${id}" title="Choose File (.csv, .xlsx, .xls)">
                     <span id="fileInputText_${id}">Choose File (.csv, .xlsx, .xls)</span>
                     <input type="file" id="landmarksFileInput_${id}" accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleFileChange(this, '${id}')" />
                   </label>
-                  <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
+                  <button type="button" class="btn-remove-file" id="removeFileBtn_${id}" onclick="handleRemoveLandmarksFile('${id}')" title="Remove file" aria-label="Remove file">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn-upload-submit" id="btnUploadSubmit_${id}" onclick="uploadLandmarksFile('${id}')">Upload</button>
                 </div>
               </div>
             `;
@@ -846,21 +852,48 @@
 
           videoObjects[id] = video;
           
-          // Load custom landmarks overrides if any
-          const key = `landmarks_${id}`;
-          const overrides = localStorage.getItem(key);
+          // Check if custom landmarks file was uploaded for this video
+          const isCustomActive = localStorage.getItem(`custom_landmarks_active_${id}`) === 'true';
+          const customFileName = localStorage.getItem(`custom_landmarks_filename_${id}`);
+          const removeBtn = document.getElementById(`removeFileBtn_${id}`);
+          const textSpan = document.getElementById(`fileInputText_${id}`);
+          const label = document.getElementById(`fileInputLabel_${id}`);
+
           let rawLandmarks = [];
-          if (overrides) {
-            rawLandmarks = JSON.parse(overrides);
-            const removeBtn = document.getElementById(`removeFileBtn_${id}`);
-            const textSpan = document.getElementById(`fileInputText_${id}`);
+          if (isCustomActive) {
+            const savedCustom = localStorage.getItem(`custom_landmarks_${id}`) || localStorage.getItem(`landmarks_${id}`);
+            try {
+              rawLandmarks = savedCustom ? JSON.parse(savedCustom) : (videoObjects[id].landmarks || []);
+            } catch (err) {
+              rawLandmarks = videoObjects[id].landmarks || [];
+            }
             if (removeBtn) removeBtn.style.display = 'inline-flex';
             if (textSpan) {
-              textSpan.innerText = 'Custom Landmarks Active';
-              textSpan.title = 'Custom landmarks loaded from file';
+              textSpan.innerText = customFileName || 'Custom Landmarks Active';
+              textSpan.title = customFileName || 'Custom landmarks loaded from file';
+            }
+            if (label && customFileName) {
+              label.title = customFileName;
             }
           } else {
-            rawLandmarks = videoObjects[id].landmarks || [];
+            if (removeBtn) removeBtn.style.display = 'none';
+            if (textSpan) {
+              textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+              textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+            }
+            if (label) {
+              label.title = 'Choose File (.csv, .xlsx, .xls)';
+            }
+            const savedWorking = localStorage.getItem(`landmarks_${id}`);
+            if (savedWorking) {
+              try {
+                rawLandmarks = JSON.parse(savedWorking);
+              } catch (err) {
+                rawLandmarks = videoObjects[id].landmarks || [];
+              }
+            } else {
+              rawLandmarks = videoObjects[id].landmarks || [];
+            }
           }
 
           // Strictly filter out any landmark that is in the recycle bin or permanently deleted
@@ -908,6 +941,9 @@
 
       // Save to localStorage
       localStorage.setItem(`landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
+      if (localStorage.getItem(`custom_landmarks_active_${id}`) === 'true') {
+        localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
+      }
 
       // Render scrollable list of landmarks
       renderLandmarksList(id);
@@ -1594,6 +1630,9 @@
       const textSpan = document.getElementById(`fileInputText_${id}`);
       const removeBtn = document.getElementById(`removeFileBtn_${id}`);
       const label = document.getElementById(`fileInputLabel_${id}`);
+      const isCustomActive = localStorage.getItem(`custom_landmarks_active_${id}`) === 'true';
+      const customFileName = localStorage.getItem(`custom_landmarks_filename_${id}`);
+
       if (input.files && input.files[0]) {
         const file = input.files[0];
         if (textSpan) {
@@ -1602,6 +1641,17 @@
         }
         if (label) {
           label.title = file.name;
+        }
+        if (removeBtn) {
+          removeBtn.style.display = 'inline-flex';
+        }
+      } else if (isCustomActive) {
+        if (textSpan) {
+          textSpan.innerText = customFileName || 'Custom Landmarks Active';
+          textSpan.title = customFileName || 'Custom landmarks loaded from file';
+        }
+        if (label) {
+          label.title = customFileName || 'Custom landmarks loaded from file';
         }
         if (removeBtn) {
           removeBtn.style.display = 'inline-flex';
@@ -1626,26 +1676,73 @@
       const textSpan = document.getElementById(`fileInputText_${id}`);
       const removeBtn = document.getElementById(`removeFileBtn_${id}`);
       const label = document.getElementById(`fileInputLabel_${id}`);
-      
-      if (fileInput) fileInput.value = '';
-      if (textSpan) {
-        textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
-        textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
-      }
-      if (label) {
-        label.title = 'Choose File (.csv, .xlsx, .xls)';
-      }
-      if (removeBtn) {
-        removeBtn.style.display = 'none';
+      const isCustomActive = localStorage.getItem(`custom_landmarks_active_${id}`) === 'true';
+      const customFileName = localStorage.getItem(`custom_landmarks_filename_${id}`);
+
+      // If user has a file chosen in the file input (not yet uploaded), clear the input selection
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        fileInput.value = '';
+        if (isCustomActive) {
+          if (textSpan) {
+            textSpan.innerText = customFileName || 'Custom Landmarks Active';
+            textSpan.title = customFileName || 'Custom landmarks loaded from file';
+          }
+          if (label) {
+            label.title = customFileName || 'Custom landmarks loaded from file';
+          }
+          if (removeBtn) {
+            removeBtn.style.display = 'inline-flex';
+          }
+        } else {
+          if (textSpan) {
+            textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+            textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+          }
+          if (label) {
+            label.title = 'Choose File (.csv, .xlsx, .xls)';
+          }
+          if (removeBtn) {
+            removeBtn.style.display = 'none';
+          }
+        }
+        return;
       }
 
-      const customKey = `landmarks_${id}`;
-      if (localStorage.getItem(customKey)) {
+      // If custom landmarks are currently active, prompt confirmation to remove and restore defaults
+      if (isCustomActive) {
         if (confirm('Do you want to remove the uploaded landmarks and restore defaults for this video?')) {
-          localStorage.removeItem(customKey);
-          const rawLandmarks = (videoObjects[id] && videoObjects[id].landmarks) ? videoObjects[id].landmarks : [];
+          localStorage.removeItem(`custom_landmarks_active_${id}`);
+          localStorage.removeItem(`custom_landmarks_filename_${id}`);
+          localStorage.removeItem(`custom_landmarks_${id}`);
+          
+          if (fileInput) fileInput.value = '';
+          if (textSpan) {
+            textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+            textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+          }
+          if (label) {
+            label.title = 'Choose File (.csv, .xlsx, .xls)';
+          }
+          if (removeBtn) {
+            removeBtn.style.display = 'none';
+          }
+
+          const rawLandmarks = (videoObjects[id] && videoObjects[id].landmarks) ? JSON.parse(JSON.stringify(videoObjects[id].landmarks)) : [];
           videoLandmarks[id] = window.TrueProgressBin ? rawLandmarks.filter(lm => !window.TrueProgressBin.isLandmarkDeleted(id, lm)) : [...rawLandmarks];
+          
           updateLandmarksUI(id);
+        }
+      } else {
+        if (fileInput) fileInput.value = '';
+        if (textSpan) {
+          textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+          textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+        }
+        if (label) {
+          label.title = 'Choose File (.csv, .xlsx, .xls)';
+        }
+        if (removeBtn) {
+          removeBtn.style.display = 'none';
         }
       }
     }
@@ -1729,9 +1826,20 @@
             if (newLandmarks.length > 0) {
               newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
               videoLandmarks[id] = newLandmarks;
+              localStorage.setItem(`custom_landmarks_active_${id}`, 'true');
+              localStorage.setItem(`custom_landmarks_filename_${id}`, file.name);
+              localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(newLandmarks));
               updateLandmarksUI(id);
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) removeBtn.style.display = 'inline-flex';
+              const textSpan = document.getElementById(`fileInputText_${id}`);
+              if (textSpan) {
+                textSpan.innerText = file.name;
+                textSpan.title = file.name;
+              }
+              const label = document.getElementById(`fileInputLabel_${id}`);
+              if (label) label.title = file.name;
+              if (fileInput) fileInput.value = '';
               alert(`${newLandmarks.length} landmarks loaded successfully from Excel.`);
             } else {
               alert('Could not find valid landmark records in Excel file.');
@@ -1786,9 +1894,20 @@
             if (newLandmarks.length > 0) {
               newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
               videoLandmarks[id] = newLandmarks;
+              localStorage.setItem(`custom_landmarks_active_${id}`, 'true');
+              localStorage.setItem(`custom_landmarks_filename_${id}`, file.name);
+              localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(newLandmarks));
               updateLandmarksUI(id);
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) removeBtn.style.display = 'inline-flex';
+              const textSpan = document.getElementById(`fileInputText_${id}`);
+              if (textSpan) {
+                textSpan.innerText = file.name;
+                textSpan.title = file.name;
+              }
+              const label = document.getElementById(`fileInputLabel_${id}`);
+              if (label) label.title = file.name;
+              if (fileInput) fileInput.value = '';
               alert(`${newLandmarks.length} CSV landmarks loaded successfully.`);
             } else {
               alert('Could not find valid landmark records in CSV.');
