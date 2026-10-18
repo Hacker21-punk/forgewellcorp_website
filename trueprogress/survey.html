@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress - Survey Videos" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta name="theme-color" content="#14124c" />
   <link rel="icon" href="assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -246,6 +246,33 @@
     let currentUser = null;
     let surveyVideos = [];
 
+    // Safe storage guardians
+    function safeGet(key, fallback = []) {
+      if (window.TPStorage && window.TPStorage.get) {
+        const val = window.TPStorage.get(key, fallback);
+        return val !== null && val !== undefined ? val : fallback;
+      }
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function safeSet(key, value) {
+      if (window.TPStorage && window.TPStorage.set) {
+        return window.TPStorage.set(key, value);
+      }
+      try {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        return true;
+      } catch (e) {
+        console.warn('safeSet error for ' + key, e);
+        return false;
+      }
+    }
+
     // URL Param parsing
     const urlParams = new URLSearchParams(window.location.search);
     surveyId = (urlParams.get('id') || '').trim();
@@ -327,10 +354,18 @@
           const res = await fetch('backup%20details%20of%20trueprogress/surveys.json');
           if (res.ok) {
             surveysList = await res.json();
+            try { sessionStorage.setItem('tp_cached_surveys', JSON.stringify(surveysList)); } catch(e) {}
+          } else {
+            throw new Error('Failed to load surveys');
           }
-        } catch (e) {}
+        } catch (e) {
+          try {
+            const cached = sessionStorage.getItem('tp_cached_surveys');
+            if (cached) surveysList = JSON.parse(cached);
+          } catch(err) {}
+        }
 
-        const customSurveys = JSON.parse(localStorage.getItem('custom_surveys') || '[]');
+        const customSurveys = safeGet('custom_surveys', []);
         const allSurveys = [...surveysList, ...customSurveys];
 
         if (surveyId && !surveyName) {
@@ -361,16 +396,28 @@
 
     async function fetchVideos() {
       try {
-        const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
-        if (!response.ok) throw new Error('Failed to load videos');
-        const defaultVideos = await response.json();
+        let defaultVideos = [];
+        try {
+          const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
+          if (response.ok) {
+            defaultVideos = await response.json();
+            try { sessionStorage.setItem('tp_cached_videos', JSON.stringify(defaultVideos)); } catch(e) {}
+          } else {
+            throw new Error('Failed to load videos');
+          }
+        } catch (e) {
+          try {
+            const cached = sessionStorage.getItem('tp_cached_videos');
+            if (cached) defaultVideos = JSON.parse(cached);
+          } catch(err) {}
+        }
 
-        // Load custom overrides from localStorage
-        const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        // Load custom overrides from safe storage
+        const customVideos = safeGet('custom_videos', []);
         const binDeletedVideos = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('video') : [];
-        const deletedVideos = JSON.parse(localStorage.getItem('deleted_videos') || '[]');
+        const deletedVideos = safeGet('deleted_videos', []);
         const allDeletedVideoIds = new Set([...deletedVideos, ...binDeletedVideos]);
-        const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+        const editedVideos = safeGet('edited_videos', []);
 
         const sIdLower = (surveyId || '').toLowerCase().trim();
         const sNameLower = (surveyName || '').toLowerCase().trim();
@@ -378,14 +425,14 @@
         function matchesSurvey(v) {
           if (!v) return false;
           if (allDeletedVideoIds.has(v.id)) return false;
-          const vSurvey = String(v.survey || '').trim().toLowerCase();
+          const vSurvey = String(v.survey || v.surveyId || '').trim().toLowerCase();
           if (sIdLower && vSurvey === sIdLower) return true;
           if (sNameLower && vSurvey === sNameLower) return true;
           return false;
         }
 
         // Filter default videos belonging to this survey
-        let filtered = defaultVideos.filter(matchesSurvey);
+        let filtered = (defaultVideos || []).filter(matchesSurvey);
 
         // Apply edits
         filtered = filtered.map(v => {
@@ -394,12 +441,12 @@
         });
 
         // Add custom new ones (strictly filtering out deleted ones)
-        const customForSurvey = customVideos.filter(matchesSurvey);
+        const customForSurvey = (customVideos || []).filter(matchesSurvey);
         surveyVideos = [...filtered, ...customForSurvey];
 
         renderTable();
       } catch (e) {
-        console.error(e);
+        console.error('Error fetching videos:', e);
         const tbody = document.getElementById('videoTableBody');
         if (tbody) {
           tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444; padding: 2rem;">Error loading videos list. Please refresh the page.</td></tr>`;
@@ -586,12 +633,12 @@
 
       if (id) {
         // Edit
-        let edited = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+        let edited = safeGet('edited_videos', []);
         const idx = edited.findIndex(e => e.id === id);
         const update = { id, name, videoURL, createdAt, status };
         if (idx > -1) edited[idx] = update;
         else edited.push(update);
-        localStorage.setItem('edited_videos', JSON.stringify(edited));
+        safeSet('edited_videos', edited);
       } else {
         // Create
         const newVideo = {
@@ -603,9 +650,9 @@
           status,
           landmarks: []
         };
-        let custom = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        let custom = safeGet('custom_videos', []);
         custom.push(newVideo);
-        localStorage.setItem('custom_videos', JSON.stringify(custom));
+        safeSet('custom_videos', custom);
       }
 
       closeVideoModal();
@@ -622,8 +669,8 @@
       if (checkedBoxes.length === 0) return;
 
       if (confirm(`Are you sure you want to delete the selected ${checkedBoxes.length} video(s)?`)) {
-        let deleted = JSON.parse(localStorage.getItem('deleted_videos') || '[]');
-        let custom = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+        let deleted = safeGet('deleted_videos', []);
+        let custom = safeGet('custom_videos', []);
 
         checkedBoxes.forEach(cb => {
           const id = cb.value;
@@ -650,8 +697,8 @@
           }
         });
 
-        localStorage.setItem('deleted_videos', JSON.stringify(deleted));
-        localStorage.setItem('custom_videos', JSON.stringify(custom));
+        safeSet('deleted_videos', deleted);
+        safeSet('custom_videos', custom);
         
         if (window.TrueProgressBin) {
           window.TrueProgressBin.showToast(`${checkedBoxes.length} video(s) moved to Recycle Bin`, 'info');

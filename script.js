@@ -206,13 +206,18 @@ if (next) next.addEventListener("click", () => { showSlide(active + 1); queueSli
 const slider = document.querySelector(".hero-slider");
 if (slider) {
 let touchStartX = 0;
-slider.addEventListener("touchstart", (e) => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+let touchStartY = 0;
+slider.addEventListener("touchstart", (e) => {
+  touchStartX = e.changedTouches[0].clientX;
+  touchStartY = e.changedTouches[0].clientY;
+}, { passive: true });
 slider.addEventListener("touchend", (e) => {
-const dx = e.changedTouches[0].clientX - touchStartX;
-if (Math.abs(dx) > 50) {
-showSlide(active + (dx < 0 ? 1 : -1));
-queueSlider();
-}
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+    showSlide(active + (dx < 0 ? 1 : -1));
+    queueSlider();
+  }
 }, { passive: true });
 }
 bindHoverPause(document.querySelector(".hero-style-2"));

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress - Login to your account" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" href="assets/trueprogress/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,11 +14,9 @@
   <script>
     (function() {
       try {
-        var t = localStorage.getItem('tp_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', t);
-      } catch (e) {
+        localStorage.setItem('tp_theme', 'light');
         document.documentElement.setAttribute('data-theme', 'light');
-      }
+      } catch (e) {}
     })();
   </script>
   <script src="assets/trueprogress/theme.js"></script>
@@ -26,24 +24,6 @@
 <body>
   <div id="__next">
     <div class="login-wrapper">
-      <!-- Theme Toggle Button -->
-      <button class="theme-toggle-btn auth-theme-toggle" id="themeToggleBtn" type="button" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
-        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-      </button>
-
       <section class="login-section">
         <div class="login-container">
           <div class="login-row">
@@ -122,8 +102,14 @@
 
   <script>
     // Automatically redirect if already logged in
-    if (sessionStorage.getItem('loggedInUser')) {
-      window.location.href = '/trueprogress/index.html';
+    const existingUser = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+    if (existingUser) {
+      try {
+        const parsed = JSON.parse(existingUser);
+        if (parsed && (parsed.uid || parsed.email)) {
+          window.location.href = '/trueprogress/index.html';
+        }
+      } catch (e) {}
     }
 
     async function handleLogin(event) {
@@ -147,10 +133,10 @@
         if (!response.ok) throw new Error('Failed to load user database');
         let users = await response.json();
 
-        // Integrate custom, edited, and deleted users from localStorage
-        const customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
-        const editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
-        const deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
+        // Integrate custom, edited, and deleted users from safe storage
+        const customUsers = (window.TPStorage && window.TPStorage.get('custom_users', [])) || JSON.parse(localStorage.getItem('custom_users') || '[]');
+        const editedUsers = (window.TPStorage && window.TPStorage.get('edited_users', [])) || JSON.parse(localStorage.getItem('edited_users') || '[]');
+        const deletedUsers = (window.TPStorage && window.TPStorage.get('deleted_users', [])) || JSON.parse(localStorage.getItem('deleted_users') || '[]');
 
         // Filter out deleted users
         users = users.filter(u => !deletedUsers.includes(u.uid));
@@ -216,6 +202,13 @@
           }
 
           sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+          try {
+            if (window.TPStorage && window.TPStorage.set) {
+              window.TPStorage.set('loggedInUser', user);
+            } else {
+              localStorage.setItem('loggedInUser', JSON.stringify(user));
+            }
+          } catch (e) {}
           window.location.href = '/trueprogress/index.html';
         } else {
           alert('Invalid ID/Email or password.');

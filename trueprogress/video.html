@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress - Video Viewer" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta name="theme-color" content="#14124c" />
   <link rel="icon" href="assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -428,10 +428,18 @@
 
     function setVolume(id, vol) {
       if (playerTypes[id] === 'youtube') {
-        if (ytPlayerReadyState[id] && players[id]) players[id].setVolume(vol * 100);
+        if (ytPlayerReadyState[id] && players[id]) {
+          try { players[id].setVolume(vol * 100); } catch (e) {}
+        }
       } else {
         const el = document.getElementById(`videoPlayer_${id}`);
-        if (el) el.volume = vol;
+        if (el) {
+          try {
+            el.volume = Math.max(0, Math.min(1, vol));
+          } catch (e) {
+            // iOS Safari restricts script-driven volume changes
+          }
+        }
       }
     }
 
@@ -734,6 +742,12 @@
     }
 
     function makeElementDraggable(elmnt) {
+      if (!elmnt) return;
+      if (window.innerWidth <= 768) {
+        elmnt.onmousedown = null;
+        elmnt.ontouchstart = null;
+        return;
+      }
       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
       
       elmnt.onmousedown = dragMouseDown;
@@ -831,14 +845,35 @@
     });
 
     async function loadVideoData() {
+      let videosList = [];
       try {
-        const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
-        if (!response.ok) throw new Error('Failed to load videos data');
-        const videosList = await response.json();
+        let response = await fetch('backup%20details%20of%20trueprogress/videos.json');
+        if (!response.ok) {
+          response = await fetch('/trueprogress/backup%20details%20of%20trueprogress/videos.json');
+        }
+        if (response.ok) {
+          videosList = await response.json();
+          try { sessionStorage.setItem('cached_base_videos', JSON.stringify(videosList)); } catch (e) {}
+        }
+      } catch (err) {
+        console.warn('Network fetch for videos.json failed, falling back to cache:', err);
+        try {
+          const cached = sessionStorage.getItem('cached_base_videos');
+          if (cached) videosList = JSON.parse(cached);
+        } catch (e) {}
+      }
 
-        // Check local storage updates
-        const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
-        const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+      try {
+        // Check local storage updates with safe fallbacks
+        let customVideos = [];
+        let editedVideos = [];
+        if (window.TPStorage) {
+          customVideos = window.TPStorage.get('custom_videos', []);
+          editedVideos = window.TPStorage.get('edited_videos', []);
+        } else {
+          try { customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]'); } catch (e) {}
+          try { editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]'); } catch (e) {}
+        }
 
         activeVideoIds.forEach(id => {
           let video = editedVideos.find(e => e.id === id);
@@ -939,10 +974,19 @@
       // Sort landmarks by time
       videoLandmarks[id].sort((a, b) => a.time - b.time);
 
-      // Save to localStorage
-      localStorage.setItem(`landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
-      if (localStorage.getItem(`custom_landmarks_active_${id}`) === 'true') {
-        localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
+      // Save to storage
+      if (window.TPStorage && window.TPStorage.set) {
+        window.TPStorage.set(`landmarks_${id}`, videoLandmarks[id]);
+        if (localStorage.getItem(`custom_landmarks_active_${id}`) === 'true') {
+          window.TPStorage.set(`custom_landmarks_${id}`, videoLandmarks[id]);
+        }
+      } else {
+        try {
+          localStorage.setItem(`landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
+          if (localStorage.getItem(`custom_landmarks_active_${id}`) === 'true') {
+            localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(videoLandmarks[id]));
+          }
+        } catch (e) {}
       }
 
       // Render scrollable list of landmarks
@@ -1473,13 +1517,26 @@
     }
 
     function toggleFullscreen(id) {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        return;
+      }
       const container = document.getElementById(`videoWrapper_${id}`);
-      if (container.requestFullscreen) {
-        container.requestFullscreen();
-      } else if (container.webkitRequestFullscreen) {
-        container.webkitRequestFullscreen();
-      } else if (container.msRequestFullscreen) {
-        container.msRequestFullscreen();
+      const videoEl = document.getElementById(`videoPlayer_${id}`);
+      if (container) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen().catch(() => {});
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        } else if (videoEl && videoEl.webkitEnterFullscreen) {
+          try { videoEl.webkitEnterFullscreen(); } catch (e) {}
+        }
       }
     }
 
@@ -1711,9 +1768,16 @@
       // If custom landmarks are currently active, prompt confirmation to remove and restore defaults
       if (isCustomActive) {
         if (confirm('Do you want to remove the uploaded landmarks and restore defaults for this video?')) {
-          localStorage.removeItem(`custom_landmarks_active_${id}`);
-          localStorage.removeItem(`custom_landmarks_filename_${id}`);
-          localStorage.removeItem(`custom_landmarks_${id}`);
+          if (window.TPStorage && window.TPStorage.remove) {
+            window.TPStorage.remove(`custom_landmarks_active_${id}`);
+            window.TPStorage.remove(`custom_landmarks_filename_${id}`);
+            window.TPStorage.remove(`custom_landmarks_${id}`);
+          }
+          try {
+            localStorage.removeItem(`custom_landmarks_active_${id}`);
+            localStorage.removeItem(`custom_landmarks_filename_${id}`);
+            localStorage.removeItem(`custom_landmarks_${id}`);
+          } catch (e) {}
           
           if (fileInput) fileInput.value = '';
           if (textSpan) {
@@ -1826,9 +1890,17 @@
             if (newLandmarks.length > 0) {
               newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
               videoLandmarks[id] = newLandmarks;
-              localStorage.setItem(`custom_landmarks_active_${id}`, 'true');
-              localStorage.setItem(`custom_landmarks_filename_${id}`, file.name);
-              localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(newLandmarks));
+              if (window.TPStorage && window.TPStorage.set) {
+                window.TPStorage.set(`custom_landmarks_active_${id}`, 'true');
+                window.TPStorage.set(`custom_landmarks_filename_${id}`, file.name);
+                window.TPStorage.set(`custom_landmarks_${id}`, newLandmarks);
+              } else {
+                try {
+                  localStorage.setItem(`custom_landmarks_active_${id}`, 'true');
+                  localStorage.setItem(`custom_landmarks_filename_${id}`, file.name);
+                  localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(newLandmarks));
+                } catch(e) {}
+              }
               updateLandmarksUI(id);
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) removeBtn.style.display = 'inline-flex';
@@ -1894,9 +1966,17 @@
             if (newLandmarks.length > 0) {
               newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
               videoLandmarks[id] = newLandmarks;
-              localStorage.setItem(`custom_landmarks_active_${id}`, 'true');
-              localStorage.setItem(`custom_landmarks_filename_${id}`, file.name);
-              localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(newLandmarks));
+              if (window.TPStorage && window.TPStorage.set) {
+                window.TPStorage.set(`custom_landmarks_active_${id}`, 'true');
+                window.TPStorage.set(`custom_landmarks_filename_${id}`, file.name);
+                window.TPStorage.set(`custom_landmarks_${id}`, newLandmarks);
+              } else {
+                try {
+                  localStorage.setItem(`custom_landmarks_active_${id}`, 'true');
+                  localStorage.setItem(`custom_landmarks_filename_${id}`, file.name);
+                  localStorage.setItem(`custom_landmarks_${id}`, JSON.stringify(newLandmarks));
+                } catch(e) {}
+              }
               updateLandmarksUI(id);
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) removeBtn.style.display = 'inline-flex';
@@ -2098,13 +2178,23 @@
     }
 
     function toggleFullscreenAll() {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        return;
+      }
       const container = document.getElementById('playersContainer');
-      if (container.requestFullscreen) {
-        container.requestFullscreen();
-      } else if (container.webkitRequestFullscreen) {
-        container.webkitRequestFullscreen();
-      } else if (container.msRequestFullscreen) {
-        container.msRequestFullscreen();
+      if (container) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen().catch(() => {});
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        }
       }
     }
 
@@ -2183,6 +2273,50 @@
         renderRecycleBin();
       }
     }
+
+    // Desktop & Laptop Keyboard Shortcuts for Video Player
+    document.addEventListener('keydown', function(e) {
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) {
+        return;
+      }
+
+      const primaryId = activeVideoIds && activeVideoIds.length > 0 ? activeVideoIds[0] : null;
+      if (!primaryId) return;
+
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'k' || e.key === 'K') {
+        e.preventDefault();
+        if (activeVideoIds.length > 1) {
+          togglePlayPauseAll();
+        } else {
+          togglePlayPause(primaryId);
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'j' || e.key === 'J') {
+        e.preventDefault();
+        if (activeVideoIds.length > 1) {
+          fastBackwardAll();
+        } else {
+          fastBackward(primaryId);
+        }
+      } else if (e.key === 'ArrowRight' || e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        if (activeVideoIds.length > 1) {
+          fastForwardAll();
+        } else {
+          fastForward(primaryId);
+        }
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        toggleMute(primaryId);
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        if (activeVideoIds.length > 1) {
+          toggleFullscreenAll();
+        } else {
+          toggleFullscreen(primaryId);
+        }
+      }
+    });
 
     window.addEventListener('tp_item_restored', function () {
       loadVideoData();

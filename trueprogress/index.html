@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress Dashboard" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta name="theme-color" content="#14124c" />
   <link rel="icon" href="assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -580,6 +580,33 @@
     // Backward compatibility fallback
     let activeFilters = {};
 
+    // Safe storage guardians
+    function safeGet(key, fallback = []) {
+      if (window.TPStorage && window.TPStorage.get) {
+        const val = window.TPStorage.get(key, fallback);
+        return val !== null && val !== undefined ? val : fallback;
+      }
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function safeSet(key, value) {
+      if (window.TPStorage && window.TPStorage.set) {
+        return window.TPStorage.set(key, value);
+      }
+      try {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        return true;
+      } catch (e) {
+        console.warn('safeSet error for ' + key, e);
+        return false;
+      }
+    }
+
     function isUserAdmin(u = currentUser) {
       return Boolean(u && (u.admin === "true" || u.admin === true));
     }
@@ -639,29 +666,39 @@
       }
     }
 
-    // Fetch surveys from surveys.json and local storage overrides
+    // Fetch surveys from surveys.json and safe storage overrides
     async function fetchSurveys() {
       try {
-        const response = await fetch('backup%20details%20of%20trueprogress/surveys.json');
-        if (!response.ok) throw new Error('Failed to load surveys data');
-        const defaultSurveys = await response.json();
+        let defaultSurveys = [];
+        try {
+          const response = await fetch('backup%20details%20of%20trueprogress/surveys.json');
+          if (response.ok) {
+            defaultSurveys = await response.json();
+            try { sessionStorage.setItem('tp_cached_surveys', JSON.stringify(defaultSurveys)); } catch(e) {}
+          } else {
+            throw new Error('Failed to load surveys data');
+          }
+        } catch (fetchErr) {
+          console.warn('Network fetch fallback for surveys:', fetchErr);
+          try {
+            const cached = sessionStorage.getItem('tp_cached_surveys');
+            if (cached) defaultSurveys = JSON.parse(cached);
+          } catch(e) {}
+        }
 
-        // Get custom surveys from localStorage
-        const customSurveysStr = localStorage.getItem('custom_surveys');
-        const customSurveys = customSurveysStr ? JSON.parse(customSurveysStr) : [];
+        // Get custom surveys from safe storage
+        const customSurveys = safeGet('custom_surveys', []);
 
         // All deleted survey IDs from universal Recycle Bin & legacy stores
         const binDeletedSurveys = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('survey') : [];
-        const deletedSurveysStr = localStorage.getItem('deleted_surveys');
-        const deletedSurveys = deletedSurveysStr ? JSON.parse(deletedSurveysStr) : [];
+        const deletedSurveys = safeGet('deleted_surveys', []);
         const allDeletedSurveyIds = new Set([...deletedSurveys, ...binDeletedSurveys]);
 
         // Apply edits / deletions to default list
-        const editedSurveysStr = localStorage.getItem('edited_surveys');
-        const editedSurveys = editedSurveysStr ? JSON.parse(editedSurveysStr) : [];
+        const editedSurveys = safeGet('edited_surveys', []);
 
         // Filter default surveys
-        surveysList = defaultSurveys.filter(s => !allDeletedSurveyIds.has(s.id));
+        surveysList = (defaultSurveys || []).filter(s => !allDeletedSurveyIds.has(s.id));
 
         // Merge edited details
         surveysList = surveysList.map(s => {
@@ -670,34 +707,46 @@
         });
 
         // Add completely new custom ones (strictly filtering out deleted ones)
-        const activeCustomSurveys = customSurveys.filter(s => !allDeletedSurveyIds.has(s.id));
+        const activeCustomSurveys = (customSurveys || []).filter(s => !allDeletedSurveyIds.has(s.id));
         surveysList = [...surveysList, ...activeCustomSurveys];
       } catch (error) {
-        console.error(error);
-        alert('Error fetching surveys database.');
+        console.error('Error fetching surveys:', error);
       }
     }
 
     // Fetch videos list
     async function fetchVideos() {
       try {
-        const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
-        if (!response.ok) throw new Error('Failed to load videos data');
-        const defaultVideos = await response.json();
+        let defaultVideos = [];
+        try {
+          const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
+          if (response.ok) {
+            defaultVideos = await response.json();
+            try { sessionStorage.setItem('tp_cached_videos', JSON.stringify(defaultVideos)); } catch(e) {}
+          } else {
+            throw new Error('Failed to load videos data');
+          }
+        } catch (fetchErr) {
+          console.warn('Network fetch fallback for videos:', fetchErr);
+          try {
+            const cached = sessionStorage.getItem('tp_cached_videos');
+            if (cached) defaultVideos = JSON.parse(cached);
+          } catch(e) {}
+        }
 
         const binDeletedVideos = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('video') : [];
-        const deletedVideos = JSON.parse(localStorage.getItem('deleted_videos') || '[]');
+        const deletedVideos = safeGet('deleted_videos', []);
         const allDeletedVideoIds = new Set([...deletedVideos, ...binDeletedVideos]);
-        const customVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
-        const editedVideos = JSON.parse(localStorage.getItem('edited_videos') || '[]');
+        const customVideos = safeGet('custom_videos', []);
+        const editedVideos = safeGet('edited_videos', []);
 
-        let activeVideos = defaultVideos.filter(v => !allDeletedVideoIds.has(v.id));
+        let activeVideos = (defaultVideos || []).filter(v => !allDeletedVideoIds.has(v.id));
         activeVideos = activeVideos.map(v => {
           const edited = editedVideos.find(e => e.id === v.id);
           return edited ? { ...v, ...edited } : v;
         });
 
-        const activeCustomVideos = customVideos.filter(v => !allDeletedVideoIds.has(v.id));
+        const activeCustomVideos = (customVideos || []).filter(v => !allDeletedVideoIds.has(v.id));
         allVideos = [...activeVideos, ...activeCustomVideos];
       } catch (error) {
         console.error('Error fetching videos:', error);
@@ -707,20 +756,33 @@
     // Fetch all users
     async function fetchUsers() {
       try {
-        const response = await fetch('backup%20details%20of%20trueprogress/users.json');
-        if (!response.ok) throw new Error('Failed to load users data');
-        let baseUsers = await response.json();
+        let baseUsers = [];
+        try {
+          const response = await fetch('backup%20details%20of%20trueprogress/users.json');
+          if (response.ok) {
+            baseUsers = await response.json();
+            try { sessionStorage.setItem('tp_cached_users', JSON.stringify(baseUsers)); } catch(e) {}
+          } else {
+            throw new Error('Failed to load users data');
+          }
+        } catch (fetchErr) {
+          console.warn('Network fetch fallback for users:', fetchErr);
+          try {
+            const cached = sessionStorage.getItem('tp_cached_users');
+            if (cached) baseUsers = JSON.parse(cached);
+          } catch(e) {}
+        }
 
-        // Apply edits / creations / deletions from localStorage & universal bin
+        // Apply edits / creations / deletions from safe storage & universal bin
         const binDeletedUsers = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('user') : [];
-        const deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
+        const deletedUsers = safeGet('deleted_users', []);
         const allDeletedUserIds = new Set([...deletedUsers, ...binDeletedUsers]);
 
-        const customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
-        const editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+        const customUsers = safeGet('custom_users', []);
+        const editedUsers = safeGet('edited_users', []);
 
         // Start with base users (excluding deleted ones)
-        allUsers = baseUsers.filter(u => !allDeletedUserIds.has(u.uid));
+        allUsers = (baseUsers || []).filter(u => !allDeletedUserIds.has(u.uid));
 
         // Merge edited users
         editedUsers.forEach(edited => {
@@ -750,7 +812,7 @@
           let binUpdated = false;
           binItems.forEach(item => {
             if (item.type === 'user' && (!item.data || !item.data.name || item.name.startsWith('User '))) {
-              const foundInBase = baseUsers.find(bu => bu.uid === item.id);
+              const foundInBase = (baseUsers || []).find(bu => bu.uid === item.id);
               if (foundInBase) {
                 item.name = foundInBase.name || item.name;
                 item.subtitle = (foundInBase.email || 'No email') + ' • ' + (foundInBase.organization || foundInBase.department || 'Account');
@@ -1580,7 +1642,7 @@
 
       if (id) {
         // Edit Survey
-        let editedSurveys = JSON.parse(localStorage.getItem('edited_surveys') || '[]');
+        let editedSurveys = safeGet('edited_surveys', []);
         const existingIdx = editedSurveys.findIndex(e => e.id === id);
         
         const surveyUpdate = { id, name, department, survey_length, createdAt, status };
@@ -1589,7 +1651,7 @@
         } else {
           editedSurveys.push(surveyUpdate);
         }
-        localStorage.setItem('edited_surveys', JSON.stringify(editedSurveys));
+        safeSet('edited_surveys', editedSurveys);
       } else {
         // Create Survey
         const newSurvey = {
@@ -1602,9 +1664,9 @@
           video_count: 0,
           user_count: []
         };
-        let customSurveys = JSON.parse(localStorage.getItem('custom_surveys') || '[]');
+        let customSurveys = safeGet('custom_surveys', []);
         customSurveys.push(newSurvey);
-        localStorage.setItem('custom_surveys', JSON.stringify(customSurveys));
+        safeSet('custom_surveys', customSurveys);
       }
 
       closeSurveyModal();
@@ -1620,7 +1682,7 @@
         return;
       }
       if (confirm('Are you sure you want to delete this survey?')) {
-        let customSurveys = JSON.parse(localStorage.getItem('custom_surveys') || '[]');
+        let customSurveys = safeGet('custom_surveys', []);
         const isCustom = id.startsWith('custom-');
         const surveyToDelete = surveysList.find(s => s.id === id) || customSurveys.find(s => s.id === id);
 
@@ -1636,21 +1698,23 @@
           });
         }
 
-        let deletedSurveys = JSON.parse(localStorage.getItem('deleted_surveys') || '[]');
+        let deletedSurveys = safeGet('deleted_surveys', []);
         
         if (isCustom) {
           if (surveyToDelete) {
-            let deletedCustomSurveys = JSON.parse(localStorage.getItem('deleted_custom_surveys') || '[]');
+            let deletedCustomSurveys = safeGet('deleted_custom_surveys', []);
             if (!deletedCustomSurveys.some(s => s.id === id)) {
               deletedCustomSurveys.push(surveyToDelete);
-              localStorage.setItem('deleted_custom_surveys', JSON.stringify(deletedCustomSurveys));
+              safeSet('deleted_custom_surveys', deletedCustomSurveys);
             }
           }
           customSurveys = customSurveys.filter(s => s.id !== id);
-          localStorage.setItem('custom_surveys', JSON.stringify(customSurveys));
+          safeSet('custom_surveys', customSurveys);
         } else {
-          deletedSurveys.push(id);
-          localStorage.setItem('deleted_surveys', JSON.stringify(deletedSurveys));
+          if (!deletedSurveys.includes(id)) {
+            deletedSurveys.push(id);
+          }
+          safeSet('deleted_surveys', deletedSurveys);
         }
 
         await fetchSurveys();
@@ -2093,10 +2157,10 @@
             return;
           }
 
-          // Merge into custom_surveys in localStorage
-          const existingCustomSurveys = JSON.parse(localStorage.getItem('custom_surveys') || '[]');
+          // Merge into custom_surveys in safe storage
+          const existingCustomSurveys = safeGet('custom_surveys', []);
           const binDeletedSurveys = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('survey') : [];
-          const deletedSurveys = JSON.parse(localStorage.getItem('deleted_surveys') || '[]');
+          const deletedSurveys = safeGet('deleted_surveys', []);
           const deletedSet = new Set([...deletedSurveys, ...binDeletedSurveys]);
 
           importedSurveys.forEach(imported => {
@@ -2109,12 +2173,12 @@
             }
           });
 
-          localStorage.setItem('custom_surveys', JSON.stringify(existingCustomSurveys));
-          localStorage.setItem('deleted_surveys', JSON.stringify(Array.from(deletedSet)));
+          safeSet('custom_surveys', existingCustomSurveys);
+          safeSet('deleted_surveys', Array.from(deletedSet));
 
           // Parse Videos if Videos sheet present or from survey Video URLs
           let importedVideosCount = 0;
-          const existingCustomVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+          const existingCustomVideos = safeGet('custom_videos', []);
 
           if (videosSheet) {
             const videoRows = XLSX.utils.sheet_to_json(videosSheet, { defval: '' });
@@ -2153,14 +2217,14 @@
             }
           });
 
-          localStorage.setItem('custom_videos', JSON.stringify(existingCustomVideos));
+          safeSet('custom_videos', existingCustomVideos);
 
           // Parse Users if Users sheet present
           let importedUsersCount = 0;
           if (usersSheet) {
             const userRows = XLSX.utils.sheet_to_json(usersSheet, { defval: '' });
             if (userRows && userRows.length > 0) {
-              const existingCustomUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+              const existingCustomUsers = safeGet('custom_users', []);
               userRows.forEach((row, uIdx) => {
                 const uUid = row['UID'] || row['uid'] || `user_${Date.now()}_${uIdx}`;
                 const uName = row['Name'] || row['name'] || '';
@@ -2206,7 +2270,7 @@
                   importedUsersCount++;
                 }
               });
-              localStorage.setItem('custom_users', JSON.stringify(existingCustomUsers));
+              safeSet('custom_users', existingCustomUsers);
               await fetchUsers();
             }
           }
@@ -2541,7 +2605,7 @@
       
       if (uid) {
         // Edit User
-        let editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+        let editedUsers = safeGet('edited_users', []);
         const existingIdx = editedUsers.findIndex(e => e.uid === uid);
         
         const userUpdate = {
@@ -2563,13 +2627,13 @@
         } else {
           editedUsers.push(userUpdate);
         }
-        localStorage.setItem('edited_users', JSON.stringify(editedUsers));
+        safeSet('edited_users', editedUsers);
 
         // If the edited user is the current logged-in user, immediately sync currentUser
         if (currentUser && (currentUser.uid === uid || (currentUser.email && email && currentUser.email.trim().toLowerCase() === email.trim().toLowerCase()))) {
           currentUser = { ...currentUser, ...userUpdate };
           sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
-          localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+          safeSet('loggedInUser', currentUser);
           
           if (document.getElementById('profileName')) {
             document.getElementById('profileName').innerText = getInitials(currentUser.name);
@@ -2603,9 +2667,9 @@
             nanoseconds: 0
           }
         };
-        let customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+        let customUsers = safeGet('custom_users', []);
         customUsers.push(newUser);
-        localStorage.setItem('custom_users', JSON.stringify(customUsers));
+        safeSet('custom_users', customUsers);
       }
       
       closeUserModal();
@@ -2626,9 +2690,9 @@
 
       if (confirm('Are you sure you want to delete this user?')) {
         const userToDelete = allUsers.find(u => u.uid === uid);
-        let customUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+        let customUsers = safeGet('custom_users', []);
         const isCustom = uid.startsWith('user-') || customUsers.some(u => u.uid === uid);
-        let editedUsers = JSON.parse(localStorage.getItem('edited_users') || '[]');
+        let editedUsers = safeGet('edited_users', []);
         const isEdited = editedUsers.some(u => u.uid === uid);
 
         // Add to universal Recycle Bin
@@ -2648,11 +2712,11 @@
         const customIdx = customUsers.findIndex(u => u.uid === uid);
         if (customIdx > -1) {
           const removed = customUsers.splice(customIdx, 1)[0];
-          localStorage.setItem('custom_users', JSON.stringify(customUsers));
-          let deletedCustomUsers = JSON.parse(localStorage.getItem('deleted_custom_users') || '[]');
+          safeSet('custom_users', customUsers);
+          let deletedCustomUsers = safeGet('deleted_custom_users', []);
           if (!deletedCustomUsers.some(u => (u.uid || u.id) === uid)) {
             deletedCustomUsers.push(removed);
-            localStorage.setItem('deleted_custom_users', JSON.stringify(deletedCustomUsers));
+            safeSet('deleted_custom_users', deletedCustomUsers);
           }
         }
 
@@ -2660,14 +2724,14 @@
         const editedIdx = editedUsers.findIndex(u => u.uid === uid);
         if (editedIdx > -1) {
           editedUsers.splice(editedIdx, 1);
-          localStorage.setItem('edited_users', JSON.stringify(editedUsers));
+          safeSet('edited_users', editedUsers);
         }
 
         // 3. Add to deleted_users array
-        let deletedUsers = JSON.parse(localStorage.getItem('deleted_users') || '[]');
+        let deletedUsers = safeGet('deleted_users', []);
         if (!deletedUsers.includes(uid)) {
           deletedUsers.push(uid);
-          localStorage.setItem('deleted_users', JSON.stringify(deletedUsers));
+          safeSet('deleted_users', deletedUsers);
         }
 
         await fetchUsers();
