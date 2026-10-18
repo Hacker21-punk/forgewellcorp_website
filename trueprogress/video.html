@@ -563,14 +563,20 @@
           // Single video mode: file upload + Landmarks + KM dropdowns in column
           const uploadHtml = isAdmin ? `
               <!-- File Upload -->
-              <div class="search-select-wrapper">
+              <div class="search-select-wrapper" style="min-width: 0;">
                 <span class="search-select-label">Upload LandMarks File (.csv, .xlsx, .xls)</span>
-                <div class="file-upload-container">
-                  <label class="file-input-wrapper" id="fileInputLabel_${id}">
+                <div class="file-upload-container" id="fileUploadContainer_${id}">
+                  <label class="file-input-wrapper" id="fileInputLabel_${id}" title="Choose File (.csv, .xlsx, .xls)">
                     <span id="fileInputText_${id}">Choose File (.csv, .xlsx, .xls)</span>
                     <input type="file" id="landmarksFileInput_${id}" accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleFileChange(this, '${id}')" />
                   </label>
-                  <button class="btn-upload-submit" onclick="uploadLandmarksFile('${id}')">Upload</button>
+                  <button type="button" class="btn-remove-file" id="removeFileBtn_${id}" onclick="handleRemoveLandmarksFile('${id}')" title="Remove file" aria-label="Remove file">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn-upload-submit" id="btnUploadSubmit_${id}" onclick="uploadLandmarksFile('${id}')">Upload</button>
                 </div>
               </div>
           ` : '';
@@ -846,6 +852,13 @@
           let rawLandmarks = [];
           if (overrides) {
             rawLandmarks = JSON.parse(overrides);
+            const removeBtn = document.getElementById(`removeFileBtn_${id}`);
+            const textSpan = document.getElementById(`fileInputText_${id}`);
+            if (removeBtn) removeBtn.style.display = 'inline-flex';
+            if (textSpan) {
+              textSpan.innerText = 'Custom Landmarks Active';
+              textSpan.title = 'Custom landmarks loaded from file';
+            }
           } else {
             rawLandmarks = videoObjects[id].landmarks || [];
           }
@@ -1579,11 +1592,60 @@
     // File input selection label toggle (preserves the <input> element)
     function handleFileChange(input, id) {
       const textSpan = document.getElementById(`fileInputText_${id}`);
-      if (textSpan) {
-        if (input.files && input.files[0]) {
-          textSpan.innerText = input.files[0].name;
-        } else {
+      const removeBtn = document.getElementById(`removeFileBtn_${id}`);
+      const label = document.getElementById(`fileInputLabel_${id}`);
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (textSpan) {
+          textSpan.innerText = file.name;
+          textSpan.title = file.name;
+        }
+        if (label) {
+          label.title = file.name;
+        }
+        if (removeBtn) {
+          removeBtn.style.display = 'inline-flex';
+        }
+      } else {
+        if (textSpan) {
           textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+          textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+        }
+        if (label) {
+          label.title = 'Choose File (.csv, .xlsx, .xls)';
+        }
+        if (removeBtn) {
+          removeBtn.style.display = 'none';
+        }
+      }
+    }
+
+    // Remove chosen landmarks file and restore default landmarks if custom ones were loaded
+    function handleRemoveLandmarksFile(id) {
+      const fileInput = document.getElementById(`landmarksFileInput_${id}`);
+      const textSpan = document.getElementById(`fileInputText_${id}`);
+      const removeBtn = document.getElementById(`removeFileBtn_${id}`);
+      const label = document.getElementById(`fileInputLabel_${id}`);
+      
+      if (fileInput) fileInput.value = '';
+      if (textSpan) {
+        textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+        textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+      }
+      if (label) {
+        label.title = 'Choose File (.csv, .xlsx, .xls)';
+      }
+      if (removeBtn) {
+        removeBtn.style.display = 'none';
+      }
+
+      const customKey = `landmarks_${id}`;
+      if (localStorage.getItem(customKey)) {
+        if (confirm('Do you want to remove the uploaded landmarks and restore defaults for this video?')) {
+          localStorage.removeItem(customKey);
+          const rawLandmarks = (videoObjects[id] && videoObjects[id].landmarks) ? videoObjects[id].landmarks : [];
+          videoLandmarks[id] = window.TrueProgressBin ? rawLandmarks.filter(lm => !window.TrueProgressBin.isLandmarkDeleted(id, lm)) : [...rawLandmarks];
+          updateLandmarksUI(id);
         }
       }
     }
@@ -1668,6 +1730,8 @@
               newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
               videoLandmarks[id] = newLandmarks;
               updateLandmarksUI(id);
+              const removeBtn = document.getElementById(`removeFileBtn_${id}`);
+              if (removeBtn) removeBtn.style.display = 'inline-flex';
               alert(`${newLandmarks.length} landmarks loaded successfully from Excel.`);
             } else {
               alert('Could not find valid landmark records in Excel file.');
@@ -1723,6 +1787,8 @@
               newLandmarks.sort((a, b) => (parseFloat(a.time) || 0) - (parseFloat(b.time) || 0));
               videoLandmarks[id] = newLandmarks;
               updateLandmarksUI(id);
+              const removeBtn = document.getElementById(`removeFileBtn_${id}`);
+              if (removeBtn) removeBtn.style.display = 'inline-flex';
               alert(`${newLandmarks.length} CSV landmarks loaded successfully.`);
             } else {
               alert('Could not find valid landmark records in CSV.');

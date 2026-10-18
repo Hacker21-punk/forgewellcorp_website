@@ -461,12 +461,21 @@
 
         <div class="form-group" style="margin-bottom: 1rem;">
           <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; display: block;">Select Project File</label>
-          <div class="file-upload-container" style="border: 2px dashed var(--surface-border, #cbd5e1); border-radius: var(--radius-md, 8px); padding: 1.5rem 1rem; text-align: center; background: var(--surface-card, #fff);">
-            <label class="file-input-wrapper" style="border-right: none; background: #2563eb; color: #fff; border-radius: var(--radius-sm, 6px); display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.25rem; cursor: pointer; font-size: 0.875rem; font-weight: 600;">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              <span>Choose Excel File</span>
-              <input type="file" id="surveyProjectFileInput" accept=".xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleSurveyProjectFileChange(this)" style="display: none;" />
-            </label>
+          <div class="file-upload-container" style="border: 2px dashed var(--surface-border, #cbd5e1); border-radius: var(--radius-md, 8px); padding: 1.5rem 1rem; text-align: center; background: var(--surface-card, #fff); flex-direction: column; align-items: center; justify-content: center;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+              <label class="file-input-wrapper" style="border-right: none; background: #2563eb; color: #fff; border-radius: var(--radius-sm, 6px); display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.25rem; cursor: pointer; font-size: 0.875rem; font-weight: 600;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Choose Excel File</span>
+                <input type="file" id="surveyProjectFileInput" accept=".xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleSurveyProjectFileChange(this)" style="display: none;" />
+              </label>
+              <button type="button" class="btn-remove-file" id="removeSurveyProjectFileBtn" onclick="removeSurveyProjectFile()" style="display: none; border: 1px solid #ef4444; border-radius: var(--radius-sm, 6px); padding: 0.55rem 0.85rem; color: #ef4444; font-size: 0.8125rem; font-weight: 600; cursor: pointer; align-items: center; gap: 0.35rem;" title="Remove chosen file">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Remove</span>
+              </button>
+            </div>
             <div id="surveyProjectFileName" style="margin-top: 0.75rem; font-size: 0.8125rem; color: var(--text-secondary, #64748b); font-weight: 500; word-break: break-all;">No file chosen</div>
           </div>
         </div>
@@ -1740,81 +1749,168 @@
           return;
         }
 
-        // Gather all surveys
+        // Ensure surveys are available
         let surveysToExport = surveysList;
         if (!surveysToExport || surveysToExport.length === 0) {
           surveysToExport = await fetchSurveys();
         }
 
-        // Gather all videos
-        let videosToExport = [];
-        try {
-          videosToExport = await fetchVideos();
-        } catch (e) {
-          console.warn('Could not fetch videos for backup:', e);
+        // Ensure videos are available
+        let videosToExport = allVideos;
+        if (!videosToExport || videosToExport.length === 0) {
+          try {
+            videosToExport = await fetchVideos();
+          } catch (e) {
+            console.warn('Could not fetch videos for backup:', e);
+          }
         }
 
-        // Gather all users
-        let usersToExport = [];
-        try {
-          usersToExport = await fetchUsers();
-        } catch (e) {
-          console.warn('Could not fetch users for backup:', e);
+        // Ensure users are available
+        let usersToExport = allUsers;
+        if (!usersToExport || usersToExport.length === 0) {
+          try {
+            usersToExport = await fetchUsers();
+          } catch (e) {
+            console.warn('Could not fetch users for backup:', e);
+          }
         }
+
+        // Rebuild user mapping to ensure fresh numbers
+        buildSurveyUserMap();
 
         const wb = XLSX.utils.book_new();
 
-        // 1. Surveys Sheet
-        const surveysData = (surveysToExport || []).map((s, idx) => ({
-          'S.No.': idx + 1,
-          'ID': s.id || '',
-          'Survey Name': s.name || '',
-          'Department': s.department || '',
-          'Survey Length': s.survey_length || '',
-          'Video Count': s.video_count !== undefined ? s.video_count : (s.videos ? s.videos.length : 0),
-          'Status': s.status || 'Active',
-          'Created At': s.createdAt || ''
-        }));
+        // 1. Surveys Sheet (Comprehensive fields exactly matching website metrics)
+        const surveysData = (surveysToExport || []).map((s, idx) => {
+          const matchingVideos = (videosToExport || []).filter(v => 
+            (v.survey && (v.survey === s.id || v.survey === s.name)) || 
+            (v.surveyId && (v.surveyId === s.id || v.surveyId === s.name))
+          );
+          const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (s.video_count !== undefined ? s.video_count : (s.total_surveys ? parseInt(s.total_surveys, 10) : 0));
+          const dynamicUsers = surveyUserMap[s.id] || [];
+          const videoUrls = matchingVideos.map(v => v.videoURL).filter(Boolean).join('\n');
+          const videoNames = matchingVideos.map(v => v.name).filter(Boolean).join(', ');
+
+          return {
+            'S.No.': idx + 1,
+            'Survey ID': s.id || '',
+            'Survey Name': s.name || '',
+            'Department': s.department || '',
+            'Survey Length': s.survey_length || '',
+            'Video Count': videoCount,
+            'User Count': dynamicUsers.length,
+            'Assigned Users': dynamicUsers.join(', '),
+            'Video URLs': videoUrls,
+            'Video Names': videoNames,
+            'Created On': formatSurveyDate(s.createdAt),
+            'Status': s.status || 'Active'
+          };
+        });
         const wsSurveys = XLSX.utils.json_to_sheet(surveysData);
+        wsSurveys['!cols'] = [
+          { wch: 8 },  // S.No.
+          { wch: 14 }, // Survey ID
+          { wch: 32 }, // Survey Name
+          { wch: 20 }, // Department
+          { wch: 16 }, // Survey Length
+          { wch: 13 }, // Video Count
+          { wch: 13 }, // User Count
+          { wch: 38 }, // Assigned Users
+          { wch: 65 }, // Video URLs
+          { wch: 30 }, // Video Names
+          { wch: 15 }, // Created On
+          { wch: 12 }  // Status
+        ];
         XLSX.utils.book_append_sheet(wb, wsSurveys, 'Surveys');
 
-        // 2. Videos Sheet
-        const videosData = (videosToExport || []).map((v, idx) => ({
-          'S.No.': idx + 1,
-          'ID': v.id || '',
-          'Survey ID': v.surveyId || '',
-          'Video Name': v.name || '',
-          'Video URL': v.videoURL || '',
-          'Length (km)': v.length || '',
-          'Created At': v.createdAt || ''
-        }));
+        // 2. Videos Sheet (Detailed links and survey linkage)
+        const videosData = (videosToExport || []).map((v, idx) => {
+          const surveyIdentifier = v.survey || v.surveyId || '';
+          const matchedSurvey = (surveysToExport || []).find(s => s.id === surveyIdentifier || s.name === surveyIdentifier);
+          const surveyName = matchedSurvey ? matchedSurvey.name : (v.survey || '');
+          const landmarksCount = (v.landmarks && Array.isArray(v.landmarks)) ? v.landmarks.length : 0;
+
+          return {
+            'S.No.': idx + 1,
+            'Video ID': v.id || '',
+            'Video Name': v.name || '',
+            'Survey ID': surveyIdentifier,
+            'Survey Name': surveyName,
+            'Video URL': v.videoURL || '',
+            'Status': v.status || 'active',
+            'Survey Date': formatSurveyDate(v.createdAt),
+            'Landmarks Count': landmarksCount
+          };
+        });
         const wsVideos = XLSX.utils.json_to_sheet(videosData);
+        wsVideos['!cols'] = [
+          { wch: 8 },  // S.No.
+          { wch: 14 }, // Video ID
+          { wch: 26 }, // Video Name
+          { wch: 16 }, // Survey ID
+          { wch: 30 }, // Survey Name
+          { wch: 70 }, // Video URL
+          { wch: 12 }, // Status
+          { wch: 15 }, // Survey Date
+          { wch: 16 }  // Landmarks Count
+        ];
         XLSX.utils.book_append_sheet(wb, wsVideos, 'Videos');
 
-        // 3. Users Sheet
-        const usersData = (usersToExport || []).map((u, idx) => ({
-          'S.No.': idx + 1,
-          'UID': u.uid || '',
-          'Name': u.name || '',
-          'Email': u.email || '',
-          'Phone': u.phone || '',
-          'Organization': u.organization || '',
-          'Department': u.department || '',
-          'Is Admin': u.admin === 'true' || u.admin === true ? 'Yes' : 'No',
-          'Assigned Surveys': Array.isArray(u.assignedSurveys) ? u.assignedSurveys.join(', ') : (u.assignedSurveys || '')
-        }));
+        // 3. Users Sheet (Accurate phone, status, and survey permissions)
+        const usersData = (usersToExport || []).map((u, idx) => {
+          const rawSurveys = Array.isArray(u.survey) ? u.survey : (Array.isArray(u.assignedSurveys) ? u.assignedSurveys : (u.survey || u.assignedSurveys ? [u.survey || u.assignedSurveys] : []));
+          const hasWildcard = rawSurveys.some(s => String(s).trim() === '*');
+          const assignedSurveysStr = hasWildcard ? 'All Surveys (*)' : rawSurveys.join(', ');
+          const assignedCount = hasWildcard ? 'All (*)' : rawSurveys.length;
+          const status = (u.status === 'Disable' || u.status === 'Disabled') ? 'Disabled' : 'Active';
+          const isAdmin = (u.admin === 'true' || u.admin === true) ? 'Yes' : 'No';
+
+          return {
+            'S.No.': idx + 1,
+            'UID': u.uid || '',
+            'Name': u.name || '',
+            'Email': u.email || '',
+            'Phone Number': u.phoneNumber || u.phone || '',
+            'Organization': u.organization || '',
+            'Department': u.department || '',
+            'State': u.state || '',
+            'Status': status,
+            'Is Admin': isAdmin,
+            'Assigned Surveys Count': assignedCount,
+            'Assigned Surveys': assignedSurveysStr
+          };
+        });
         const wsUsers = XLSX.utils.json_to_sheet(usersData);
+        wsUsers['!cols'] = [
+          { wch: 8 },  // S.No.
+          { wch: 32 }, // UID
+          { wch: 24 }, // Name
+          { wch: 28 }, // Email
+          { wch: 16 }, // Phone Number
+          { wch: 20 }, // Organization
+          { wch: 20 }, // Department
+          { wch: 16 }, // State
+          { wch: 12 }, // Status
+          { wch: 10 }, // Is Admin
+          { wch: 22 }, // Assigned Surveys Count
+          { wch: 45 }  // Assigned Surveys
+        ];
         XLSX.utils.book_append_sheet(wb, wsUsers, 'Users');
 
         // 4. Metadata Sheet
         const metaData = [
-          { 'Property': 'Backup Date', 'Value': new Date().toISOString() },
+          { 'Property': 'Backup Date', 'Value': new Date().toLocaleString() },
           { 'Property': 'System', 'Value': 'TrueProgress Dashboard' },
           { 'Property': 'Total Surveys', 'Value': surveysData.length },
           { 'Property': 'Total Videos', 'Value': videosData.length },
-          { 'Property': 'Total Users', 'Value': usersData.length }
+          { 'Property': 'Total Users', 'Value': usersData.length },
+          { 'Property': 'Generated By', 'Value': currentUser ? `${currentUser.name || 'User'} (${currentUser.email || ''})` : 'Administrator' }
         ];
         const wsMeta = XLSX.utils.json_to_sheet(metaData);
+        wsMeta['!cols'] = [
+          { wch: 20 },
+          { wch: 45 }
+        ];
         XLSX.utils.book_append_sheet(wb, wsMeta, 'Metadata');
 
         const todayStr = new Date().toISOString().split('T')[0];
@@ -1830,8 +1926,10 @@
       const modal = document.getElementById('uploadProjectModal');
       const fileInput = document.getElementById('surveyProjectFileInput');
       const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      const removeBtn = document.getElementById('removeSurveyProjectFileBtn');
       if (fileInput) fileInput.value = '';
       if (fileNameDisplay) fileNameDisplay.innerText = 'No file chosen';
+      if (removeBtn) removeBtn.style.display = 'none';
       if (modal) modal.classList.add('show');
     }
 
@@ -1840,8 +1938,18 @@
       if (modal) modal.classList.remove('show');
     }
 
+    function removeSurveyProjectFile() {
+      const fileInput = document.getElementById('surveyProjectFileInput');
+      const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      const removeBtn = document.getElementById('removeSurveyProjectFileBtn');
+      if (fileInput) fileInput.value = '';
+      if (fileNameDisplay) fileNameDisplay.innerText = 'No file chosen';
+      if (removeBtn) removeBtn.style.display = 'none';
+    }
+
     function handleSurveyProjectFileChange(input) {
       const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      const removeBtn = document.getElementById('removeSurveyProjectFileBtn');
       if (!fileNameDisplay) return;
       if (input.files && input.files[0]) {
         const file = input.files[0];
@@ -1850,11 +1958,14 @@
           alert('Only Excel files (.xlsx, .xls) are supported.');
           input.value = '';
           fileNameDisplay.innerText = 'No file chosen';
+          if (removeBtn) removeBtn.style.display = 'none';
           return;
         }
         fileNameDisplay.innerHTML = `<strong>Selected:</strong> ${escapeHtml(file.name)} (${(file.size / 1024).toFixed(1)} KB)`;
+        if (removeBtn) removeBtn.style.display = 'inline-flex';
       } else {
         fileNameDisplay.innerText = 'No file chosen';
+        if (removeBtn) removeBtn.style.display = 'none';
       }
     }
 
@@ -1891,9 +2002,10 @@
             return;
           }
 
-          // Check for Surveys sheet or use first sheet
+          // Check for Surveys, Videos, Users sheets
           let surveysSheet = null;
           let videosSheet = null;
+          let usersSheet = null;
 
           for (const name of workbook.SheetNames) {
             const lower = name.toLowerCase().trim();
@@ -1901,6 +2013,8 @@
               surveysSheet = workbook.Sheets[name];
             } else if (lower === 'videos' || lower === 'video') {
               videosSheet = workbook.Sheets[name];
+            } else if (lower === 'users' || lower === 'user') {
+              usersSheet = workbook.Sheets[name];
             }
           }
 
@@ -1916,6 +2030,7 @@
 
           // Parse Surveys
           const importedSurveys = [];
+          const additionalVideosFromSurveys = [];
           surveyRows.forEach((row, idx) => {
             let id = '';
             let name = '';
@@ -1943,8 +2058,9 @@
             }
 
             if (name) {
+              const surveyId = id || `survey_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 5)}`;
               importedSurveys.push({
-                id: id || `survey_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 5)}`,
+                id: surveyId,
                 name: name,
                 department: dept || 'General',
                 survey_length: len || '0 KM',
@@ -1952,6 +2068,23 @@
                 status: status || 'Active',
                 createdAt: createdAt || new Date().toISOString()
               });
+
+              // If Video URLs are present directly in survey row
+              const videoUrlsCol = row['Video URLs'] || row['Video URL'] || row['videoURL'];
+              if (videoUrlsCol) {
+                const urls = String(videoUrlsCol).split(/[\r\n,]+/).map(u => u.trim()).filter(Boolean);
+                urls.forEach((url, uIdx) => {
+                  additionalVideosFromSurveys.push({
+                    id: `video_${surveyId}_${uIdx}`,
+                    survey: surveyId,
+                    surveyId: surveyId,
+                    name: `Video ${uIdx + 1} - ${name}`,
+                    videoURL: url,
+                    status: 'active',
+                    createdAt: createdAt || new Date().toISOString()
+                  });
+                });
+              }
             }
           });
 
@@ -1979,23 +2112,25 @@
           localStorage.setItem('custom_surveys', JSON.stringify(existingCustomSurveys));
           localStorage.setItem('deleted_surveys', JSON.stringify(Array.from(deletedSet)));
 
-          // Parse Videos if Videos sheet present
+          // Parse Videos if Videos sheet present or from survey Video URLs
           let importedVideosCount = 0;
+          const existingCustomVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
+
           if (videosSheet) {
             const videoRows = XLSX.utils.sheet_to_json(videosSheet, { defval: '' });
             if (videoRows && videoRows.length > 0) {
-              const existingCustomVideos = JSON.parse(localStorage.getItem('custom_videos') || '[]');
               videoRows.forEach((row, vIdx) => {
-                let vId = row['ID'] || row['id'] || `video_${Date.now()}_${vIdx}`;
-                let vSurveyId = row['Survey ID'] || row['surveyId'] || '';
+                let vId = row['ID'] || row['Video ID'] || row['id'] || `video_${Date.now()}_${vIdx}`;
+                let vSurveyId = row['Survey ID'] || row['surveyId'] || row['Survey'] || row['survey'] || '';
                 let vName = row['Video Name'] || row['name'] || 'Survey Video';
                 let vUrl = row['Video URL'] || row['videoURL'] || row['url'] || '';
                 let vLen = row['Length (km)'] || row['length'] || '';
-                let vCreatedAt = row['Created At'] || row['createdAt'] || new Date().toISOString();
+                let vCreatedAt = row['Survey Date'] || row['Created At'] || row['createdAt'] || new Date().toISOString();
+                let vStatus = row['Status'] || row['status'] || 'active';
 
                 if (vName || vUrl) {
                   const evIdx = existingCustomVideos.findIndex(v => v.id === vId);
-                  const vObj = { id: vId, surveyId: vSurveyId, name: vName, videoURL: vUrl, length: vLen, createdAt: vCreatedAt };
+                  const vObj = { id: vId, survey: vSurveyId, surveyId: vSurveyId, name: vName, videoURL: vUrl, length: vLen, createdAt: vCreatedAt, status: vStatus };
                   if (evIdx >= 0) {
                     existingCustomVideos[evIdx] = { ...existingCustomVideos[evIdx], ...vObj };
                   } else {
@@ -2004,7 +2139,75 @@
                   importedVideosCount++;
                 }
               });
-              localStorage.setItem('custom_videos', JSON.stringify(existingCustomVideos));
+            }
+          }
+
+          // Add any videos found directly in Surveys sheet
+          additionalVideosFromSurveys.forEach(vObj => {
+            const evIdx = existingCustomVideos.findIndex(v => v.id === vObj.id || (v.survey === vObj.survey && v.videoURL === vObj.videoURL));
+            if (evIdx >= 0) {
+              existingCustomVideos[evIdx] = { ...existingCustomVideos[evIdx], ...vObj };
+            } else {
+              existingCustomVideos.push(vObj);
+              importedVideosCount++;
+            }
+          });
+
+          localStorage.setItem('custom_videos', JSON.stringify(existingCustomVideos));
+
+          // Parse Users if Users sheet present
+          let importedUsersCount = 0;
+          if (usersSheet) {
+            const userRows = XLSX.utils.sheet_to_json(usersSheet, { defval: '' });
+            if (userRows && userRows.length > 0) {
+              const existingCustomUsers = JSON.parse(localStorage.getItem('custom_users') || '[]');
+              userRows.forEach((row, uIdx) => {
+                const uUid = row['UID'] || row['uid'] || `user_${Date.now()}_${uIdx}`;
+                const uName = row['Name'] || row['name'] || '';
+                const uEmail = row['Email'] || row['email'] || '';
+                const uPhone = row['Phone Number'] || row['phone'] || row['phoneNumber'] || '';
+                const uOrg = row['Organization'] || row['organization'] || '';
+                const uDept = row['Department'] || row['department'] || '';
+                const uState = row['State'] || row['state'] || '';
+                const uStatus = (row['Status'] || '').toLowerCase() === 'disabled' ? 'Disable' : '';
+                const uAdmin = (String(row['Is Admin'] || row['admin']).toLowerCase() === 'yes' || String(row['Is Admin'] || row['admin']).toLowerCase() === 'true') ? 'true' : 'false';
+
+                let rawSurveys = row['Assigned Surveys'] || row['survey'] || '';
+                let uSurveys = [];
+                if (typeof rawSurveys === 'string') {
+                  if (rawSurveys.includes('*') || rawSurveys.toLowerCase().includes('all surveys')) {
+                    uSurveys = ['*'];
+                  } else {
+                    uSurveys = rawSurveys.split(',').map(s => s.trim()).filter(Boolean);
+                  }
+                } else if (Array.isArray(rawSurveys)) {
+                  uSurveys = rawSurveys;
+                }
+
+                if (uName || uEmail) {
+                  const euIdx = existingCustomUsers.findIndex(u => u.uid === uUid || (u.email && uEmail && u.email.toLowerCase() === uEmail.toLowerCase()));
+                  const uObj = {
+                    uid: uUid,
+                    name: uName,
+                    email: uEmail,
+                    phoneNumber: uPhone,
+                    organization: uOrg,
+                    department: uDept,
+                    state: uState,
+                    status: uStatus,
+                    admin: uAdmin,
+                    survey: uSurveys
+                  };
+                  if (euIdx >= 0) {
+                    existingCustomUsers[euIdx] = { ...existingCustomUsers[euIdx], ...uObj };
+                  } else {
+                    existingCustomUsers.push(uObj);
+                  }
+                  importedUsersCount++;
+                }
+              });
+              localStorage.setItem('custom_users', JSON.stringify(existingCustomUsers));
+              await fetchUsers();
             }
           }
 
@@ -2013,10 +2216,12 @@
           buildSurveyUserMap();
           if (currentView === 'surveys') {
             renderSurveysTable();
+          } else if (currentView === 'users') {
+            renderUsersTable();
           }
 
           closeUploadProjectModal();
-          alert(`Successfully imported ${importedSurveys.length} survey(s)${importedVideosCount > 0 ? ` and ${importedVideosCount} video(s)` : ''} from Excel.`);
+          alert(`Successfully imported ${importedSurveys.length} survey(s)${importedVideosCount > 0 ? `, ${importedVideosCount} video(s)` : ''}${importedUsersCount > 0 ? `, and ${importedUsersCount} user(s)` : ''} from Excel.`);
         } catch (error) {
           console.error('Failed to import survey project:', error);
           alert('Failed to import survey project: ' + error.message);
