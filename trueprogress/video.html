@@ -22,6 +22,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
+  <script src="assets/cloudSync.js"></script>
   <script src="assets/recycleBin.js"></script>
   <script src="assets/xlsx.full.min.js"></script>
 </head>
@@ -845,6 +846,13 @@
     });
 
     async function loadVideoData() {
+      if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
+        try {
+          await window.TPCloudSync.pull();
+        } catch (syncErr) {
+          console.warn('[CloudSync] video pull error:', syncErr);
+        }
+      }
       let videosList = [];
       try {
         let response = await fetch('backup%20details%20of%20trueprogress/videos.json');
@@ -1795,6 +1803,9 @@
           videoLandmarks[id] = window.TrueProgressBin ? rawLandmarks.filter(lm => !window.TrueProgressBin.isLandmarkDeleted(id, lm)) : [...rawLandmarks];
           
           updateLandmarksUI(id);
+          if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+            window.TPCloudSync.schedulePush();
+          }
         }
       } else {
         if (fileInput) fileInput.value = '';
@@ -1902,6 +1913,9 @@
                 } catch(e) {}
               }
               updateLandmarksUI(id);
+              if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+                window.TPCloudSync.schedulePush();
+              }
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) removeBtn.style.display = 'inline-flex';
               const textSpan = document.getElementById(`fileInputText_${id}`);
@@ -1978,6 +1992,9 @@
                 } catch(e) {}
               }
               updateLandmarksUI(id);
+              if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+                window.TPCloudSync.schedulePush();
+              }
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) removeBtn.style.display = 'inline-flex';
               const textSpan = document.getElementById(`fileInputText_${id}`);

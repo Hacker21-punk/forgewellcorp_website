@@ -82,6 +82,9 @@
     saveBinItems: function (items) {
       localStorage.setItem(STORAGE_BIN, JSON.stringify(items || []));
       window.dispatchEvent(new CustomEvent('tp_bin_updated', { detail: { items: items } }));
+      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+        window.TPCloudSync.schedulePush();
+      }
     },
 
     /**

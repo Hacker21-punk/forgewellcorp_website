@@ -20,6 +20,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
+  <script src="assets/cloudSync.js"></script>
   <script src="assets/recycleBin.js"></script>
   <script src="assets/xlsx.full.min.js"></script>
 </head>
@@ -647,12 +648,33 @@
     }
 
     async function initializeApp() {
+      if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
+        try {
+          await window.TPCloudSync.pull();
+        } catch (syncErr) {
+          console.warn('[CloudSync] initial pull error:', syncErr);
+        }
+      }
       await fetchSurveys();
       await fetchVideos();
       await fetchUsers();
       buildSurveyUserMap();
       populateSurveyCheckboxes();
       renderSurveysTable();
+
+      // Listen for background cloud sync updates
+      window.addEventListener('tp_cloud_synced', async function () {
+        await fetchSurveys();
+        await fetchVideos();
+        await fetchUsers();
+        buildSurveyUserMap();
+        populateSurveyCheckboxes();
+        if (currentView === 'surveys') {
+          renderSurveysTable();
+        } else if (currentView === 'users' && typeof renderUsersTable === 'function') {
+          renderUsersTable();
+        }
+      });
 
       // Check query params for user deep-linking
       const params = new URLSearchParams(window.location.search);
@@ -1674,6 +1696,9 @@
       buildSurveyUserMap();
       populateSurveyCheckboxes();
       renderSurveysTable();
+      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+        window.TPCloudSync.schedulePush();
+      }
     }
 
     async function handleDeleteSurvey(id) {
@@ -1710,17 +1735,20 @@
           }
           customSurveys = customSurveys.filter(s => s.id !== id);
           safeSet('custom_surveys', customSurveys);
-        } else {
-          if (!deletedSurveys.includes(id)) {
-            deletedSurveys.push(id);
-          }
-          safeSet('deleted_surveys', deletedSurveys);
         }
+        
+        if (!deletedSurveys.includes(id)) {
+          deletedSurveys.push(id);
+        }
+        safeSet('deleted_surveys', deletedSurveys);
 
         await fetchSurveys();
         buildSurveyUserMap();
         populateSurveyCheckboxes();
         renderSurveysTable();
+        if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+          window.TPCloudSync.schedulePush();
+        }
       }
     }
 
@@ -2283,6 +2311,9 @@
           } else if (currentView === 'users') {
             renderUsersTable();
           }
+          if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+            window.TPCloudSync.schedulePush();
+          }
 
           closeUploadProjectModal();
           alert(`Successfully imported ${importedSurveys.length} survey(s)${importedVideosCount > 0 ? `, ${importedVideosCount} video(s)` : ''}${importedUsersCount > 0 ? `, and ${importedUsersCount} user(s)` : ''} from Excel.`);
@@ -2676,6 +2707,9 @@
       await fetchUsers();
       buildSurveyUserMap();
       renderSurveysTable();
+      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+        window.TPCloudSync.schedulePush();
+      }
     }
 
     async function handleDeleteUser(uid) {
@@ -2740,6 +2774,9 @@
           renderUsersTable();
         } else {
           renderSurveysTable();
+        }
+        if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+          window.TPCloudSync.schedulePush();
         }
       }
     }

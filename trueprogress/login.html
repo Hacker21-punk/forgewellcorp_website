@@ -20,6 +20,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
+  <script src="assets/cloudSync.js"></script>
 </head>
 <body>
   <div id="__next">
@@ -126,6 +127,13 @@
       }
 
       try {
+        if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
+          try {
+            await window.TPCloudSync.pull();
+          } catch (syncErr) {
+            console.warn('[CloudSync] Login sync error:', syncErr);
+          }
+        }
         let response = await fetch('backup%20details%20of%20trueprogress/users.json');
         if (!response.ok) {
           response = await fetch('trueprogress/backup%20details%20of%20trueprogress/users.json');

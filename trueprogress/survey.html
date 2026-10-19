@@ -20,6 +20,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
+  <script src="assets/cloudSync.js"></script>
   <script src="assets/recycleBin.js"></script>
 </head>
 <body>
@@ -341,9 +342,22 @@
     }
 
     async function loadPageData() {
+      if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
+        try {
+          await window.TPCloudSync.pull();
+        } catch (syncErr) {
+          console.warn('[CloudSync] survey page pull error:', syncErr);
+        }
+      }
       await resolveSurveyInfo();
       await fetchVideos();
       renderActionRow();
+
+      window.addEventListener('tp_cloud_synced', async function () {
+        await resolveSurveyInfo();
+        await fetchVideos();
+        renderActionRow();
+      });
     }
 
     // Auto-resolve survey ID and name if either is missing or mismatched
@@ -657,6 +671,9 @@
 
       closeVideoModal();
       fetchVideos();
+      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+        window.TPCloudSync.schedulePush();
+      }
     }
 
     function handleDeleteVideos() {
@@ -690,10 +707,9 @@
 
           if (isCustom) {
             custom = custom.filter(v => v.id !== id);
-          } else {
-            if (!deleted.includes(id)) {
-              deleted.push(id);
-            }
+          }
+          if (!deleted.includes(id)) {
+            deleted.push(id);
           }
         });
 
@@ -705,6 +721,9 @@
         }
 
         fetchVideos();
+        if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
+          window.TPCloudSync.schedulePush();
+        }
       }
     }
 
