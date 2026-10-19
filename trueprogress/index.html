@@ -23,6 +23,7 @@
   <script src="assets/cloudSync.js"></script>
   <script src="assets/recycleBin.js"></script>
   <script src="assets/xlsx.full.min.js"></script>
+  <script src="assets/exceljs.min.js"></script>
 </head>
 <body>
   <div class="dashboard-wrapper">
@@ -1833,10 +1834,10 @@
 
 
 
-    // Backup Generation (Excel Download)
+    // Backup Generation (Excel Download in Exact User Specified Format)
     document.getElementById('createBackupBtn').addEventListener('click', async () => {
       try {
-        if (typeof XLSX === 'undefined') {
+        if (typeof ExcelJS === 'undefined' && typeof XLSX === 'undefined') {
           alert('Excel processing library is not loaded. Please reload the page.');
           return;
         }
@@ -1870,143 +1871,346 @@
         // Rebuild user mapping to ensure fresh numbers
         buildSurveyUserMap();
 
-        const wb = XLSX.utils.book_new();
+        function formatExcelCreatedDate(val) {
+          if (!val || val === 'N/A') return '';
+          let d = null;
+          if (typeof val === 'number') d = new Date(val);
+          else if (typeof val === 'object' && val.seconds) d = new Date(val.seconds * 1000);
+          else if (typeof val === 'string') {
+            const trimmed = val.trim();
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) return trimmed;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) d = new Date(trimmed + 'T00:00:00');
+            else d = new Date(trimmed);
+          }
+          if (d && !isNaN(d.getTime())) {
+            return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+          }
+          return String(val || '');
+        }
 
-        // 1. Surveys Sheet (Comprehensive fields exactly matching website metrics)
-        const surveysData = (surveysToExport || []).map((s, idx) => {
-          const matchingVideos = (videosToExport || []).filter(v => 
-            (v.survey && (v.survey === s.id || v.survey === s.name)) || 
-            (v.surveyId && (v.surveyId === s.id || v.surveyId === s.name))
-          );
-          const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (s.video_count !== undefined ? s.video_count : (s.total_surveys ? parseInt(s.total_surveys, 10) : 0));
-          const dynamicUsers = surveyUserMap[s.id] || [];
-          const videoUrls = matchingVideos.map(v => v.videoURL).filter(Boolean).join('\n');
-          const videoNames = matchingVideos.map(v => v.name).filter(Boolean).join(', ');
+        function formatExcelSurveyDate(val) {
+          if (!val || val === 'N/A') return '';
+          let d = null;
+          if (typeof val === 'number') d = new Date(val);
+          else if (typeof val === 'object' && val.seconds) d = new Date(val.seconds * 1000);
+          else if (typeof val === 'string') {
+            const trimmed = val.trim();
+            if (/^[A-Za-z]{3}\s+\d{1,2}\s+\d{4}$/.test(trimmed)) return trimmed;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) d = new Date(trimmed + 'T00:00:00');
+            else d = new Date(trimmed);
+          }
+          if (d && !isNaN(d.getTime())) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const m = months[d.getMonth()];
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${m} ${day} ${d.getFullYear()}`;
+          }
+          return String(val || '');
+        }
 
-          return {
-            'S.No.': idx + 1,
-            'Survey ID': s.id || '',
-            'Survey Name': s.name || '',
-            'Department': s.department || '',
-            'Survey Length': s.survey_length || '',
-            'Video Count': videoCount,
-            'User Count': dynamicUsers.length,
-            'Assigned Users': dynamicUsers.join(', '),
-            'Video URLs': videoUrls,
-            'Video Names': videoNames,
-            'Created On': formatSurveyDate(s.createdAt),
-            'Status': s.status || 'Active'
+        function formatExcelLength(val) {
+          if (!val && val !== 0) return '';
+          const s = String(val).trim();
+          if (!s) return '';
+          if (/km$/i.test(s)) return s.replace(/\s*km$/i, ' km');
+          return `${s} km`;
+        }
+
+        if (typeof ExcelJS !== 'undefined') {
+          const wb = new ExcelJS.Workbook();
+          wb.creator = 'TrueProgress';
+          wb.created = new Date();
+
+          // 1. Primary Sheet1: Exact format matching user screenshot
+          const ws = wb.addWorksheet('Sheet1', {
+            views: [{ showGridLines: true }]
+          });
+
+          // Set column widths matching screenshot
+          ws.columns = [
+            { key: 'A', width: 4 },
+            { key: 'B', width: 8 },
+            { key: 'C', width: 34 },
+            { key: 'D', width: 14 },
+            { key: 'E', width: 15 },
+            { key: 'F', width: 14 },
+            { key: 'G', width: 16 },
+            { key: 'H', width: 4 },
+            { key: 'I', width: 42 }
+          ];
+
+          // Row 1 is empty
+          ws.getRow(1).height = 18;
+
+          // Row 2 is Header with light green fill and bold centered text
+          const headerRow = ws.getRow(2);
+          headerRow.height = 26;
+
+          const headers = {
+            B: 'S.No.',
+            C: 'Project Name',
+            D: 'No. of Surveys',
+            E: 'Survey Length',
+            F: 'Created On',
+            G: 'Survey Date',
+            I: 'YouTube URL'
           };
-        });
-        const wsSurveys = XLSX.utils.json_to_sheet(surveysData);
-        wsSurveys['!cols'] = [
-          { wch: 8 },  // S.No.
-          { wch: 14 }, // Survey ID
-          { wch: 32 }, // Survey Name
-          { wch: 20 }, // Department
-          { wch: 16 }, // Survey Length
-          { wch: 13 }, // Video Count
-          { wch: 13 }, // User Count
-          { wch: 38 }, // Assigned Users
-          { wch: 65 }, // Video URLs
-          { wch: 30 }, // Video Names
-          { wch: 15 }, // Created On
-          { wch: 12 }  // Status
-        ];
-        XLSX.utils.book_append_sheet(wb, wsSurveys, 'Surveys');
 
-        // 2. Videos Sheet (Detailed links and survey linkage)
-        const videosData = (videosToExport || []).map((v, idx) => {
-          const surveyIdentifier = v.survey || v.surveyId || '';
-          const matchedSurvey = (surveysToExport || []).find(s => s.id === surveyIdentifier || s.name === surveyIdentifier);
-          const surveyName = matchedSurvey ? matchedSurvey.name : (v.survey || '');
-          const landmarksCount = (v.landmarks && Array.isArray(v.landmarks)) ? v.landmarks.length : 0;
-
-          return {
-            'S.No.': idx + 1,
-            'Video ID': v.id || '',
-            'Video Name': v.name || '',
-            'Survey ID': surveyIdentifier,
-            'Survey Name': surveyName,
-            'Video URL': v.videoURL || '',
-            'Status': v.status || 'active',
-            'Survey Date': formatSurveyDate(v.createdAt),
-            'Landmarks Count': landmarksCount
+          const borderStyle = {
+            top: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            left: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            right: { style: 'thin', color: { argb: 'FFBFBFBF' } }
           };
-        });
-        const wsVideos = XLSX.utils.json_to_sheet(videosData);
-        wsVideos['!cols'] = [
-          { wch: 8 },  // S.No.
-          { wch: 14 }, // Video ID
-          { wch: 26 }, // Video Name
-          { wch: 16 }, // Survey ID
-          { wch: 30 }, // Survey Name
-          { wch: 70 }, // Video URL
-          { wch: 12 }, // Status
-          { wch: 15 }, // Survey Date
-          { wch: 16 }  // Landmarks Count
-        ];
-        XLSX.utils.book_append_sheet(wb, wsVideos, 'Videos');
 
-        // 3. Users Sheet (Accurate phone, status, and survey permissions)
-        const usersData = (usersToExport || []).map((u, idx) => {
-          const rawSurveys = Array.isArray(u.survey) ? u.survey : (Array.isArray(u.assignedSurveys) ? u.assignedSurveys : (u.survey || u.assignedSurveys ? [u.survey || u.assignedSurveys] : []));
-          const hasWildcard = rawSurveys.some(s => String(s).trim() === '*');
-          const assignedSurveysStr = hasWildcard ? 'All Surveys (*)' : rawSurveys.join(', ');
-          const assignedCount = hasWildcard ? 'All (*)' : rawSurveys.length;
-          const status = (u.status === 'Disable' || u.status === 'Disabled') ? 'Disabled' : 'Active';
-          const isAdmin = (u.admin === 'true' || u.admin === true) ? 'Yes' : 'No';
+          for (const [col, title] of Object.entries(headers)) {
+            const cell = headerRow.getCell(col);
+            cell.value = title;
+            cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF000000' } };
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFE2EFD9' }
+            };
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            cell.border = borderStyle;
+          }
+          headerRow.getCell('H').border = borderStyle;
 
-          return {
-            'S.No.': idx + 1,
-            'UID': u.uid || '',
-            'Name': u.name || '',
-            'Email': u.email || '',
-            'Phone Number': u.phoneNumber || u.phone || '',
-            'Organization': u.organization || '',
-            'Department': u.department || '',
-            'State': u.state || '',
-            'Status': status,
-            'Is Admin': isAdmin,
-            'Assigned Surveys Count': assignedCount,
-            'Assigned Surveys': assignedSurveysStr
-          };
-        });
-        const wsUsers = XLSX.utils.json_to_sheet(usersData);
-        wsUsers['!cols'] = [
-          { wch: 8 },  // S.No.
-          { wch: 32 }, // UID
-          { wch: 24 }, // Name
-          { wch: 28 }, // Email
-          { wch: 16 }, // Phone Number
-          { wch: 20 }, // Organization
-          { wch: 20 }, // Department
-          { wch: 16 }, // State
-          { wch: 12 }, // Status
-          { wch: 10 }, // Is Admin
-          { wch: 22 }, // Assigned Surveys Count
-          { wch: 45 }  // Assigned Surveys
-        ];
-        XLSX.utils.book_append_sheet(wb, wsUsers, 'Users');
+          let currentRowNum = 3;
 
-        // 4. Metadata Sheet
-        const metaData = [
-          { 'Property': 'Backup Date', 'Value': new Date().toLocaleString() },
-          { 'Property': 'System', 'Value': 'TrueProgress Dashboard' },
-          { 'Property': 'Total Surveys', 'Value': surveysData.length },
-          { 'Property': 'Total Videos', 'Value': videosData.length },
-          { 'Property': 'Total Users', 'Value': usersData.length },
-          { 'Property': 'Generated By', 'Value': currentUser ? `${currentUser.name || 'User'} (${currentUser.email || ''})` : 'Administrator' }
-        ];
-        const wsMeta = XLSX.utils.json_to_sheet(metaData);
-        wsMeta['!cols'] = [
-          { wch: 20 },
-          { wch: 45 }
-        ];
-        XLSX.utils.book_append_sheet(wb, wsMeta, 'Metadata');
+          (surveysToExport || []).forEach((s, pIdx) => {
+            const matchingVideos = (videosToExport || []).filter(v => 
+              (v.survey && (v.survey === s.id || v.survey === s.name)) || 
+              (v.surveyId && (v.surveyId === s.id || v.surveyId === s.name))
+            );
 
-        const todayStr = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(wb, `trueprogress_backup_${todayStr}.xlsx`);
+            const numRows = Math.max(1, matchingVideos.length);
+            const startR = currentRowNum;
+            const endR = startR + numRows - 1;
+
+            if (numRows > 1) {
+              ws.mergeCells(startR, 2, endR, 2); // B (S.No.)
+              ws.mergeCells(startR, 3, endR, 3); // C (Project Name)
+              ws.mergeCells(startR, 5, endR, 5); // E (Survey Length)
+              ws.mergeCells(startR, 6, endR, 6); // F (Created On)
+            }
+
+            // Populate merged project columns
+            const cellB = ws.getCell(startR, 2);
+            cellB.value = pIdx + 1;
+            cellB.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellB.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellC = ws.getCell(startR, 3);
+            cellC.value = s.name || '';
+            cellC.alignment = { horizontal: 'left', vertical: 'middle' };
+            cellC.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellE = ws.getCell(startR, 5);
+            cellE.value = formatExcelLength(s.survey_length);
+            cellE.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellE.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellF = ws.getCell(startR, 6);
+            cellF.value = formatExcelCreatedDate(s.createdAt);
+            cellF.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellF.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            for (let i = 0; i < numRows; i++) {
+              const r = startR + i;
+              const v = matchingVideos[i] || null;
+
+              // D: No. of Surveys (1, 2, 3...)
+              const cellD = ws.getCell(r, 4);
+              cellD.value = i + 1;
+              cellD.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellD.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+              // G: Survey Date
+              const cellG = ws.getCell(r, 7);
+              const videoDate = v ? (v.createdAt || v.surveyDate || '') : (s.createdAt || '');
+              cellG.value = formatExcelSurveyDate(videoDate);
+              cellG.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellG.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+              // H: Blank Separator
+              const cellH = ws.getCell(r, 8);
+              cellH.value = '';
+
+              // I: YouTube URL
+              const cellI = ws.getCell(r, 9);
+              const ytUrl = v ? (v.videoURL || '') : '';
+              cellI.value = ytUrl;
+              cellI.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellI.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+              if (ytUrl) {
+                cellI.fill = {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: 'FF92D050' }
+                };
+              }
+
+              ws.getRow(r).height = 22;
+              for (let c = 2; c <= 9; c++) {
+                ws.getCell(r, c).border = borderStyle;
+              }
+            }
+
+            currentRowNum = endR + 1;
+          });
+
+          // 2. Users Sheet (Accurate phone, status, and survey permissions)
+          const wsUsers = wb.addWorksheet('Users', { views: [{ showGridLines: true }] });
+          wsUsers.columns = [
+            { header: 'S.No.', key: 'sno', width: 8 },
+            { header: 'UID', key: 'uid', width: 32 },
+            { header: 'Name', key: 'name', width: 24 },
+            { header: 'Email', key: 'email', width: 28 },
+            { header: 'Phone Number', key: 'phone', width: 16 },
+            { header: 'Organization', key: 'org', width: 20 },
+            { header: 'Department', key: 'dept', width: 20 },
+            { header: 'State', key: 'state', width: 16 },
+            { header: 'Status', key: 'status', width: 12 },
+            { header: 'Is Admin', key: 'admin', width: 10 },
+            { header: 'Assigned Surveys Count', key: 'count', width: 22 },
+            { header: 'Assigned Surveys', key: 'surveys', width: 45 }
+          ];
+          const userHeaderRow = wsUsers.getRow(1);
+          userHeaderRow.height = 24;
+          userHeaderRow.eachCell(cell => {
+            cell.font = { bold: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFD9' } };
+            cell.border = borderStyle;
+            cell.alignment = { vertical: 'middle' };
+          });
+
+          (usersToExport || []).forEach((u, idx) => {
+            const rawSurveys = Array.isArray(u.survey) ? u.survey : (Array.isArray(u.assignedSurveys) ? u.assignedSurveys : (u.survey || u.assignedSurveys ? [u.survey || u.assignedSurveys] : []));
+            const hasWildcard = rawSurveys.some(s => String(s).trim() === '*');
+            const assignedSurveysStr = hasWildcard ? 'All Surveys (*)' : rawSurveys.join(', ');
+            const assignedCount = hasWildcard ? 'All (*)' : rawSurveys.length;
+            const status = (u.status === 'Disable' || u.status === 'Disabled') ? 'Disabled' : 'Active';
+            const isAdmin = (u.admin === 'true' || u.admin === true) ? 'Yes' : 'No';
+
+            const row = wsUsers.addRow({
+              sno: idx + 1,
+              uid: u.uid || '',
+              name: u.name || '',
+              email: u.email || '',
+              phone: u.phoneNumber || u.phone || '',
+              org: u.organization || '',
+              dept: u.department || '',
+              state: u.state || '',
+              status: status,
+              admin: isAdmin,
+              count: assignedCount,
+              surveys: assignedSurveysStr
+            });
+            row.height = 20;
+            row.eachCell(cell => {
+              cell.border = borderStyle;
+              cell.alignment = { vertical: 'middle' };
+            });
+          });
+
+          // 3. Metadata Sheet
+          const wsMeta = wb.addWorksheet('Metadata', { views: [{ showGridLines: true }] });
+          wsMeta.columns = [
+            { header: 'Property', key: 'prop', width: 22 },
+            { header: 'Value', key: 'val', width: 45 }
+          ];
+          wsMeta.getRow(1).eachCell(cell => {
+            cell.font = { bold: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFD9' } };
+            cell.border = borderStyle;
+          });
+          const metaEntries = [
+            { prop: 'Backup Date', val: new Date().toLocaleString() },
+            { prop: 'System', val: 'TrueProgress Dashboard' },
+            { prop: 'Total Projects', val: (surveysToExport || []).length },
+            { prop: 'Total Videos', val: (videosToExport || []).length },
+            { prop: 'Total Users', val: (usersToExport || []).length },
+            { prop: 'Generated By', val: currentUser ? `${currentUser.name || 'User'} (${currentUser.email || ''})` : 'Administrator' }
+          ];
+          metaEntries.forEach(m => {
+            const r = wsMeta.addRow(m);
+            r.eachCell(cell => { cell.border = borderStyle; });
+          });
+
+          const buffer = await wb.xlsx.writeBuffer();
+          const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const todayStr = new Date().toISOString().split('T')[0];
+          const filename = `AWS_Projects_Backup_${todayStr}.xlsx`;
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl);
+        } else {
+          // SheetJS Fallback
+          const wb = XLSX.utils.book_new();
+          const rows = [
+            [], // Row 1 empty
+            ['', 'S.No.', 'Project Name', 'No. of Surveys', 'Survey Length', 'Created On', 'Survey Date', '', 'YouTube URL']
+          ];
+          const merges = [];
+          let currentR = 2; // 0-indexed row 2 is 3rd row in sheet
+
+          (surveysToExport || []).forEach((s, pIdx) => {
+            const matchingVideos = (videosToExport || []).filter(v => 
+              (v.survey && (v.survey === s.id || v.survey === s.name)) || 
+              (v.surveyId && (v.surveyId === s.id || v.surveyId === s.name))
+            );
+            const numRows = Math.max(1, matchingVideos.length);
+            const startR = currentR;
+            const endR = startR + numRows - 1;
+
+            if (numRows > 1) {
+              merges.push({ s: { r: startR, c: 1 }, e: { r: endR, c: 1 } }); // B
+              merges.push({ s: { r: startR, c: 2 }, e: { r: endR, c: 2 } }); // C
+              merges.push({ s: { r: startR, c: 4 }, e: { r: endR, c: 4 } }); // E
+              merges.push({ s: { r: startR, c: 5 }, e: { r: endR, c: 5 } }); // F
+            }
+
+            for (let i = 0; i < numRows; i++) {
+              const v = matchingVideos[i] || null;
+              const isFirst = i === 0;
+              const sno = isFirst ? (pIdx + 1) : '';
+              const pName = isFirst ? (s.name || '') : '';
+              const sNum = i + 1;
+              const sLen = isFirst ? formatExcelLength(s.survey_length) : '';
+              const cOn = isFirst ? formatExcelCreatedDate(s.createdAt) : '';
+              const sDate = formatExcelSurveyDate(v ? (v.createdAt || v.surveyDate || '') : (s.createdAt || ''));
+              const ytUrl = v ? (v.videoURL || '') : '';
+
+              rows.push(['', sno, pName, sNum, sLen, cOn, sDate, '', ytUrl]);
+            }
+            currentR = endR + 1;
+          });
+
+          const ws1 = XLSX.utils.aoa_to_sheet(rows);
+          ws1['!merges'] = merges;
+          ws1['!cols'] = [
+            { wch: 4 },
+            { wch: 8 },
+            { wch: 34 },
+            { wch: 14 },
+            { wch: 15 },
+            { wch: 14 },
+            { wch: 16 },
+            { wch: 4 },
+            { wch: 42 }
+          ];
+          XLSX.utils.book_append_sheet(wb, ws1, 'Sheet1');
+
+          const todayStr = new Date().toISOString().split('T')[0];
+          XLSX.writeFile(wb, `AWS_Projects_Backup_${todayStr}.xlsx`);
+        }
       } catch (err) {
         console.error('Failed to create Excel backup:', err);
         alert('Failed to create Excel backup: ' + err.message);
@@ -2094,10 +2298,11 @@
             return;
           }
 
-          // Check for Surveys, Videos, Users sheets
+          // Check for Sheets
           let surveysSheet = null;
           let videosSheet = null;
           let usersSheet = null;
+          let sheet1 = null;
 
           for (const name of workbook.SheetNames) {
             const lower = name.toLowerCase().trim();
@@ -2107,78 +2312,147 @@
               videosSheet = workbook.Sheets[name];
             } else if (lower === 'users' || lower === 'user') {
               usersSheet = workbook.Sheets[name];
+            } else if (lower === 'sheet1' || lower === 'sheet 1' || lower === 'projects') {
+              sheet1 = workbook.Sheets[name];
             }
           }
 
-          if (!surveysSheet) {
-            surveysSheet = workbook.Sheets[workbook.SheetNames[0]];
-          }
-
-          const surveyRows = XLSX.utils.sheet_to_json(surveysSheet, { defval: '' });
-          if (!surveyRows || surveyRows.length === 0) {
-            alert('Could not find any survey records in the Excel file.');
+          const primarySheet = sheet1 || surveysSheet || workbook.Sheets[workbook.SheetNames[0]];
+          const rawGrid = XLSX.utils.sheet_to_json(primarySheet, { header: 1, defval: '' });
+          if (!rawGrid || rawGrid.length === 0) {
+            alert('Could not find any data records in the Excel file.');
             return;
           }
 
-          // Parse Surveys
+          // Check for header row index (e.g. Row 2 in Sheet1 format)
+          let headerRowIdx = -1;
+          for (let i = 0; i < Math.min(10, rawGrid.length); i++) {
+            const rowStr = (rawGrid[i] || []).map(x => String(x).toLowerCase()).join(' ');
+            if (rowStr.includes('project name') || rowStr.includes('survey name') || (rowStr.includes('survey') && rowStr.includes('url'))) {
+              headerRowIdx = i;
+              break;
+            }
+          }
+
           const importedSurveys = [];
           const additionalVideosFromSurveys = [];
-          surveyRows.forEach((row, idx) => {
-            let id = '';
-            let name = '';
-            let dept = '';
-            let len = '';
-            let vCount = 0;
-            let status = 'Active';
-            let createdAt = '';
 
-            for (const [k, v] of Object.entries(row)) {
-              const key = k.trim().toLowerCase();
-              const val = String(v).trim();
-              if (key === 'id' || key === 'survey id') id = val;
-              else if (/survey\s*name|name|title/i.test(key) && !name) name = val;
-              else if (/department|dept/i.test(key) && !dept) dept = val;
-              else if (/survey\s*length|length|distance/i.test(key) && !len) len = val;
-              else if (/video\s*count|videos/i.test(key)) vCount = parseInt(val, 10) || 0;
-              else if (/status/i.test(key)) status = val || 'Active';
-              else if (/created/i.test(key)) createdAt = val;
-            }
+          if (headerRowIdx !== -1) {
+            // High-fidelity grid parsing (supports Sheet1 format with merged project rows and multi-video rows)
+            const headerRow = rawGrid[headerRowIdx];
+            const colMap = {};
+            headerRow.forEach((cell, idx) => {
+              const c = String(cell).toLowerCase().trim();
+              if (c.includes('project name') || c === 'project' || c === 'survey name' || c === 'name') colMap.name = idx;
+              else if (c.includes('s.no') || c === 'sno' || c === 'sl.no' || c === 'sr.no') colMap.sno = idx;
+              else if (c.includes('no. of survey') || c.includes('survey count') || c === 'no of surveys' || c === 'surveys count') colMap.surveyNum = idx;
+              else if (c.includes('length') || c.includes('distance')) colMap.length = idx;
+              else if (c.includes('created')) colMap.createdOn = idx;
+              else if (c.includes('survey date') || c.includes('video date')) colMap.surveyDate = idx;
+              else if (c.includes('url') || c.includes('youtube') || c.includes('link')) colMap.url = idx;
+              else if (c.includes('dept') || c.includes('department')) colMap.dept = idx;
+            });
 
-            if (!name) {
-              const vals = Object.values(row).filter(x => x !== '');
-              if (vals.length > 0) name = String(vals[0]);
-            }
+            let currentSurvey = null;
+            for (let r = headerRowIdx + 1; r < rawGrid.length; r++) {
+              const row = rawGrid[r] || [];
+              const nameVal = colMap.name !== undefined ? String(row[colMap.name] || '').trim() : '';
+              const snoVal = colMap.sno !== undefined ? String(row[colMap.sno] || '').trim() : '';
+              const numVal = colMap.surveyNum !== undefined ? String(row[colMap.surveyNum] || '').trim() : '';
+              const lenVal = colMap.length !== undefined ? String(row[colMap.length] || '').trim() : '';
+              const createdVal = colMap.createdOn !== undefined ? String(row[colMap.createdOn] || '').trim() : '';
+              const dateVal = colMap.surveyDate !== undefined ? String(row[colMap.surveyDate] || '').trim() : '';
+              const urlVal = colMap.url !== undefined ? String(row[colMap.url] || '').trim() : '';
+              const deptVal = colMap.dept !== undefined ? String(row[colMap.dept] || '').trim() : '';
 
-            if (name) {
-              const surveyId = id || `survey_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 5)}`;
-              importedSurveys.push({
-                id: surveyId,
-                name: name,
-                department: dept || 'General',
-                survey_length: len || '0 KM',
-                video_count: vCount || 0,
-                status: status || 'Active',
-                createdAt: createdAt || new Date().toISOString()
-              });
+              if (nameVal) {
+                const surveyId = `survey_${snoVal || (importedSurveys.length + 1)}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+                currentSurvey = {
+                  id: surveyId,
+                  name: nameVal,
+                  department: deptVal || 'General',
+                  survey_length: lenVal || '0 KM',
+                  createdAt: createdVal || new Date().toISOString(),
+                  status: 'Active',
+                  video_count: 0
+                };
+                importedSurveys.push(currentSurvey);
+              }
 
-              // If Video URLs are present directly in survey row
-              const videoUrlsCol = row['Video URLs'] || row['Video URL'] || row['videoURL'];
-              if (videoUrlsCol) {
-                const urls = String(videoUrlsCol).split(/[\r\n,]+/).map(u => u.trim()).filter(Boolean);
-                urls.forEach((url, uIdx) => {
-                  additionalVideosFromSurveys.push({
-                    id: `video_${surveyId}_${uIdx}`,
-                    survey: surveyId,
-                    surveyId: surveyId,
-                    name: `Video ${uIdx + 1} - ${name}`,
-                    videoURL: url,
-                    status: 'active',
-                    createdAt: createdAt || new Date().toISOString()
-                  });
+              if (currentSurvey && (urlVal || dateVal || numVal)) {
+                currentSurvey.video_count++;
+                additionalVideosFromSurveys.push({
+                  id: `video_${currentSurvey.id}_${currentSurvey.video_count}`,
+                  survey: currentSurvey.id,
+                  surveyId: currentSurvey.id,
+                  name: `${currentSurvey.name} - Survey ${numVal || currentSurvey.video_count}`,
+                  videoURL: urlVal,
+                  createdAt: dateVal || currentSurvey.createdAt,
+                  status: 'active'
                 });
               }
             }
-          });
+          }
+
+          // Fallback to key-value row parsing if grid parser didn't match
+          if (importedSurveys.length === 0) {
+            const surveyRows = XLSX.utils.sheet_to_json(primarySheet, { defval: '' });
+            surveyRows.forEach((row, idx) => {
+              let id = '';
+              let name = '';
+              let dept = '';
+              let len = '';
+              let vCount = 0;
+              let status = 'Active';
+              let createdAt = '';
+
+              for (const [k, v] of Object.entries(row)) {
+                const key = k.trim().toLowerCase();
+                const val = String(v).trim();
+                if (key === 'id' || key === 'survey id') id = val;
+                else if (/survey\s*name|name|title/i.test(key) && !name) name = val;
+                else if (/department|dept/i.test(key) && !dept) dept = val;
+                else if (/survey\s*length|length|distance/i.test(key) && !len) len = val;
+                else if (/video\s*count|videos/i.test(key)) vCount = parseInt(val, 10) || 0;
+                else if (/status/i.test(key)) status = val || 'Active';
+                else if (/created/i.test(key)) createdAt = val;
+              }
+
+              if (!name) {
+                const vals = Object.values(row).filter(x => x !== '');
+                if (vals.length > 0) name = String(vals[0]);
+              }
+
+              if (name) {
+                const surveyId = id || `survey_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 5)}`;
+                importedSurveys.push({
+                  id: surveyId,
+                  name: name,
+                  department: dept || 'General',
+                  survey_length: len || '0 KM',
+                  video_count: vCount || 0,
+                  status: status || 'Active',
+                  createdAt: createdAt || new Date().toISOString()
+                });
+
+                const videoUrlsCol = row['Video URLs'] || row['Video URL'] || row['videoURL'];
+                if (videoUrlsCol) {
+                  const urls = String(videoUrlsCol).split(/[\r\n,]+/).map(u => u.trim()).filter(Boolean);
+                  urls.forEach((url, uIdx) => {
+                    additionalVideosFromSurveys.push({
+                      id: `video_${surveyId}_${uIdx}`,
+                      survey: surveyId,
+                      surveyId: surveyId,
+                      name: `Video ${uIdx + 1} - ${name}`,
+                      videoURL: url,
+                      status: 'active',
+                      createdAt: createdAt || new Date().toISOString()
+                    });
+                  });
+                }
+              }
+            });
+          }
 
           if (importedSurveys.length === 0) {
             alert('No valid survey rows found in the uploaded file.');
@@ -2303,8 +2577,9 @@
             }
           }
 
-          // Reload surveys data and refresh UI
+          // Reload surveys and videos data and refresh UI
           await fetchSurveys();
+          await fetchVideos();
           buildSurveyUserMap();
           if (currentView === 'surveys') {
             renderSurveysTable();
