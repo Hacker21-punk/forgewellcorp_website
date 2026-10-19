@@ -1220,8 +1220,9 @@
           userCell = `<td>0 Users</td>`;
         }
         
-        const dateCell = `<td>${formatSurveyDate(survey.createdAt)}</td>`;
-        const statusCell = `<td><span class="status-badge ${survey.status || 'active'}">${survey.status || 'Active'}</span></td>`;
+        const rawStatus = (survey.status || 'active').trim();
+        const statusClass = rawStatus.toLowerCase();
+        const statusCell = `<td><span class="status-badge ${statusClass}">${escapeHtml(statusClass)}</span></td>`;
 
         let actionCell = '';
         if (isUserAdmin()) {
@@ -1641,8 +1642,9 @@
       document.getElementById('surveyDateInput').value = createdOn;
 
       const radios = document.getElementsByName('surveyStatus');
+      const curStatus = (survey.status || 'active').trim().toLowerCase();
       for (let radio of radios) {
-        if (radio.value === survey.status) {
+        if (radio.value.toLowerCase() === curStatus) {
           radio.checked = true;
         }
       }

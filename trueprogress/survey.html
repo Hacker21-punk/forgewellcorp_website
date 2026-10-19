@@ -499,10 +499,11 @@
           }
         } catch(e) {}
 
+        const vStatus = (v.status || 'active').trim().toLowerCase();
         tr.innerHTML = `
           <td><input type="checkbox" value="${v.id}" class="video-row-checkbox" onchange="handleCheckboxChange()" /></td>
           <td><strong>${escapeHtml(v.name || 'Film')}</strong></td>
-          <td>${escapeHtml(v.status || 'active')}</td>
+          <td><span class="status-badge ${vStatus}">${escapeHtml(vStatus)}</span></td>
           <td>${displayDate}</td>
         `;
         tbody.appendChild(tr);
@@ -613,8 +614,9 @@
       document.getElementById('videoDateInput').value = dateVal;
 
       const radios = document.getElementsByName('videoStatus');
+      const curVStatus = (video.status || 'active').trim().toLowerCase();
       for (let r of radios) {
-        if (r.value === (video.status || 'active')) {
+        if (r.value.toLowerCase() === curVStatus) {
           r.checked = true;
         }
       }

@@ -87,6 +87,9 @@
   --badge-disabled-bg: #fee2e2;
   --badge-disabled-text: #b91c1c;
   --badge-disabled-border: #fca5a5;
+  --badge-inactive-bg: #fee2e2;
+  --badge-inactive-text: #b91c1c;
+  --badge-inactive-border: #fca5a5;
 
   /* Shadows (Soft, Diffuse, Elegant) */
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
@@ -218,6 +221,9 @@
   --badge-disabled-bg: rgba(239, 68, 68, 0.18);
   --badge-disabled-text: #f87171;
   --badge-disabled-border: rgba(239, 68, 68, 0.35);
+  --badge-inactive-bg: rgba(239, 68, 68, 0.18);
+  --badge-inactive-text: #f87171;
+  --badge-inactive-border: rgba(239, 68, 68, 0.35);
 
   /* Shadows */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
@@ -706,24 +712,30 @@ a {
 .status-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 0.28rem 0.75rem;
   border-radius: var(--radius-pill);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+  line-height: 1.2;
 }
 
-.status-badge.active {
+.status-badge.active,
+.status-badge.Active {
   background: var(--badge-active-bg) !important;
   color: var(--badge-active-text) !important;
   border: 1px solid var(--badge-active-border) !important;
   box-shadow: var(--shadow-sm);
 }
 
-.status-badge.disabled {
-  background: var(--badge-disabled-bg) !important;
-  color: var(--badge-disabled-text) !important;
-  border: 1px solid var(--badge-disabled-border) !important;
+.status-badge.inactive,
+.status-badge.Inactive,
+.status-badge.disabled,
+.status-badge.Disabled {
+  background: var(--badge-inactive-bg) !important;
+  color: var(--badge-inactive-text) !important;
+  border: 1px solid var(--badge-inactive-border) !important;
   box-shadow: var(--shadow-sm);
 }
 
