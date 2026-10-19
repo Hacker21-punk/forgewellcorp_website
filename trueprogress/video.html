@@ -897,7 +897,6 @@
           
           // Check if custom landmarks file was uploaded for this video
           const isCustomActive = localStorage.getItem(`custom_landmarks_active_${id}`) === 'true';
-          const customFileName = localStorage.getItem(`custom_landmarks_filename_${id}`);
           const removeBtn = document.getElementById(`removeFileBtn_${id}`);
           const textSpan = document.getElementById(`fileInputText_${id}`);
           const label = document.getElementById(`fileInputLabel_${id}`);
@@ -910,23 +909,12 @@
             } catch (err) {
               rawLandmarks = videoObjects[id].landmarks || [];
             }
-            if (removeBtn) removeBtn.style.display = 'inline-flex';
-            if (textSpan) {
-              textSpan.innerText = customFileName || 'Custom Landmarks Active';
-              textSpan.title = customFileName || 'Custom landmarks loaded from file';
-            }
-            if (label && customFileName) {
-              label.title = customFileName;
+            if (removeBtn) {
+              removeBtn.style.display = 'inline-flex';
+              removeBtn.title = 'Remove custom landmarks and restore defaults';
             }
           } else {
             if (removeBtn) removeBtn.style.display = 'none';
-            if (textSpan) {
-              textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
-              textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
-            }
-            if (label) {
-              label.title = 'Choose File (.csv, .xlsx, .xls)';
-            }
             const savedWorking = localStorage.getItem(`landmarks_${id}`);
             if (savedWorking) {
               try {
@@ -938,6 +926,27 @@
               rawLandmarks = videoObjects[id].landmarks || [];
             }
           }
+
+          // Always display standard placeholder in the file upload option box
+          if (textSpan) {
+            textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+            textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+          }
+          if (label) {
+            label.title = 'Choose File (.csv, .xlsx, .xls)';
+          }
+
+          // Sanitize rawLandmarks: clean up any existing landmark names that were mistakenly stored in km
+          rawLandmarks = (rawLandmarks || []).map(lm => {
+            if (!lm) return lm;
+            const valid = isValidKmValue(lm.km);
+            return {
+              ...lm,
+              name: lm.name || lm.display || (valid ? `KM ${formatKmDisplay(lm.km)}` : 'Landmark'),
+              display: lm.display || lm.name || (valid ? `KM ${formatKmDisplay(lm.km)}` : 'Landmark'),
+              km: valid ? formatKmDisplay(lm.km) : ''
+            };
+          });
 
           // Strictly filter out any landmark that is in the recycle bin or permanently deleted
           if (window.TrueProgressBin) {
@@ -975,9 +984,55 @@
       }
     }
 
+    // Validation and formatting utilities for chainage / KM values
+    function isValidKmValue(val) {
+      if (val === null || val === undefined) return false;
+      let str = String(val).trim();
+      if (!str) return false;
+      if (/^(n\/?a|null|undefined|none|-|--)$/i.test(str)) return false;
+
+      // Strip common prefixes (KM, K.M., Chainage, Ch, Ch., Distance, Dist)
+      str = str.replace(/^(km|k\.m\.|chainage|ch\.?|distance|dist\.?)\s*:?\s*/i, '');
+      // Strip common suffixes (KM, K.M., meters, meter, m, mtrs, mtr)
+      str = str.replace(/\s*(km|k\.m\.|meters?|mtrs?|m)$/i, '');
+      str = str.trim();
+      if (!str) return false;
+
+      // Landmark names/descriptions contain letters (e.g. station, bridge, rob, rub, road, etc.)
+      // If any alphabetical letter remains, it is a landmark name/description, NOT a valid KM!
+      if (/[a-z]/i.test(str)) {
+        return false;
+      }
+
+      // Valid KM patterns:
+      // Numbers: "12", "12.5", "12.500", "0", "0.00"
+      // Chainage: "12+500", "12+500.5", "12/5", "12-500"
+      return /^\d+([.,/+-]\d+)*$/.test(str);
+    }
+
+    function formatKmDisplay(val) {
+      if (!isValidKmValue(val)) return '';
+      let str = String(val).trim();
+      str = str.replace(/^(km|k\.m\.|chainage|ch\.?|distance|dist\.?)\s*:?\s*/i, '');
+      str = str.replace(/\s*(km|k\.m\.|meters?|mtrs?|m)$/i, '');
+      return str.trim();
+    }
+
     // Dropdowns & Total Count updates for specific player
     function updateLandmarksUI(id) {
       if (!videoLandmarks[id]) return;
+
+      // Sanitize landmarks: ensure landmark names are never retained in km
+      videoLandmarks[id] = videoLandmarks[id].map((lm, idx) => {
+        if (!lm) return lm;
+        const valid = isValidKmValue(lm.km);
+        return {
+          ...lm,
+          name: lm.name || lm.display || (valid ? `KM ${formatKmDisplay(lm.km)}` : `Landmark ${idx + 1}`),
+          display: lm.display || lm.name || (valid ? `KM ${formatKmDisplay(lm.km)}` : `Landmark ${idx + 1}`),
+          km: valid ? formatKmDisplay(lm.km) : ''
+        };
+      });
 
       // Sort landmarks by time
       videoLandmarks[id].sort((a, b) => a.time - b.time);
@@ -1024,10 +1079,12 @@
             landmarksSelect.appendChild(opt1);
           }
 
-          if (kmSelect && lm.km) {
+          // Strictly ensure only valid numeric/chainage KM values ever appear in the KM dropdown
+          if (kmSelect && isValidKmValue(lm.km)) {
+            const cleanKm = formatKmDisplay(lm.km);
             const opt2 = document.createElement('option');
             opt2.value = lm.time;
-            opt2.innerText = `KM ${lm.km} (${timeCode})`;
+            opt2.innerText = `KM ${cleanKm} (${timeCode})`;
             kmSelect.appendChild(opt2);
           }
         });
@@ -1083,26 +1140,26 @@
     }
 
     function normalizeKmKey(km) {
-      if (km === null || km === undefined) return '';
-      return km.toString().toLowerCase().replace(/km/gi, '').replace(/[^0-9]/g, '').trim();
+      if (!isValidKmValue(km)) return '';
+      return formatKmDisplay(km).toLowerCase().replace(/[^0-9]/g, '').trim();
     }
 
     function findMatchingKm(landmarksList, targetKm) {
-      if (!landmarksList || !landmarksList.length || targetKm === null || targetKm === undefined) return null;
+      if (!landmarksList || !landmarksList.length || !isValidKmValue(targetKm)) return null;
       
-      const targetStr = targetKm.toString().trim();
-      let found = landmarksList.find(l => l.km && l.km.toString().trim() === targetStr);
+      const cleanTarget = formatKmDisplay(targetKm);
+      let found = landmarksList.find(l => isValidKmValue(l.km) && formatKmDisplay(l.km) === cleanTarget);
       if (found) return found;
 
-      const targetNum = parseFloat(targetKm);
+      const targetNum = parseFloat(cleanTarget);
       if (!isNaN(targetNum)) {
-        found = landmarksList.find(l => l.km && parseFloat(l.km) === targetNum);
+        found = landmarksList.find(l => isValidKmValue(l.km) && parseFloat(formatKmDisplay(l.km)) === targetNum);
         if (found) return found;
       }
 
       const targetNorm = normalizeKmKey(targetKm);
       if (targetNorm) {
-        found = landmarksList.find(l => l.km && normalizeKmKey(l.km) === targetNorm);
+        found = landmarksList.find(l => isValidKmValue(l.km) && normalizeKmKey(l.km) === targetNorm);
         if (found) return found;
       }
 
@@ -1135,8 +1192,9 @@
               }
             }
 
-            if (lm.km !== null && lm.km !== undefined) {
-              const kmStr = lm.km.toString().trim();
+            // Strictly ensure only valid numeric/chainage KM values ever enter the shared KM dropdown
+            if (lm.km !== null && lm.km !== undefined && isValidKmValue(lm.km)) {
+              const kmStr = formatKmDisplay(lm.km);
               if (kmStr) {
                 const normKm = normalizeKmKey(kmStr) || kmStr;
                 if (!kmGroups.has(normKm)) {
@@ -1166,10 +1224,10 @@
       });
 
       sortedKms.forEach(km => {
-        if (sharedKmSelect) {
+        if (sharedKmSelect && isValidKmValue(km)) {
           const opt = document.createElement('option');
           opt.value = km;
-          opt.innerText = `KM ${km}`;
+          opt.innerText = `KM ${formatKmDisplay(km)}`;
           sharedKmSelect.appendChild(opt);
         }
       });
@@ -1275,7 +1333,7 @@
       
       videoLandmarks[id][idx].name = newName;
       videoLandmarks[id][idx].display = newName;
-      videoLandmarks[id][idx].km = newKm;
+      videoLandmarks[id][idx].km = isValidKmValue(newKm) ? formatKmDisplay(newKm) : '';
       
       updateLandmarksUI(id);
     }
@@ -1600,8 +1658,10 @@
 
       const rawName = nameInput.value.trim();
       const rawKm = kmInput.value.trim();
-      const name = rawName || (rawKm ? `KM ${rawKm}` : `Landmark at ${formattedTimeStr}`);
-      const km = rawKm;
+      const validKm = isValidKmValue(rawKm);
+      const cleanKm = validKm ? formatKmDisplay(rawKm) : '';
+      const name = rawName || (cleanKm ? `KM ${cleanKm}` : `Landmark at ${formattedTimeStr}`);
+      const km = cleanKm;
 
       const newLm = {
         name,
@@ -1696,7 +1756,6 @@
       const removeBtn = document.getElementById(`removeFileBtn_${id}`);
       const label = document.getElementById(`fileInputLabel_${id}`);
       const isCustomActive = localStorage.getItem(`custom_landmarks_active_${id}`) === 'true';
-      const customFileName = localStorage.getItem(`custom_landmarks_filename_${id}`);
 
       if (input.files && input.files[0]) {
         const file = input.files[0];
@@ -1709,17 +1768,7 @@
         }
         if (removeBtn) {
           removeBtn.style.display = 'inline-flex';
-        }
-      } else if (isCustomActive) {
-        if (textSpan) {
-          textSpan.innerText = customFileName || 'Custom Landmarks Active';
-          textSpan.title = customFileName || 'Custom landmarks loaded from file';
-        }
-        if (label) {
-          label.title = customFileName || 'Custom landmarks loaded from file';
-        }
-        if (removeBtn) {
-          removeBtn.style.display = 'inline-flex';
+          removeBtn.title = 'Cancel chosen file';
         }
       } else {
         if (textSpan) {
@@ -1730,7 +1779,8 @@
           label.title = 'Choose File (.csv, .xlsx, .xls)';
         }
         if (removeBtn) {
-          removeBtn.style.display = 'none';
+          removeBtn.style.display = isCustomActive ? 'inline-flex' : 'none';
+          removeBtn.title = isCustomActive ? 'Remove custom landmarks and restore defaults' : 'Remove file';
         }
       }
     }
@@ -1742,33 +1792,20 @@
       const removeBtn = document.getElementById(`removeFileBtn_${id}`);
       const label = document.getElementById(`fileInputLabel_${id}`);
       const isCustomActive = localStorage.getItem(`custom_landmarks_active_${id}`) === 'true';
-      const customFileName = localStorage.getItem(`custom_landmarks_filename_${id}`);
 
       // If user has a file chosen in the file input (not yet uploaded), clear the input selection
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         fileInput.value = '';
-        if (isCustomActive) {
-          if (textSpan) {
-            textSpan.innerText = customFileName || 'Custom Landmarks Active';
-            textSpan.title = customFileName || 'Custom landmarks loaded from file';
-          }
-          if (label) {
-            label.title = customFileName || 'Custom landmarks loaded from file';
-          }
-          if (removeBtn) {
-            removeBtn.style.display = 'inline-flex';
-          }
-        } else {
-          if (textSpan) {
-            textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
-            textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
-          }
-          if (label) {
-            label.title = 'Choose File (.csv, .xlsx, .xls)';
-          }
-          if (removeBtn) {
-            removeBtn.style.display = 'none';
-          }
+        if (textSpan) {
+          textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+          textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
+        }
+        if (label) {
+          label.title = 'Choose File (.csv, .xlsx, .xls)';
+        }
+        if (removeBtn) {
+          removeBtn.style.display = isCustomActive ? 'inline-flex' : 'none';
+          removeBtn.title = isCustomActive ? 'Remove custom landmarks and restore defaults' : 'Remove file';
         }
         return;
       }
@@ -1873,26 +1910,54 @@
 
               for (const [key, val] of Object.entries(row)) {
                 const k = key.trim().toLowerCase();
-                if (/name|landmark|title|label|desc/i.test(k) && !nameVal) {
-                  nameVal = String(val).trim();
-                } else if (/km|chainage|dist|kilo/i.test(k) && !kmVal) {
-                  kmVal = String(val).trim();
-                } else if (/time|second|sec|timestamp/i.test(k) && !timeVal) {
-                  timeVal = String(val).trim();
+                const vStr = String(val !== undefined && val !== null ? val : '').trim();
+                if (!vStr) continue;
+
+                if (/^(km|chainage|dist|kilo)/i.test(k) || /\bkm\b|\bchainage\b/i.test(k)) {
+                  if (!kmVal && isValidKmValue(vStr)) kmVal = formatKmDisplay(vStr);
+                } else if (/^(time|second|sec|timestamp|duration)/i.test(k) || /\btime\b/i.test(k)) {
+                  if (!timeVal) timeVal = vStr;
+                } else if (/^(name|landmark|title|label|desc)/i.test(k) || /landmark|title/i.test(k)) {
+                  if (!nameVal) nameVal = vStr;
                 }
               }
 
               const values = Object.values(row);
-              if (!nameVal && values[0] !== undefined) nameVal = String(values[0]).trim();
-              if (!kmVal && values[1] !== undefined) kmVal = String(values[1]).trim();
-              if (!timeVal && values[2] !== undefined) timeVal = String(values[2]).trim();
+              if (!nameVal) {
+                for (let v of values) {
+                  const s = String(v || '').trim();
+                  if (s && !/^\d{1,2}:\d{2}(:\d{2})?$/.test(s) && !isValidKmValue(s)) {
+                    nameVal = s;
+                    break;
+                  }
+                }
+                if (!nameVal && values[0] !== undefined) nameVal = String(values[0]).trim();
+              }
+
+              // Validate kmVal: strictly ensure it never holds landmark names
+              if (kmVal && !isValidKmValue(kmVal)) {
+                kmVal = '';
+              } else if (kmVal) {
+                kmVal = formatKmDisplay(kmVal);
+              }
+
+              if (!timeVal) {
+                for (let v of values) {
+                  const s = String(v || '').trim();
+                  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) {
+                    timeVal = s;
+                    break;
+                  }
+                }
+                if (!timeVal && values[2] !== undefined) timeVal = String(values[2]).trim();
+              }
 
               const timeSecs = parseTimeToSeconds(timeVal);
 
               newLandmarks.push({
                 name: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
                 display: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
-                km: kmVal,
+                km: isValidKmValue(kmVal) ? formatKmDisplay(kmVal) : '',
                 time: isNaN(timeSecs) ? 0 : timeSecs,
                 videoId: id
               });
@@ -1917,14 +1982,17 @@
                 window.TPCloudSync.schedulePush();
               }
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
-              if (removeBtn) removeBtn.style.display = 'inline-flex';
+              if (removeBtn) {
+                removeBtn.style.display = 'inline-flex';
+                removeBtn.title = 'Remove custom landmarks and restore defaults';
+              }
               const textSpan = document.getElementById(`fileInputText_${id}`);
               if (textSpan) {
-                textSpan.innerText = file.name;
-                textSpan.title = file.name;
+                textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+                textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
               }
               const label = document.getElementById(`fileInputLabel_${id}`);
-              if (label) label.title = file.name;
+              if (label) label.title = 'Choose File (.csv, .xlsx, .xls)';
               if (fileInput) fileInput.value = '';
               alert(`${newLandmarks.length} landmarks loaded successfully from Excel.`);
             } else {
@@ -1949,29 +2017,80 @@
             const newLandmarks = [];
             const headerLine = lines[0];
             const delimiter = headerLine.includes('\t') ? '\t' : (headerLine.includes(';') ? ';' : ',');
-            const headers = headerLine.split(delimiter).map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase());
+            const rawHeaders = headerLine.split(delimiter).map(h => h.replace(/^["']|["']$/g, '').trim());
+            const headers = rawHeaders.map(h => h.toLowerCase());
 
-            let nameIdx = headers.findIndex(h => /name|landmark|title|label|desc/i.test(h));
-            let kmIdx = headers.findIndex(h => /km|chainage|dist|kilo/i.test(h));
-            let timeIdx = headers.findIndex(h => /time|second|sec|timestamp/i.test(h));
+            let nameIdx = headers.findIndex(h => /^(landmark|name|title|label|description|desc)/i.test(h) || /landmark|title/i.test(h));
+            let kmIdx = headers.findIndex(h => /^(km|chainage|dist|kilo)/i.test(h) || /\bkm\b|\bchainage\b/i.test(h));
+            let timeIdx = headers.findIndex(h => /^(time|second|sec|timestamp|duration)/i.test(h) || /\btime\b/i.test(h));
+
+            // Check if the first line is actually data (no headers present)
+            let startRow = 1;
+            const isFirstRowData = headers.some(h => /^\d{1,2}:\d{2}/.test(h) || (!isNaN(parseFloat(h)) && h.length > 4));
+            if (isFirstRowData) {
+              startRow = 0;
+            }
+
+            // If header matching didn't identify columns, detect by column content
+            if (nameIdx === -1 || timeIdx === -1) {
+              const sampleRow = (lines.length > 1 ? lines[1] : lines[0]).split(delimiter).map(c => c.replace(/^["']|["']$/g, '').trim());
+              sampleRow.forEach((colVal, cIdx) => {
+                if (timeIdx === -1 && /^\d{1,2}:\d{2}(:\d{2})?$/.test(colVal)) {
+                  timeIdx = cIdx;
+                } else if (kmIdx === -1 && isValidKmValue(colVal)) {
+                  if (!/^(s\.?no|sl\.?no|sr\.?no|no\.?|id|#)$/i.test(headers[cIdx] || '')) {
+                    kmIdx = cIdx;
+                  }
+                } else if (nameIdx === -1 && /[a-z]/i.test(colVal)) {
+                  nameIdx = cIdx;
+                }
+              });
+            }
 
             if (nameIdx === -1) nameIdx = 0;
-            if (kmIdx === -1) kmIdx = 1;
-            if (timeIdx === -1) timeIdx = 2;
+            // CRITICAL: kmIdx remains -1 if no KM column exists! NEVER force kmIdx = 1!
 
-            for (let i = 1; i < lines.length; i++) {
+            for (let i = startRow; i < lines.length; i++) {
               const row = lines[i].trim();
               if (!row) continue;
               const cols = row.split(delimiter).map(c => c.replace(/^["']|["']$/g, '').trim());
-              const nameVal = cols[nameIdx] || '';
-              const kmVal = cols[kmIdx] || '';
-              const timeVal = cols[timeIdx] || '';
+              let nameVal = (nameIdx !== -1 && cols[nameIdx] !== undefined) ? cols[nameIdx] : '';
+              let kmVal = (kmIdx !== -1 && cols[kmIdx] !== undefined) ? cols[kmIdx] : '';
+              let timeVal = (timeIdx !== -1 && cols[timeIdx] !== undefined) ? cols[timeIdx] : '';
+
+              // Ensure kmVal NEVER contains a landmark name or non-KM string
+              if (!isValidKmValue(kmVal)) {
+                kmVal = '';
+              } else {
+                kmVal = formatKmDisplay(kmVal);
+              }
+
+              // Fallback for timeVal if not set: scan cols for time pattern
+              if (!timeVal) {
+                for (let c of cols) {
+                  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(c)) {
+                    timeVal = c;
+                    break;
+                  }
+                }
+              }
+
+              // Fallback for nameVal: if nameVal is empty, find column with text
+              if (!nameVal) {
+                for (let c of cols) {
+                  if (c && c !== timeVal && c !== kmVal && !/^(s\.?no|sl\.?no|sr\.?no|\d+)$/i.test(c)) {
+                    nameVal = c;
+                    break;
+                  }
+                }
+              }
+
               const timeSecs = parseTimeToSeconds(timeVal);
 
               newLandmarks.push({
                 name: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
                 display: nameVal || (kmVal ? `KM ${kmVal}` : 'Landmark'),
-                km: kmVal,
+                km: isValidKmValue(kmVal) ? formatKmDisplay(kmVal) : '',
                 time: isNaN(timeSecs) ? 0 : timeSecs,
                 videoId: id
               });
@@ -1996,14 +2115,17 @@
                 window.TPCloudSync.schedulePush();
               }
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
-              if (removeBtn) removeBtn.style.display = 'inline-flex';
+              if (removeBtn) {
+                removeBtn.style.display = 'inline-flex';
+                removeBtn.title = 'Remove custom landmarks and restore defaults';
+              }
               const textSpan = document.getElementById(`fileInputText_${id}`);
               if (textSpan) {
-                textSpan.innerText = file.name;
-                textSpan.title = file.name;
+                textSpan.innerText = 'Choose File (.csv, .xlsx, .xls)';
+                textSpan.title = 'Choose File (.csv, .xlsx, .xls)';
               }
               const label = document.getElementById(`fileInputLabel_${id}`);
-              if (label) label.title = file.name;
+              if (label) label.title = 'Choose File (.csv, .xlsx, .xls)';
               if (fileInput) fileInput.value = '';
               alert(`${newLandmarks.length} CSV landmarks loaded successfully.`);
             } else {
