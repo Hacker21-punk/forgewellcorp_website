@@ -24,6 +24,11 @@
   <script src="assets/recycleBin.js"></script>
   <script src="assets/xlsx.full.min.js"></script>
   <script src="assets/exceljs.min.js"></script>
+  <script>
+    if (typeof ExcelJS === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"><\/script>');
+    }
+  </script>
 </head>
 <body>
   <div class="dashboard-wrapper">
