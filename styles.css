@@ -367,6 +367,10 @@ p { color: var(--text-dim); line-height: 1.8; }
   width: 24px;
 }
 
+.desktop-nav .has-menu > a {
+  cursor: pointer;
+  user-select: none;
+}
 .desktop-nav .has-menu > a::after { display: none; }
 .desktop-nav .has-menu > a::before {
   content: "";
