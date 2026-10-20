@@ -879,14 +879,18 @@
             localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
           }
         }
-        // Ensure Amit Kumar does not carry invalid Bairabi survey assignments in memory
+        // Ensure Amit Kumar has correct survey assignments in memory
         allUsers.forEach(u => {
           if (u && (u.email === 'amitkumarcvl20@gmail.com' || u.uid === 'ezNB5e1gOXXgEmSftaiaAoE8FiY2')) {
             if (Array.isArray(u.survey)) {
               u.survey = u.survey.filter(s => {
                 const sClean = String(s).trim().toLowerCase();
-                return sClean !== 'bairabi section' && sClean !== 'bairabi sarang short film';
+                return sClean !== 'bairabi section';
               });
+              const hasShortFilm = u.survey.some(s => String(s).trim().toLowerCase() === 'bairabi sarang short film');
+              if (!hasShortFilm) {
+                u.survey.push('Bairabi Sarang Short Film');
+              }
             }
           }
         });

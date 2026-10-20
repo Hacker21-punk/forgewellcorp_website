@@ -103,11 +103,19 @@
               if (u && (u.email === 'amitkumarcvl20@gmail.com' || u.uid === 'ezNB5e1gOXXgEmSftaiaAoE8FiY2')) {
                 if (Array.isArray(u.survey)) {
                   var origLen = u.survey.length;
+                  // Remove Bairabi Section if present
                   u.survey = u.survey.filter(function (s) {
                     var sClean = String(s).trim().toLowerCase();
-                    return sClean !== 'bairabi section' && sClean !== 'bairabi sarang short film';
+                    return sClean !== 'bairabi section';
                   });
-                  if (u.survey.length !== origLen) modified = true;
+                  // Ensure Bairabi Sarang Short Film is preserved
+                  var hasShortFilm = u.survey.some(function (s) {
+                    return String(s).trim().toLowerCase() === 'bairabi sarang short film';
+                  });
+                  if (!hasShortFilm) {
+                    u.survey.push('Bairabi Sarang Short Film');
+                  }
+                  if (u.survey.length !== origLen || !hasShortFilm) modified = true;
                 }
               }
             });
