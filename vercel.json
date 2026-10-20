@@ -195,5 +195,17 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/trueprogress",
+      "destination": "/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/trueprogress/",
+      "destination": "/dashboard",
+      "permanent": false
+    }
   ]
 }
