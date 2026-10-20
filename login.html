@@ -107,7 +107,7 @@
       try {
         const parsed = JSON.parse(existingUser);
         if (parsed && (parsed.uid || parsed.email)) {
-          window.location.href = '/trueprogress/index.html';
+          window.location.href = '/dashboard';
         }
       } catch (e) {}
     }
@@ -221,7 +221,7 @@
               localStorage.setItem('loggedInUser', JSON.stringify(user));
             }
           } catch (e) {}
-          window.location.href = '/trueprogress/index.html';
+          window.location.href = '/dashboard';
         } else {
           alert('Invalid ID/Email or password.');
           if (btn) {

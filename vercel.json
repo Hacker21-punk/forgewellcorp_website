@@ -102,18 +102,6 @@
       "destination": "/trueprogress/video.html"
     },
     {
-      "source": "/trueprogress",
-      "destination": "/trueprogress/dashboard.html"
-    },
-    {
-      "source": "/trueprogress/",
-      "destination": "/trueprogress/dashboard.html"
-    },
-    {
-      "source": "/trueprogress/index",
-      "destination": "/trueprogress/dashboard.html"
-    },
-    {
       "source": "/trueprogress/survey",
       "destination": "/trueprogress/survey.html"
     },

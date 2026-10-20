@@ -107,7 +107,7 @@
       try {
         const parsed = JSON.parse(existingUser);
         if (parsed && (parsed.uid || parsed.email)) {
-          window.location.href = 'index.html';
+          window.location.href = '/dashboard';
         }
       } catch (e) {}
     }
@@ -215,7 +215,7 @@
 
           sessionStorage.setItem('loggedInUser', JSON.stringify(user));
           localStorage.setItem('loggedInUser', JSON.stringify(user));
-          window.location.href = 'index.html';
+          window.location.href = '/dashboard';
         } else {
           alert('Invalid ID/Email or password.');
           if (btn) {
