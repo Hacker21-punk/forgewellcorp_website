@@ -20,7 +20,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
-  <script src="assets/cloudSync.js"></script>
+  <script src="assets/dataProtection.js"></script>
   <script src="assets/recycleBin.js"></script>
   <script src="assets/xlsx.full.min.js"></script>
   <script src="assets/exceljs.min.js"></script>
@@ -654,33 +654,12 @@
     }
 
     async function initializeApp() {
-      if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
-        try {
-          await window.TPCloudSync.pull();
-        } catch (syncErr) {
-          console.warn('[CloudSync] initial pull error:', syncErr);
-        }
-      }
       await fetchSurveys();
       await fetchVideos();
       await fetchUsers();
       buildSurveyUserMap();
       populateSurveyCheckboxes();
       renderSurveysTable();
-
-      // Listen for background cloud sync updates
-      window.addEventListener('tp_cloud_synced', async function () {
-        await fetchSurveys();
-        await fetchVideos();
-        await fetchUsers();
-        buildSurveyUserMap();
-        populateSurveyCheckboxes();
-        if (currentView === 'surveys') {
-          renderSurveysTable();
-        } else if (currentView === 'users' && typeof renderUsersTable === 'function') {
-          renderUsersTable();
-        }
-      });
 
       // Check query params for user deep-linking
       const params = new URLSearchParams(window.location.search);
@@ -698,20 +677,24 @@
     async function fetchSurveys() {
       try {
         let defaultSurveys = [];
-        try {
-          const response = await fetch('backup%20details%20of%20trueprogress/surveys.json');
-          if (response.ok) {
-            defaultSurveys = await response.json();
-            try { sessionStorage.setItem('tp_cached_surveys', JSON.stringify(defaultSurveys)); } catch(e) {}
-          } else {
-            throw new Error('Failed to load surveys data');
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          defaultSurveys = await window.TPDataLoader.fetchJson('surveys.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/surveys.json',
+            '/backup%20details%20of%20trueprogress/surveys.json',
+            'trueprogress/backup%20details%20of%20trueprogress/surveys.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/surveys.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                defaultSurveys = await res.json();
+                break;
+              }
+            } catch (e) {}
           }
-        } catch (fetchErr) {
-          console.warn('Network fetch fallback for surveys:', fetchErr);
-          try {
-            const cached = sessionStorage.getItem('tp_cached_surveys');
-            if (cached) defaultSurveys = JSON.parse(cached);
-          } catch(e) {}
         }
 
         // Get custom surveys from safe storage
@@ -737,6 +720,11 @@
         // Add completely new custom ones (strictly filtering out deleted ones)
         const activeCustomSurveys = (customSurveys || []).filter(s => !allDeletedSurveyIds.has(s.id));
         surveysList = [...surveysList, ...activeCustomSurveys];
+
+        // Hard Anti-Wipe guarantee: default surveys must never be zero if source data exists
+        if (window.TPDataLoader && typeof window.TPDataLoader.protectSurveys === 'function') {
+          surveysList = window.TPDataLoader.protectSurveys(surveysList, defaultSurveys);
+        }
       } catch (error) {
         console.error('Error fetching surveys:', error);
       }
@@ -746,20 +734,24 @@
     async function fetchVideos() {
       try {
         let defaultVideos = [];
-        try {
-          const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
-          if (response.ok) {
-            defaultVideos = await response.json();
-            try { sessionStorage.setItem('tp_cached_videos', JSON.stringify(defaultVideos)); } catch(e) {}
-          } else {
-            throw new Error('Failed to load videos data');
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          defaultVideos = await window.TPDataLoader.fetchJson('videos.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/videos.json',
+            '/backup%20details%20of%20trueprogress/videos.json',
+            'trueprogress/backup%20details%20of%20trueprogress/videos.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/videos.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                defaultVideos = await res.json();
+                break;
+              }
+            } catch (e) {}
           }
-        } catch (fetchErr) {
-          console.warn('Network fetch fallback for videos:', fetchErr);
-          try {
-            const cached = sessionStorage.getItem('tp_cached_videos');
-            if (cached) defaultVideos = JSON.parse(cached);
-          } catch(e) {}
         }
 
         const binDeletedVideos = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('video') : [];
@@ -776,6 +768,10 @@
 
         const activeCustomVideos = (customVideos || []).filter(v => !allDeletedVideoIds.has(v.id));
         allVideos = [...activeVideos, ...activeCustomVideos];
+
+        if (window.TPDataLoader && typeof window.TPDataLoader.protectVideos === 'function') {
+          allVideos = window.TPDataLoader.protectVideos(allVideos, defaultVideos);
+        }
       } catch (error) {
         console.error('Error fetching videos:', error);
       }
@@ -785,20 +781,24 @@
     async function fetchUsers() {
       try {
         let baseUsers = [];
-        try {
-          const response = await fetch('backup%20details%20of%20trueprogress/users.json');
-          if (response.ok) {
-            baseUsers = await response.json();
-            try { sessionStorage.setItem('tp_cached_users', JSON.stringify(baseUsers)); } catch(e) {}
-          } else {
-            throw new Error('Failed to load users data');
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          baseUsers = await window.TPDataLoader.fetchJson('users.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/users.json',
+            '/backup%20details%20of%20trueprogress/users.json',
+            'trueprogress/backup%20details%20of%20trueprogress/users.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/users.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                baseUsers = await res.json();
+                break;
+              }
+            } catch (e) {}
           }
-        } catch (fetchErr) {
-          console.warn('Network fetch fallback for users:', fetchErr);
-          try {
-            const cached = sessionStorage.getItem('tp_cached_users');
-            if (cached) baseUsers = JSON.parse(cached);
-          } catch(e) {}
         }
 
         // Apply edits / creations / deletions from safe storage & universal bin
@@ -833,6 +833,11 @@
             allUsers.push(custom);
           }
         });
+
+        // Anti-Wipe protect for users
+        if (window.TPDataLoader && typeof window.TPDataLoader.protectUsers === 'function') {
+          allUsers = window.TPDataLoader.protectUsers(allUsers, baseUsers);
+        }
 
         // Enrich any user in recycle bin that only has a placeholder name
         if (window.TrueProgressBin) {
@@ -1704,9 +1709,6 @@
       buildSurveyUserMap();
       populateSurveyCheckboxes();
       renderSurveysTable();
-      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-        window.TPCloudSync.schedulePush();
-      }
     }
 
     async function handleDeleteSurvey(id) {
@@ -1754,9 +1756,6 @@
         buildSurveyUserMap();
         populateSurveyCheckboxes();
         renderSurveysTable();
-        if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-          window.TPCloudSync.schedulePush();
-        }
       }
     }
 
@@ -2593,9 +2592,6 @@
           } else if (currentView === 'users') {
             renderUsersTable();
           }
-          if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-            window.TPCloudSync.schedulePush();
-          }
 
           closeUploadProjectModal();
           alert(`Successfully imported ${importedSurveys.length} survey(s)${importedVideosCount > 0 ? `, ${importedVideosCount} video(s)` : ''}${importedUsersCount > 0 ? `, and ${importedUsersCount} user(s)` : ''} from Excel.`);
@@ -2989,9 +2985,6 @@
       await fetchUsers();
       buildSurveyUserMap();
       renderSurveysTable();
-      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-        window.TPCloudSync.schedulePush();
-      }
     }
 
     async function handleDeleteUser(uid) {
@@ -3056,9 +3049,6 @@
           renderUsersTable();
         } else {
           renderSurveysTable();
-        }
-        if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-          window.TPCloudSync.schedulePush();
         }
       }
     }

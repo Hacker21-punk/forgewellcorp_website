@@ -82,9 +82,6 @@
     saveBinItems: function (items) {
       localStorage.setItem(STORAGE_BIN, JSON.stringify(items || []));
       window.dispatchEvent(new CustomEvent('tp_bin_updated', { detail: { items: items } }));
-      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-        window.TPCloudSync.schedulePush();
-      }
     },
 
     /**
@@ -680,24 +677,7 @@
         }
       });
 
-      // Import legacy deleted default surveys
-      var permSurveys = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_SURVEYS), []);
-      delSurveys.forEach(function (id) {
-        if (permSurveys.includes(id)) return;
-        if (!items.some(function (it) { return it.id === id && it.type === 'survey'; })) {
-          items.push({
-            binId: 'bin_survey_' + id + '_' + Date.now(),
-            type: 'survey',
-            id: id,
-            name: 'Survey #' + id,
-            subtitle: 'Default Survey Archive',
-            deletedAt: new Date().toISOString(),
-            data: { id: id },
-            meta: { isCustom: false }
-          });
-          hasChanges = true;
-        }
-      });
+      // Base surveys are never phantom-imported
 
       // Import legacy deleted custom users if not in bin
       var deletedCustomUsers = safeJsonParse(localStorage.getItem(STORAGE_DELETED_CUSTOM_USERS), []);
@@ -719,43 +699,9 @@
         }
       });
 
-      // Import legacy deleted users
-      var permUsers = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_USERS), []);
-      delUsers.forEach(function (uid) {
-        if (permUsers.includes(uid)) return;
-        if (!items.some(function (it) { return it.id === uid && it.type === 'user'; })) {
-          items.push({
-            binId: 'bin_user_' + uid + '_' + Date.now(),
-            type: 'user',
-            id: uid,
-            name: 'User ' + uid.substring(0, 8),
-            subtitle: 'Deleted User Account',
-            deletedAt: new Date().toISOString(),
-            data: { uid: uid },
-            meta: { isCustom: uid.startsWith('user-') }
-          });
-          hasChanges = true;
-        }
-      });
+      // Base users are never phantom-imported
 
-      // Import legacy deleted videos
-      var permVideos = safeJsonParse(localStorage.getItem(STORAGE_PERM_DELETED_VIDEOS), []);
-      delVideos.forEach(function (vidId) {
-        if (permVideos.includes(vidId)) return;
-        if (!items.some(function (it) { return it.id === vidId && it.type === 'video'; })) {
-          items.push({
-            binId: 'bin_video_' + vidId + '_' + Date.now(),
-            type: 'video',
-            id: vidId,
-            name: 'Video ' + vidId,
-            subtitle: 'Deleted Video',
-            deletedAt: new Date().toISOString(),
-            data: { id: vidId },
-            meta: { isCustom: vidId.startsWith('vid-') }
-          });
-          hasChanges = true;
-        }
-      });
+      // Base videos are never phantom-imported
 
       if (hasChanges) {
         this.saveBinItems(items);

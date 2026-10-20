@@ -22,7 +22,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
-  <script src="assets/cloudSync.js"></script>
+  <script src="assets/dataProtection.js"></script>
   <script src="assets/recycleBin.js"></script>
   <script src="assets/xlsx.full.min.js"></script>
 </head>
@@ -846,29 +846,25 @@
     });
 
     async function loadVideoData() {
-      if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
-        try {
-          await window.TPCloudSync.pull();
-        } catch (syncErr) {
-          console.warn('[CloudSync] video pull error:', syncErr);
-        }
-      }
       let videosList = [];
-      try {
-        let response = await fetch('backup%20details%20of%20trueprogress/videos.json');
-        if (!response.ok) {
-          response = await fetch('/trueprogress/backup%20details%20of%20trueprogress/videos.json');
+      if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+        videosList = await window.TPDataLoader.fetchJson('videos.json');
+      } else {
+        const candidates = [
+          'backup%20details%20of%20trueprogress/videos.json',
+          '/backup%20details%20of%20trueprogress/videos.json',
+          'trueprogress/backup%20details%20of%20trueprogress/videos.json',
+          '/trueprogress/backup%20details%20of%20trueprogress/videos.json'
+        ];
+        for (const u of candidates) {
+          try {
+            const r = await fetch(u);
+            if (r.ok) {
+              videosList = await r.json();
+              break;
+            }
+          } catch(e) {}
         }
-        if (response.ok) {
-          videosList = await response.json();
-          try { sessionStorage.setItem('cached_base_videos', JSON.stringify(videosList)); } catch (e) {}
-        }
-      } catch (err) {
-        console.warn('Network fetch for videos.json failed, falling back to cache:', err);
-        try {
-          const cached = sessionStorage.getItem('cached_base_videos');
-          if (cached) videosList = JSON.parse(cached);
-        } catch (e) {}
       }
 
       try {
@@ -1840,9 +1836,6 @@
           videoLandmarks[id] = window.TrueProgressBin ? rawLandmarks.filter(lm => !window.TrueProgressBin.isLandmarkDeleted(id, lm)) : [...rawLandmarks];
           
           updateLandmarksUI(id);
-          if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-            window.TPCloudSync.schedulePush();
-          }
         }
       } else {
         if (fileInput) fileInput.value = '';
@@ -1978,9 +1971,6 @@
                 } catch(e) {}
               }
               updateLandmarksUI(id);
-              if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-                window.TPCloudSync.schedulePush();
-              }
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) {
                 removeBtn.style.display = 'inline-flex';
@@ -2111,9 +2101,6 @@
                 } catch(e) {}
               }
               updateLandmarksUI(id);
-              if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-                window.TPCloudSync.schedulePush();
-              }
               const removeBtn = document.getElementById(`removeFileBtn_${id}`);
               if (removeBtn) {
                 removeBtn.style.display = 'inline-flex';

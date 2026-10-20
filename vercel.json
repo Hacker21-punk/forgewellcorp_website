@@ -1,38 +1,142 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/solutions/quantum-&-physics", "destination": "/solutions/quantum-and-physics.html" },
-    { "source": "/solutions/quantum-physics", "destination": "/solutions/quantum-and-physics.html" },
-    { "source": "/solutions/tactical-&-surveillance-solutions", "destination": "/solutions/tactical-and-surveillance-solutions.html" },
-    { "source": "/solutions/tactical-surveillance-solutions", "destination": "/solutions/tactical-and-surveillance-solutions.html" },
-    { "source": "/solutions/test-&-measurement-solutions", "destination": "/solutions/test-and-measurement-solutions.html" },
-    { "source": "/solutions/test-measurement-solutions", "destination": "/solutions/test-and-measurement-solutions.html" },
-    { "source": "/solutions/machine-vision-&-monitoring-solutions", "destination": "/solutions/machine-vision-and-monitoring-solutions.html" },
-    { "source": "/solutions/machine-vision-monitoring-solutions", "destination": "/solutions/machine-vision-and-monitoring-solutions.html" },
-    { "source": "/solutions/automation-&-access-control-systems", "destination": "/solutions/automation-and-access-control-systems.html" },
-    { "source": "/solutions/automation-access-control-systems", "destination": "/solutions/automation-and-access-control-systems.html" },
-    { "source": "/solutions/aerial-surveys", "destination": "/solutions/aerial-survey.html" },
-    { "source": "/solutions/aerial-survey", "destination": "/solutions/aerial-survey.html" },
-    { "source": "/solutions/bim-&-3d-lidar-scanning", "destination": "/solutions/bim-and-3d-lidar-scanning.html" },
-    { "source": "/solutions/bim-3d-lidar-scanning", "destination": "/solutions/bim-and-3d-lidar-scanning.html" },
-    { "source": "/solutions/it-solutions", "destination": "/solutions/quantum-and-physics.html" },
-    { "source": "/solutions/it%20solutions", "destination": "/solutions/quantum-and-physics.html" },
-    { "source": "/contact", "destination": "/contact.html" },
-    { "source": "/solutions", "destination": "/solutions/index.html" },
-    { "source": "/login", "destination": "/trueprogress/login.html" },
-    { "source": "/reset-password", "destination": "/trueprogress/reset-password.html" },
-    { "source": "/dashboard", "destination": "/trueprogress/index.html" },
-    { "source": "/survey", "destination": "/trueprogress/survey.html" },
-    { "source": "/video", "destination": "/trueprogress/video.html" },
-    { "source": "/trueprogress", "destination": "/trueprogress/index.html" },
-    { "source": "/trueprogress/", "destination": "/trueprogress/index.html" },
-    { "source": "/trueprogress/index", "destination": "/trueprogress/index.html" },
-    { "source": "/trueprogress/survey", "destination": "/trueprogress/survey.html" },
-    { "source": "/trueprogress/survey.html", "destination": "/trueprogress/survey.html" },
-    { "source": "/trueprogress/video", "destination": "/trueprogress/video.html" },
-    { "source": "/trueprogress/video.html", "destination": "/trueprogress/video.html" },
-    { "source": "/trueprogress/login", "destination": "/trueprogress/login.html" },
-    { "source": "/trueprogress/reset-password", "destination": "/trueprogress/reset-password.html" }
+    {
+      "source": "/backup%20details%20of%20trueprogress/(.*)",
+      "destination": "/backup details of trueprogress/$1"
+    },
+    {
+      "source": "/backup details of trueprogress/(.*)",
+      "destination": "/backup details of trueprogress/$1"
+    },
+    {
+      "source": "/solutions/quantum-&-physics",
+      "destination": "/solutions/quantum-and-physics.html"
+    },
+    {
+      "source": "/solutions/quantum-physics",
+      "destination": "/solutions/quantum-and-physics.html"
+    },
+    {
+      "source": "/solutions/tactical-&-surveillance-solutions",
+      "destination": "/solutions/tactical-and-surveillance-solutions.html"
+    },
+    {
+      "source": "/solutions/tactical-surveillance-solutions",
+      "destination": "/solutions/tactical-and-surveillance-solutions.html"
+    },
+    {
+      "source": "/solutions/test-&-measurement-solutions",
+      "destination": "/solutions/test-and-measurement-solutions.html"
+    },
+    {
+      "source": "/solutions/test-measurement-solutions",
+      "destination": "/solutions/test-and-measurement-solutions.html"
+    },
+    {
+      "source": "/solutions/machine-vision-&-monitoring-solutions",
+      "destination": "/solutions/machine-vision-and-monitoring-solutions.html"
+    },
+    {
+      "source": "/solutions/machine-vision-monitoring-solutions",
+      "destination": "/solutions/machine-vision-and-monitoring-solutions.html"
+    },
+    {
+      "source": "/solutions/automation-&-access-control-systems",
+      "destination": "/solutions/automation-and-access-control-systems.html"
+    },
+    {
+      "source": "/solutions/automation-access-control-systems",
+      "destination": "/solutions/automation-and-access-control-systems.html"
+    },
+    {
+      "source": "/solutions/aerial-surveys",
+      "destination": "/solutions/aerial-survey.html"
+    },
+    {
+      "source": "/solutions/aerial-survey",
+      "destination": "/solutions/aerial-survey.html"
+    },
+    {
+      "source": "/solutions/bim-&-3d-lidar-scanning",
+      "destination": "/solutions/bim-and-3d-lidar-scanning.html"
+    },
+    {
+      "source": "/solutions/bim-3d-lidar-scanning",
+      "destination": "/solutions/bim-and-3d-lidar-scanning.html"
+    },
+    {
+      "source": "/solutions/it-solutions",
+      "destination": "/solutions/quantum-and-physics.html"
+    },
+    {
+      "source": "/solutions/it%20solutions",
+      "destination": "/solutions/quantum-and-physics.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/solutions",
+      "destination": "/solutions/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/trueprogress/login.html"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/trueprogress/reset-password.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/trueprogress/index.html"
+    },
+    {
+      "source": "/survey",
+      "destination": "/trueprogress/survey.html"
+    },
+    {
+      "source": "/video",
+      "destination": "/trueprogress/video.html"
+    },
+    {
+      "source": "/trueprogress",
+      "destination": "/trueprogress/index.html"
+    },
+    {
+      "source": "/trueprogress/",
+      "destination": "/trueprogress/index.html"
+    },
+    {
+      "source": "/trueprogress/index",
+      "destination": "/trueprogress/index.html"
+    },
+    {
+      "source": "/trueprogress/survey",
+      "destination": "/trueprogress/survey.html"
+    },
+    {
+      "source": "/trueprogress/survey.html",
+      "destination": "/trueprogress/survey.html"
+    },
+    {
+      "source": "/trueprogress/video",
+      "destination": "/trueprogress/video.html"
+    },
+    {
+      "source": "/trueprogress/video.html",
+      "destination": "/trueprogress/video.html"
+    },
+    {
+      "source": "/trueprogress/login",
+      "destination": "/trueprogress/login.html"
+    },
+    {
+      "source": "/trueprogress/reset-password",
+      "destination": "/trueprogress/reset-password.html"
+    }
   ],
   "headers": [
     {
@@ -58,7 +162,6 @@
           "key": "Permissions-Policy",
           "value": "accelerometer=(), camera=(), geolocation=(self \"https://www.google.com\" \"https://maps.google.com\"), gyroscope=(), microphone=(), payment=(), usb=()"
         },
-
         {
           "key": "Cross-Origin-Resource-Policy",
           "value": "cross-origin"

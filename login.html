@@ -20,7 +20,6 @@
     })();
   </script>
   <script src="assets/trueprogress/theme.js"></script>
-  <script src="assets/trueprogress/cloudSync.js"></script>
 </head>
 <body>
   <div id="__next">
@@ -127,18 +126,23 @@
       }
 
       try {
-        if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
+        let response = null;
+        const userUrls = [
+          'trueprogress/backup%20details%20of%20trueprogress/users.json',
+          '/trueprogress/backup%20details%20of%20trueprogress/users.json',
+          'backup%20details%20of%20trueprogress/users.json',
+          '/backup%20details%20of%20trueprogress/users.json'
+        ];
+        for (const u of userUrls) {
           try {
-            await window.TPCloudSync.pull();
-          } catch (syncErr) {
-            console.warn('[CloudSync] Login sync error:', syncErr);
-          }
+            const r = await fetch(u);
+            if (r.ok) {
+              response = r;
+              break;
+            }
+          } catch(e) {}
         }
-        let response = await fetch('trueprogress/backup%20details%20of%20trueprogress/users.json');
-        if (!response.ok) {
-          response = await fetch('backup%20details%20of%20trueprogress/users.json');
-        }
-        if (!response.ok) throw new Error('Failed to load user database');
+        if (!response || !response.ok) throw new Error('Failed to load user database');
         let users = await response.json();
 
         // Integrate custom, edited, and deleted users from safe storage

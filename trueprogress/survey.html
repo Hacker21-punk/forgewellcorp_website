@@ -20,7 +20,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
-  <script src="assets/cloudSync.js"></script>
+  <script src="assets/dataProtection.js"></script>
   <script src="assets/recycleBin.js"></script>
 </head>
 <body>
@@ -342,41 +342,33 @@
     }
 
     async function loadPageData() {
-      if (window.TPCloudSync && typeof window.TPCloudSync.pull === 'function') {
-        try {
-          await window.TPCloudSync.pull();
-        } catch (syncErr) {
-          console.warn('[CloudSync] survey page pull error:', syncErr);
-        }
-      }
       await resolveSurveyInfo();
       await fetchVideos();
       renderActionRow();
-
-      window.addEventListener('tp_cloud_synced', async function () {
-        await resolveSurveyInfo();
-        await fetchVideos();
-        renderActionRow();
-      });
     }
 
     // Auto-resolve survey ID and name if either is missing or mismatched
     async function resolveSurveyInfo() {
       try {
         let surveysList = [];
-        try {
-          const res = await fetch('backup%20details%20of%20trueprogress/surveys.json');
-          if (res.ok) {
-            surveysList = await res.json();
-            try { sessionStorage.setItem('tp_cached_surveys', JSON.stringify(surveysList)); } catch(e) {}
-          } else {
-            throw new Error('Failed to load surveys');
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          surveysList = await window.TPDataLoader.fetchJson('surveys.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/surveys.json',
+            '/backup%20details%20of%20trueprogress/surveys.json',
+            'trueprogress/backup%20details%20of%20trueprogress/surveys.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/surveys.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                surveysList = await res.json();
+                break;
+              }
+            } catch (e) {}
           }
-        } catch (e) {
-          try {
-            const cached = sessionStorage.getItem('tp_cached_surveys');
-            if (cached) surveysList = JSON.parse(cached);
-          } catch(err) {}
         }
 
         const customSurveys = safeGet('custom_surveys', []);
@@ -411,19 +403,24 @@
     async function fetchVideos() {
       try {
         let defaultVideos = [];
-        try {
-          const response = await fetch('backup%20details%20of%20trueprogress/videos.json');
-          if (response.ok) {
-            defaultVideos = await response.json();
-            try { sessionStorage.setItem('tp_cached_videos', JSON.stringify(defaultVideos)); } catch(e) {}
-          } else {
-            throw new Error('Failed to load videos');
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          defaultVideos = await window.TPDataLoader.fetchJson('videos.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/videos.json',
+            '/backup%20details%20of%20trueprogress/videos.json',
+            'trueprogress/backup%20details%20of%20trueprogress/videos.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/videos.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                defaultVideos = await res.json();
+                break;
+              }
+            } catch (e) {}
           }
-        } catch (e) {
-          try {
-            const cached = sessionStorage.getItem('tp_cached_videos');
-            if (cached) defaultVideos = JSON.parse(cached);
-          } catch(err) {}
         }
 
         // Load custom overrides from safe storage
@@ -457,6 +454,18 @@
         // Add custom new ones (strictly filtering out deleted ones)
         const customForSurvey = (customVideos || []).filter(matchesSurvey);
         surveyVideos = [...filtered, ...customForSurvey];
+
+        // Anti-wipe protection: If this survey had videos in defaultVideos, do not let them disappear
+        if (surveyVideos.length === 0 && defaultVideos.length > 0) {
+          const baseSurveyVideos = (defaultVideos || []).filter(v => {
+            const vSurvey = String(v.survey || v.surveyId || '').trim().toLowerCase();
+            return (sIdLower && vSurvey === sIdLower) || (sNameLower && vSurvey === sNameLower);
+          });
+          if (baseSurveyVideos.length > 0) {
+            surveyVideos = baseSurveyVideos;
+            try { localStorage.removeItem('deleted_videos'); } catch(e) {}
+          }
+        }
 
         renderTable();
       } catch (e) {
@@ -673,9 +682,6 @@
 
       closeVideoModal();
       fetchVideos();
-      if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-        window.TPCloudSync.schedulePush();
-      }
     }
 
     function handleDeleteVideos() {
@@ -723,9 +729,6 @@
         }
 
         fetchVideos();
-        if (window.TPCloudSync && typeof window.TPCloudSync.schedulePush === 'function') {
-          window.TPCloudSync.schedulePush();
-        }
       }
     }
 
