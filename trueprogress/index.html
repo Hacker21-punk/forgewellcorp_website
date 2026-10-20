@@ -664,11 +664,22 @@
       // Check query params for user deep-linking
       const params = new URLSearchParams(window.location.search);
       const nameParam = params.get('name');
-      if (nameParam) {
-        const user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === nameParam.trim().toLowerCase());
+      const uidParam = params.get('uid');
+      if (nameParam || uidParam) {
+        let user = null;
+        if (uidParam) user = allUsers.find(u => u.uid === uidParam);
+        if (!user && nameParam) {
+          user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === nameParam.trim().toLowerCase());
+        }
         if (user) {
           navigateToView('users');
           openEditUserModal(user.uid);
+          try {
+            const cleanUrl = new URL(window.location);
+            cleanUrl.searchParams.delete('name');
+            cleanUrl.searchParams.delete('uid');
+            history.replaceState(null, '', cleanUrl.pathname);
+          } catch (e) {}
         }
       }
     }
@@ -868,32 +879,62 @@
             localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
           }
         }
+        // Ensure Amit Kumar does not carry invalid Bairabi survey assignments in memory
+        allUsers.forEach(u => {
+          if (u && (u.email === 'amitkumarcvl20@gmail.com' || u.uid === 'ezNB5e1gOXXgEmSftaiaAoE8FiY2')) {
+            if (Array.isArray(u.survey)) {
+              u.survey = u.survey.filter(s => {
+                const sClean = String(s).trim().toLowerCase();
+                return sClean !== 'bairabi section' && sClean !== 'bairabi sarang short film';
+              });
+            }
+          }
+        });
+
         window.allUsers = allUsers;
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     }
 
-    // Build a map of survey name -> list of user names who have access
+    // Build a map of survey id -> list of user objects who have access
     function buildSurveyUserMap() {
       surveyUserMap = {};
       surveysList.forEach(survey => {
         if (!survey || !survey.id) return;
         const surveyNameLower = (survey.name || '').trim().toLowerCase();
-        const matchingUserNames = [];
+        const matchingUsers = [];
+
         allUsers.forEach(user => {
-          if (user && user.survey && Array.isArray(user.survey)) {
+          if (!user || !user.name) return;
+          if (user.survey && Array.isArray(user.survey)) {
             const hasAccess = user.survey.some(s => {
               if (!s) return false;
               const sStr = String(s).trim();
               return sStr === '*' || sStr.toLowerCase() === surveyNameLower;
             });
-            if (hasAccess && user.name) {
-              matchingUserNames.push(user.name);
+            if (hasAccess) {
+              matchingUsers.push({
+                uid: user.uid,
+                name: user.name,
+                email: user.email || ''
+              });
             }
           }
         });
-        surveyUserMap[survey.id] = matchingUserNames;
+
+        // Deduplicate users
+        const uniqueUsers = [];
+        const seen = new Set();
+        matchingUsers.forEach(u => {
+          const key = (u.uid || u.name).toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueUsers.push(u);
+          }
+        });
+
+        surveyUserMap[survey.id] = uniqueUsers;
       });
     }
 
@@ -1549,13 +1590,15 @@
       // Close filters popover
       closeFilterPopover();
 
-      if (userNames.length === 0) return;
+      if (!Array.isArray(userNames) || userNames.length === 0) return;
 
       let listHtml = '';
-      userNames.forEach((name, idx) => {
+      userNames.forEach((userItem, idx) => {
+        const uName = typeof userItem === 'string' ? userItem : (userItem.name || 'User');
+        const uUid = (typeof userItem === 'object' && userItem.uid) ? userItem.uid : '';
         listHtml += `
           <li class="users-popover-item" style="margin-bottom: 0.25rem;">
-            ${idx + 1}. - <a href="#" onclick="event.preventDefault(); navigateToUserByName('${escapeHtml(name).replace(/'/g, "\\'")}')" class="user-popover-link">${escapeHtml(name)}</a>
+            ${idx + 1}. - <a href="#" onclick="event.preventDefault(); navigateToUser('${escapeHtml(uUid).replace(/'/g, "\\'")}', '${escapeHtml(uName).replace(/'/g, "\\'")}')" class="user-popover-link">${escapeHtml(uName)}</a>
           </li>
         `;
       });
@@ -1836,6 +1879,15 @@
       if (profileDropdown) {
         profileDropdown.classList.remove('show');
       }
+      try {
+        const url = new URL(window.location);
+        if (url.searchParams.has('name') || url.searchParams.has('uid')) {
+          url.searchParams.delete('name');
+          url.searchParams.delete('uid');
+          history.replaceState(null, '', url.pathname);
+        }
+      } catch (e) {}
+      closeUserModal();
       navigateToView('users');
     });
 
@@ -2667,12 +2719,15 @@
       });
     }
 
-    function navigateToUserByName(name) {
-      const user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === name.trim().toLowerCase());
+    function navigateToUser(uid, name) {
+      let user = null;
+      if (uid) {
+        user = allUsers.find(u => u.uid === uid);
+      }
+      if (!user && name) {
+        user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === name.trim().toLowerCase());
+      }
       if (user) {
-        // Update URL to match exactly
-        history.pushState(null, '', `?name=${encodeURIComponent(name)}`);
-        
         // Hide popover
         const popover = document.getElementById('usersPopover');
         if (popover) popover.style.display = 'none';
@@ -2682,6 +2737,10 @@
       } else {
         alert("User details not found.");
       }
+    }
+
+    function navigateToUserByName(name) {
+      navigateToUser(null, name);
     }
 
     function populateSurveyCheckboxes() {
@@ -2864,11 +2923,23 @@
     function closeUserModal() {
       if (userModal) userModal.classList.remove('show');
       // Clean query parameter
-      const url = new URL(window.location);
-      if (url.searchParams.has('name')) {
-        url.searchParams.delete('name');
-        history.pushState(null, '', url.pathname);
-      }
+      try {
+        const url = new URL(window.location);
+        if (url.searchParams.has('name') || url.searchParams.has('uid')) {
+          url.searchParams.delete('name');
+          url.searchParams.delete('uid');
+          history.replaceState(null, '', url.pathname);
+        }
+      } catch (e) {}
+    }
+
+    // Close userModal on backdrop click
+    if (userModal) {
+      userModal.addEventListener('click', (e) => {
+        if (e.target === userModal) {
+          closeUserModal();
+        }
+      });
     }
 
     async function handleSaveUser(event) {
@@ -2922,6 +2993,57 @@
       
       if (uid) {
         // Edit User
+        const targetUser = allUsers.find(u => u.uid === uid);
+        const oldSurveys = (targetUser && Array.isArray(targetUser.survey)) ? targetUser.survey : [];
+        const oldSurveysNormalized = oldSurveys.map(s => String(s).trim().toLowerCase());
+        const newSurveysNormalized = selectedSurveys.map(s => String(s).trim().toLowerCase());
+
+        const removedSurveys = oldSurveysNormalized.filter(s => !newSurveysNormalized.includes(s));
+        const addedSurveys = newSurveysNormalized.filter(s => !oldSurveysNormalized.includes(s));
+
+        // Bidirectionally synchronize survey.user_count and edited_surveys
+        if (removedSurveys.length > 0 || addedSurveys.length > 0) {
+          let editedSurveys = safeGet('edited_surveys', []);
+          let surveysUpdated = false;
+
+          surveysList.forEach(survey => {
+            if (!survey || !survey.name) return;
+            const sNameLower = survey.name.trim().toLowerCase();
+
+            if (removedSurveys.includes(sNameLower)) {
+              if (Array.isArray(survey.user_count)) {
+                survey.user_count = survey.user_count.filter(un => un.trim().toLowerCase() !== name.trim().toLowerCase());
+              }
+              const eIdx = editedSurveys.findIndex(e => e.id === survey.id);
+              if (eIdx > -1) {
+                editedSurveys[eIdx].user_count = survey.user_count;
+              } else {
+                editedSurveys.push({ ...survey });
+              }
+              surveysUpdated = true;
+            }
+
+            if (addedSurveys.includes(sNameLower)) {
+              if (Array.isArray(survey.user_count)) {
+                if (!survey.user_count.some(un => un.trim().toLowerCase() === name.trim().toLowerCase())) {
+                  survey.user_count.push(name);
+                }
+              }
+              const eIdx = editedSurveys.findIndex(e => e.id === survey.id);
+              if (eIdx > -1) {
+                editedSurveys[eIdx].user_count = survey.user_count;
+              } else {
+                editedSurveys.push({ ...survey });
+              }
+              surveysUpdated = true;
+            }
+          });
+
+          if (surveysUpdated) {
+            safeSet('edited_surveys', editedSurveys);
+          }
+        }
+
         let editedUsers = safeGet('edited_users', []);
         const existingIdx = editedUsers.findIndex(e => e.uid === uid);
         
@@ -2987,6 +3109,35 @@
         let customUsers = safeGet('custom_users', []);
         customUsers.push(newUser);
         safeSet('custom_users', customUsers);
+
+        if (selectedSurveys.length > 0) {
+          let editedSurveys = safeGet('edited_surveys', []);
+          let surveysUpdated = false;
+          const newSurveysNormalized = selectedSurveys.map(s => String(s).trim().toLowerCase());
+
+          surveysList.forEach(survey => {
+            if (!survey || !survey.name) return;
+            const sNameLower = survey.name.trim().toLowerCase();
+            if (newSurveysNormalized.includes(sNameLower)) {
+              if (Array.isArray(survey.user_count)) {
+                if (!survey.user_count.some(un => un.trim().toLowerCase() === name.trim().toLowerCase())) {
+                  survey.user_count.push(name);
+                }
+              }
+              const eIdx = editedSurveys.findIndex(e => e.id === survey.id);
+              if (eIdx > -1) {
+                editedSurveys[eIdx].user_count = survey.user_count;
+              } else {
+                editedSurveys.push({ ...survey });
+              }
+              surveysUpdated = true;
+            }
+          });
+
+          if (surveysUpdated) {
+            safeSet('edited_surveys', editedSurveys);
+          }
+        }
       }
       
       closeUserModal();
@@ -3059,6 +3210,40 @@
           renderSurveysTable();
         }
       }
+    }
+
+    // Global keyboard and modal backdrop handlers
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const uModal = document.getElementById('userModal');
+        if (uModal && uModal.classList.contains('show')) {
+          closeUserModal();
+        }
+        const sModal = document.getElementById('surveyModal');
+        if (sModal && sModal.classList.contains('show')) {
+          closeSurveyModal();
+        }
+        const rModal = document.getElementById('recycleBinModal');
+        if (rModal && rModal.classList.contains('show')) {
+          closeRecycleBinModal();
+        }
+        const upModal = document.getElementById('uploadProjectModal');
+        if (upModal && upModal.classList.contains('show')) {
+          closeUploadProjectModal();
+        }
+        const popover = document.getElementById('usersPopover');
+        if (popover) popover.style.display = 'none';
+        closeExcelFilterPopover();
+      }
+    });
+
+    const surveyModalEl = document.getElementById('surveyModal');
+    if (surveyModalEl) {
+      surveyModalEl.addEventListener('click', (e) => {
+        if (e.target === surveyModalEl) {
+          closeSurveyModal();
+        }
+      });
     }
 
     // Helpers

@@ -81,8 +81,45 @@
 
         localStorage.setItem(FIX_KEY, 'true');
       }
+
+      // Sanitize user assignments: ensure Amit Kumar does not carry invalid Bairabi assignments in cached stores
+      sanitizeUserAssignments();
     } catch (e) {
       console.warn('Store healing error:', e);
+    }
+  }
+
+  function sanitizeUserAssignments() {
+    try {
+      const keys = ['tp_canonical_users.json', 'tp_cached_users.json', 'edited_users'];
+      keys.forEach(function (k) {
+        var raw = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (!raw) return;
+        try {
+          var arr = JSON.parse(raw);
+          if (Array.isArray(arr)) {
+            var modified = false;
+            arr.forEach(function (u) {
+              if (u && (u.email === 'amitkumarcvl20@gmail.com' || u.uid === 'ezNB5e1gOXXgEmSftaiaAoE8FiY2')) {
+                if (Array.isArray(u.survey)) {
+                  var origLen = u.survey.length;
+                  u.survey = u.survey.filter(function (s) {
+                    var sClean = String(s).trim().toLowerCase();
+                    return sClean !== 'bairabi section' && sClean !== 'bairabi sarang short film';
+                  });
+                  if (u.survey.length !== origLen) modified = true;
+                }
+              }
+            });
+            if (modified) {
+              try { localStorage.setItem(k, JSON.stringify(arr)); } catch (e) {}
+              try { sessionStorage.setItem(k, JSON.stringify(arr)); } catch (e) {}
+            }
+          }
+        } catch (e) {}
+      });
+    } catch (err) {
+      console.warn('User sanitization notice:', err);
     }
   }
 
