@@ -1728,13 +1728,16 @@
         let editedSurveys = safeGet('edited_surveys', []);
         const existingIdx = editedSurveys.findIndex(e => e.id === id);
         
-        const surveyUpdate = { id, name, department, survey_length, createdAt, status };
+        const existingEdited = existingIdx > -1 ? editedSurveys[existingIdx] : {};
+        const baseSurvey = surveysList.find(s => s.id === id) || {};
+        const surveyUpdate = { ...baseSurvey, ...existingEdited, id, name, department, survey_length, createdAt, status };
         if (existingIdx > -1) {
           editedSurveys[existingIdx] = surveyUpdate;
         } else {
           editedSurveys.push(surveyUpdate);
         }
         safeSet('edited_surveys', editedSurveys);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'edited_surveys' } }));
       } else {
         // Create Survey
         const newSurvey = {
@@ -1750,6 +1753,7 @@
         let customSurveys = safeGet('custom_surveys', []);
         customSurveys.push(newSurvey);
         safeSet('custom_surveys', customSurveys);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'custom_surveys' } }));
       }
 
       closeSurveyModal();
@@ -1799,6 +1803,7 @@
           deletedSurveys.push(id);
         }
         safeSet('deleted_surveys', deletedSurveys);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'deleted_surveys' } }));
 
         await fetchSurveys();
         buildSurveyUserMap();
@@ -2677,15 +2682,57 @@
       });
     }
 
-    window.addEventListener('tp_item_restored', async function () {
-      await fetchSurveys();
-      await fetchUsers();
-      buildSurveyUserMap();
-      if (currentView === 'users') {
-        renderUsersTable();
-      } else {
-        renderSurveysTable();
+    // Cross-tab and real-time reactive synchronization for survey/user/video status and updates
+    async function syncAndRefreshView() {
+      try {
+        await fetchSurveys();
+        await fetchVideos();
+        await fetchUsers();
+        buildSurveyUserMap();
+        populateSurveyCheckboxes();
+        if (currentView === 'users') {
+          renderUsersTable();
+        } else {
+          renderSurveysTable();
+        }
+      } catch (e) {
+        console.warn('Sync refresh error:', e);
       }
+    }
+
+    window.addEventListener('storage', async function (e) {
+      if (!e.key || [
+        'edited_surveys',
+        'custom_surveys',
+        'deleted_surveys',
+        'edited_users',
+        'custom_users',
+        'deleted_users',
+        'edited_videos',
+        'custom_videos',
+        'deleted_videos',
+        'tp_recycle_bin'
+      ].includes(e.key)) {
+        await syncAndRefreshView();
+      }
+    });
+
+    window.addEventListener('tp_data_changed', async function () {
+      await syncAndRefreshView();
+    });
+
+    window.addEventListener('tp_item_restored', async function () {
+      await syncAndRefreshView();
+    });
+
+    document.addEventListener('visibilitychange', async function () {
+      if (!document.hidden) {
+        await syncAndRefreshView();
+      }
+    });
+
+    window.addEventListener('focus', async function () {
+      await syncAndRefreshView();
     });
 
     // Dropdown toggle logic
@@ -3145,6 +3192,7 @@
       }
       
       closeUserModal();
+      window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'edited_users' } }));
       await fetchUsers();
       buildSurveyUserMap();
       renderSurveysTable();
@@ -3205,6 +3253,7 @@
           deletedUsers.push(uid);
           safeSet('deleted_users', deletedUsers);
         }
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'deleted_users' } }));
 
         await fetchUsers();
         buildSurveyUserMap();

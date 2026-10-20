@@ -664,6 +664,7 @@
         if (idx > -1) edited[idx] = update;
         else edited.push(update);
         safeSet('edited_videos', edited);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'edited_videos' } }));
       } else {
         // Create
         const newVideo = {
@@ -678,6 +679,7 @@
         let custom = safeGet('custom_videos', []);
         custom.push(newVideo);
         safeSet('custom_videos', custom);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'custom_videos' } }));
       }
 
       closeVideoModal();
@@ -723,6 +725,7 @@
 
         safeSet('deleted_videos', deleted);
         safeSet('custom_videos', custom);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'deleted_videos' } }));
         
         if (window.TrueProgressBin) {
           window.TrueProgressBin.showToast(`${checkedBoxes.length} video(s) moved to Recycle Bin`, 'info');
@@ -780,8 +783,44 @@
       }
     }
 
+    // Cross-tab and real-time reactive synchronization
+    async function syncAndRefreshSurveyView() {
+      try {
+        await fetchVideos();
+      } catch (e) {
+        console.warn('Survey sync error:', e);
+      }
+    }
+
+    window.addEventListener('storage', async function (e) {
+      if (!e.key || [
+        'edited_videos',
+        'custom_videos',
+        'deleted_videos',
+        'edited_surveys',
+        'custom_surveys',
+        'tp_recycle_bin'
+      ].includes(e.key)) {
+        await syncAndRefreshSurveyView();
+      }
+    });
+
+    window.addEventListener('tp_data_changed', async function () {
+      await syncAndRefreshSurveyView();
+    });
+
     window.addEventListener('tp_item_restored', async function () {
-      await fetchVideos();
+      await syncAndRefreshSurveyView();
+    });
+
+    document.addEventListener('visibilitychange', async function () {
+      if (!document.hidden) {
+        await syncAndRefreshSurveyView();
+      }
+    });
+
+    window.addEventListener('focus', async function () {
+      await syncAndRefreshSurveyView();
     });
 
     // Go to Watch Page

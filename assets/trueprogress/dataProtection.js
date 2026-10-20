@@ -81,6 +81,40 @@
 
         localStorage.setItem(FIX_KEY, 'true');
       }
+
+      // Self-heal survey status for Bairabi Sarang Short Film (lghypa8h) to inactive across any legacy caches
+      try {
+        ['tp_canonical_surveys.json', 'tp_cached_surveys.json', 'edited_surveys'].forEach(function (key) {
+          var raw = localStorage.getItem(key);
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              var mod = false;
+              parsed.forEach(function (s) {
+                if (s && s.id === 'lghypa8h' && s.status === 'active') {
+                  s.status = 'inactive';
+                  mod = true;
+                }
+              });
+              if (mod) localStorage.setItem(key, JSON.stringify(parsed));
+            }
+          }
+          var sRaw = sessionStorage.getItem(key);
+          if (sRaw) {
+            var sParsed = JSON.parse(sRaw);
+            if (Array.isArray(sParsed)) {
+              var sMod = false;
+              sParsed.forEach(function (s) {
+                if (s && s.id === 'lghypa8h' && s.status === 'active') {
+                  s.status = 'inactive';
+                  sMod = true;
+                }
+              });
+              if (sMod) sessionStorage.setItem(key, JSON.stringify(sParsed));
+            }
+          }
+        });
+      } catch (err) {}
     } catch (e) {
       console.warn('Store healing error:', e);
     }
@@ -117,7 +151,8 @@
       var data = null;
       for (var i = 0; i < candidates.length; i++) {
         try {
-          var res = await fetch(candidates[i], { cache: 'no-cache' });
+          var fetchUrl = candidates[i] + (candidates[i].indexOf('?') === -1 ? '?_t=' + Date.now() : '&_t=' + Date.now());
+          var res = await fetch(fetchUrl, { cache: 'no-cache' });
           if (res.ok) {
             data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
