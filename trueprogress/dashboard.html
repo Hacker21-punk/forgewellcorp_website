@@ -1850,30 +1850,37 @@
         }
 
         // Ensure surveys are available
-        let surveysToExport = surveysList;
+        let surveysToExport = [...(surveysList || [])];
         if (!surveysToExport || surveysToExport.length === 0) {
-          surveysToExport = await fetchSurveys();
+          await fetchSurveys();
+          surveysToExport = [...(surveysList || [])];
         }
+
+        // Sort surveys alphabetically by project name (A to Z) exactly matching website table
+        surveysToExport.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true }));
 
         // Ensure videos are available
         let videosToExport = allVideos;
         if (!videosToExport || videosToExport.length === 0) {
           try {
-            videosToExport = await fetchVideos();
+            await fetchVideos();
+            videosToExport = allVideos;
           } catch (e) {
             console.warn('Could not fetch videos for backup:', e);
           }
         }
 
         // Ensure users are available
-        let usersToExport = allUsers;
+        let usersToExport = [...(allUsers || [])];
         if (!usersToExport || usersToExport.length === 0) {
           try {
-            usersToExport = await fetchUsers();
+            await fetchUsers();
+            usersToExport = [...(allUsers || [])];
           } catch (e) {
             console.warn('Could not fetch users for backup:', e);
           }
         }
+        usersToExport.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true }));
 
         // Rebuild user mapping to ensure fresh numbers
         buildSurveyUserMap();
