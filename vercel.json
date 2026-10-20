@@ -124,6 +124,14 @@
     {
       "source": "/trueprogress/reset-password",
       "destination": "/trueprogress/reset-password.html"
+    },
+    {
+      "source": "/trueprogress",
+      "destination": "/trueprogress.html"
+    },
+    {
+      "source": "/trueprogress/",
+      "destination": "/trueprogress.html"
     }
   ],
   "headers": [
@@ -169,7 +177,7 @@
       ]
     },
     {
-      "source": "/(index|login|reset-password|404|sw.js)",
+      "source": "/(index|login|reset-password|trueprogress|404|sw.js)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -194,18 +202,6 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/trueprogress",
-      "destination": "/dashboard",
-      "permanent": false
-    },
-    {
-      "source": "/trueprogress/",
-      "destination": "/dashboard",
-      "permanent": false
     }
   ]
 }

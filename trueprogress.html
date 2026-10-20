@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>TrueProgress - Aerial Survey Progress Tracking | Forgewell Corporation</title>
+  <meta name="description" content="Track Progress Easily with TrueProgress by Forgewell Corporation. An advanced aerial survey progress-tracking platform empowering infrastructure and construction projects.">
+  <meta name="keywords" content="TrueProgress, Forgewell Corporation, Aerial Survey, Drone Survey, Railway Construction Progress, Video Comparison, Construction Monitoring">
+  <meta name="author" content="Forgewell Corporation">
+  <link rel="canonical" href="https://www.forgewellcorp.com/trueprogress">
+  <link rel="icon" type="image/svg+xml" href="/assets/media/logo-2.svg">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/_next/static/css/1ede6a71eafd663f.css">
+  <script src="/theme.js"></script>
+
+  <style id="trueprogress-page-css">
+    :root {
+      --primary: #00b67a;
+      --primary-hover: #009865;
+      --primary-light: rgba(0, 182, 122, 0.1);
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme="dark"] {
+      --primary: #00d690;
+      --primary-hover: #00b67a;
+      --primary-light: rgba(0, 214, 144, 0.12);
+      --bg-body: #08080c;
+      --bg-card: #15151e;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: 'Nunito Sans', sans-serif;
+      margin: 0;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    /* Navigation dropdown enhancements */
+    nav ul li.solutions-nav-item, nav ul li.product-nav-item {
+      position: relative;
+    }
+    nav ul li.solutions-nav-item > a,
+    nav ul li.product-nav-item > a {
+      cursor: pointer;
+      user-select: none;
+    }
+    nav ul li.solutions-nav-item > ul.solutions-dropdown-menu {
+      position: absolute !important;
+      top: 104% !important;
+      left: -240px !important;
+      width: 634px !important;
+      max-width: 90vw !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      background: #ffffff !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+      border: 1px solid #e5e7eb !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transform: translateY(10px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      z-index: 9999 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      list-style: none !important;
+      border-radius: 6px;
+      text-align: left !important;
+    }
+    nav ul li.solutions-nav-item:hover > ul.solutions-dropdown-menu,
+    nav ul li.solutions-nav-item:focus-within > ul.solutions-dropdown-menu {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+    }
+    nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li {
+      width: 100% !important;
+      padding: 12px 18px !important;
+      border-bottom: 1px solid #f3f3f3 !important;
+      background: #ffffff !important;
+      box-sizing: border-box !important;
+    }
+    nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li:hover {
+      background-color: #f9fafb !important;
+    }
+    nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li > a {
+      color: #1f2937 !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      display: block !important;
+      padding: 0 !important;
+    }
+    nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li > a:hover {
+      color: var(--primary) !important;
+    }
+
+    /* Product Submenu */
+    nav ul li.product-nav-item > ul.product-dropdown-menu {
+      position: absolute !important;
+      top: 104% !important;
+      left: 0 !important;
+      width: 220px !important;
+      background: #ffffff !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+      border: 1px solid #e5e7eb !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transform: translateY(10px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      z-index: 9999 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      list-style: none !important;
+      border-radius: 6px;
+      text-align: left !important;
+    }
+    nav ul li.product-nav-item:hover > ul.product-dropdown-menu,
+    nav ul li.product-nav-item:focus-within > ul.product-dropdown-menu {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+    }
+    nav ul li.product-nav-item > ul.product-dropdown-menu > li {
+      padding: 10px 18px !important;
+      border-bottom: 1px solid #f3f3f3 !important;
+    }
+    nav ul li.product-nav-item > ul.product-dropdown-menu > li > a {
+      color: #1f2937 !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      display: block !important;
+    }
+    nav ul li.product-nav-item > ul.product-dropdown-menu > li > a:hover {
+      color: var(--primary) !important;
+    }
+
+    /* Active link */
+    nav ul li a.active-link {
+      color: var(--primary) !important;
+      font-weight: 700 !important;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+      margin-right: 12px;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .theme-toggle-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .theme-toggle-btn .sun-icon { display: none; }
+    .theme-toggle-btn .moon-icon { display: block; }
+    [data-theme="dark"] .theme-toggle-btn .sun-icon { display: block; }
+    [data-theme="dark"] .theme-toggle-btn .moon-icon { display: none; }
+
+    /* TrueProgress Login Button */
+    .trueprogress-login {
+      min-height: 44px !important;
+      padding: 8px 18px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      border-radius: 8px !important;
+      background: #00b67a !important;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      box-shadow: 0 4px 12px rgba(0, 182, 122, 0.3) !important;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      cursor: pointer !important;
+    }
+    .trueprogress-login:hover,
+    .trueprogress-login:focus-visible {
+      background: #009865 !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 18px rgba(0, 182, 122, 0.45) !important;
+      color: #ffffff !important;
+    }
+    .trueprogress-login svg {
+      width: 18px !important;
+      height: 18px !important;
+      stroke: currentColor !important;
+      stroke-width: 2 !important;
+      fill: none !important;
+      transition: transform 0.2s ease !important;
+    }
+    .trueprogress-login:hover svg {
+      transform: translateX(3px) !important;
+    }
+
+    /* Hero Section */
+    .tp-hero-section {
+      position: relative;
+      padding: 130px 0 90px;
+      background: linear-gradient(135deg, rgba(0, 182, 122, 0.05) 0%, rgba(0, 182, 122, 0) 100%);
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tp-hero-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      border: 1px solid rgba(0, 182, 122, 0.2);
+    }
+    .tp-hero-title {
+      font-size: clamp(2rem, 4.5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.18;
+      color: var(--text-main);
+      margin-bottom: 16px;
+    }
+    .tp-hero-title span {
+      color: var(--primary);
+    }
+    .tp-hero-subtitle {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+    .tp-hero-desc {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 560px;
+    }
+    .tp-hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    .tp-btn-primary {
+      background: var(--primary);
+      color: #ffffff !important;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0, 182, 122, 0.35);
+      transition: all 0.25s ease;
+    }
+    .tp-btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 182, 122, 0.45);
+    }
+    .tp-btn-secondary {
+      background: transparent;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border-color);
+      padding: 13px 26px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+    .tp-btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary) !important;
+      background: var(--primary-light);
+    }
+    .tp-hero-image-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+      border: 1px solid var(--border-color);
+    }
+    .tp-hero-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+    .tp-hero-image-wrap:hover img {
+      transform: scale(1.03);
+    }
+    .tp-floating-card {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .tp-floating-card {
+      background: rgba(21, 21, 30, 0.88);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* About Section */
+    .tp-about-section {
+      padding: 90px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tp-about-img-box {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
+    }
+    .tp-about-img-box img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .tp-check-list {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0 0;
+    }
+    .tp-check-list li {
+      position: relative;
+      padding-left: 32px;
+      margin-bottom: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    .tp-check-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #ffffff;
+      background: var(--primary);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    /* Challenges Section */
+    .tp-challenges-section {
+      padding: 90px 0;
+      background: var(--bg-body);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tp-challenge-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--card-shadow);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .tp-challenge-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 36px rgba(0, 182, 122, 0.14);
+      border-color: rgba(0, 182, 122, 0.4);
+    }
+    .tp-challenge-img {
+      height: 210px;
+      overflow: hidden;
+      position: relative;
+    }
+    .tp-challenge-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .tp-challenge-card:hover .tp-challenge-img img {
+      transform: scale(1.08);
+    }
+    .tp-challenge-body {
+      padding: 24px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .tp-challenge-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+    .tp-challenge-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    /* Snapshots Section */
+    .tp-snapshots-section {
+      padding: 90px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tp-snapshot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .tp-snapshot-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+    }
+    .tp-snapshot-thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #0f172a;
+      overflow: hidden;
+    }
+    .tp-snapshot-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .tp-snapshot-card:hover .tp-snapshot-thumb img {
+      transform: scale(1.04);
+    }
+    .tp-snapshot-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .tp-snapshot-card:hover .tp-snapshot-overlay {
+      opacity: 1;
+    }
+    .tp-zoom-badge {
+      background: var(--primary);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+    .tp-snapshot-meta {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+    }
+    .tp-snapshot-meta h4 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .tp-snapshot-meta span {
+      font-size: 0.8rem;
+      color: var(--primary);
+      font-weight: 700;
+      background: var(--primary-light);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* Core Features Grid */
+    .tp-features-section {
+      padding: 90px 0;
+      background: var(--bg-body);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tp-feature-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 32px 24px;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+      height: 100%;
+      box-shadow: var(--card-shadow);
+    }
+    .tp-feature-box:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+    .tp-feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .tp-feature-icon svg {
+      width: 26px;
+      height: 26px;
+    }
+    .tp-feature-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+    .tp-feature-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* CTA Section */
+    .tp-cta-section {
+      padding: 90px 0;
+      background: linear-gradient(135deg, rgba(0, 182, 122, 0.08) 0%, rgba(0, 182, 122, 0.02) 100%);
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tp-cta-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 18px;
+    }
+    .tp-cta-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+
+    /* Lightbox Modal */
+    .tp-lightbox-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .tp-lightbox-modal.show {
+      display: flex;
+    }
+    .tp-lightbox-content {
+      position: relative;
+      max-width: 1100px;
+      width: 100%;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color);
+    }
+    .tp-lightbox-img {
+      width: 100%;
+      max-height: 75vh;
+      object-fit: contain;
+      background: #000;
+      display: block;
+    }
+    .tp-lightbox-caption {
+      padding: 16px 24px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tp-lightbox-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .tp-lightbox-close:hover {
+      background: var(--primary);
+    }
+
+    @media (max-width: 991px) {
+      .tp-hero-section { padding: 110px 0 60px; }
+      .tp-hero-image-wrap { margin-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+  <!-- Header Navigation -->
+  <header class="fixed-navbar" id="header" style="position: sticky; top: 0; z-index: 999; background: var(--bg-card); border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+    <div class="middle-header">
+      <div class="header-style-2">
+        <div class="container-fluid" style="padding: 0 30px;">
+          <div class="header-content" style="display: flex; align-items: center; justify-content: space-between; height: 80px;">
+            <div class="logo">
+              <a href="/" aria-label="Forgewell Corporation Home">
+                <img src="/assets/media/logo-2.svg" width="59" height="50" alt="Forgewell Corporation Logo">
+              </a>
+            </div>
+
+            <!-- Desktop Menu -->
+            <nav class="desktop-nav d-none d-lg-block" style="flex: 1; margin-left: 40px;">
+              <ul style="display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0;">
+                <li><a href="/" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 15px;">Home</a></li>
+                <li><a href="/#about" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 15px;">About Us</a></li>
+                
+                <li class="has-menu solutions-nav-item">
+                  <a class="solutions-main-link" role="button" tabindex="0" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 15px; cursor: pointer;" onclick="event.preventDefault();">Solutions</a>
+                  <ul class="solutions-dropdown-menu">
+                    <li><a href="/solutions/quantum-&-physics">Quantum &amp; Physics</a></li>
+                    <li><a href="/solutions/tactical-&-surveillance-solutions">Tactical &amp; Surveillance Solutions</a></li>
+                    <li><a href="/solutions/test-&-measurement-solutions">Test &amp; Measurement Solutions</a></li>
+                    <li><a href="/solutions/machine-vision-&-monitoring-solutions">Machine Vision &amp; Monitoring Solutions</a></li>
+                    <li><a href="/solutions/automation-&-access-control-systems">Automation &amp; Access Control Systems</a></li>
+                    <li><a href="/solutions/aerial-survey">Aerial Survey</a></li>
+                    <li><a href="/solutions/bim-&-3d-lidar-scanning">BIM &amp; 3D Lidar Scanning</a></li>
+                  </ul>
+                </li>
+
+                <li class="has-menu product-nav-item">
+                  <a class="product-main-link" role="button" tabindex="0" style="color: var(--primary); font-weight: 700; text-decoration: none; font-size: 15px; cursor: pointer;" onclick="event.preventDefault();">Product</a>
+                  <ul class="product-dropdown-menu">
+                    <li><a href="/trueprogress" style="color: var(--primary); font-weight: 700;">TrueProgress</a></li>
+                    <li><a href="/#trueprogress">Yokogawa</a></li>
+                    <li><a href="/#trueprogress">Pico Tech</a></li>
+                    <li><a href="/#trueprogress">Tabor Electronics</a></li>
+                  </ul>
+                </li>
+
+                <li><a href="/contact" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 15px;">Contact</a></li>
+              </ul>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions" style="display: flex; align-items: center;">
+              <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle Theme" title="Toggle Light / Dark Mode">
+                <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="5"></circle>
+                  <line x1="12" y1="1" x2="12" y2="3"></line>
+                  <line x1="12" y1="21" x2="12" y2="23"></line>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                  <line x1="1" y1="12" x2="3" y2="12"></line>
+                  <line x1="21" y1="12" x2="23" y2="12"></line>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              </button>
+
+              <a class="theme-btn-s2 trueprogress-login" href="/login" title="TrueProgress Portal Login">
+                TrueProgress
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"></path>
+                </svg>
+              </a>
+
+              <!-- Mobile Toggle Button -->
+              <button class="showmenu d-lg-none" type="button" aria-label="Open mobile menu" style="background: none; border: none; cursor: pointer; padding: 8px; margin-left: 10px; color: var(--text-main);">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="mobileMenu" style="position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: var(--bg-card); z-index: 10000; box-shadow: -5px 0 25px rgba(0,0,0,0.15); transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 30px 24px; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+      <img src="/assets/media/logo-2.svg" width="46" height="38" alt="Forgewell Logo">
+      <button class="menu-close" type="button" aria-label="Close menu" style="background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text-main);">&times;</button>
+    </div>
+    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 18px;">
+      <li><a href="/" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 16px; display: block;">Home</a></li>
+      <li><a href="/#about" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 16px; display: block;">About Us</a></li>
+      <li><a href="/solutions/quantum-&-physics" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 16px; display: block;">Solutions</a></li>
+      <li><a href="/trueprogress" style="color: var(--primary); font-weight: 700; text-decoration: none; font-size: 16px; display: block;">TrueProgress</a></li>
+      <li><a href="/contact" style="color: var(--text-main); font-weight: 600; text-decoration: none; font-size: 16px; display: block;">Contact Us</a></li>
+    </ul>
+    <div style="margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border-color);">
+      <a href="/login" class="tp-btn-primary" style="width: 100%; justify-content: center; font-size: 14px; padding: 12px 18px;">
+        TrueProgress Login
+        <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="tp-hero-section">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6 col-md-12">
+            <span class="tp-hero-badge">Smart Infrastructure Analytics</span>
+            <h1 class="tp-hero-title">Track Progress Easily with <span>TrueProgress</span></h1>
+            <div class="tp-hero-subtitle">Your Progress, Our Priority</div>
+            <p class="tp-hero-desc">
+              Transforming how major railway, highway, and industrial construction projects are monitored. Compare high-resolution aerial surveys, pinpoint chainage landmarks, assess chronological development, and ensure flawless multi-site alignment.
+            </p>
+            <div class="tp-hero-actions">
+              <a href="/login" class="tp-btn-primary">
+                TrueProgress Login
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+              </a>
+              <a href="/contact" class="tp-btn-secondary">
+                Request a Demo
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-6 col-md-12">
+            <div class="tp-hero-image-wrap">
+              <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/vecteezy_drone-quadcopter-operator-pilot-making-photos-uav-with_11430693_j2ECqJEcd.jpg?updatedAt=1695547345193" alt="TrueProgress UAV Drone Pilot Operator Aerial Surveying">
+              <div class="tp-floating-card">
+                <div style="background: var(--primary); color: #fff; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                  </svg>
+                </div>
+                <div>
+                  <div style="font-weight: 800; font-size: 14px; color: var(--text-main);">Frame-Accurate Video Sync</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">2-Video &amp; 4-Video Synchronized Progress Playback</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRODUCING TRUEPROGRESS SECTION -->
+    <section class="tp-about-section">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-5 col-md-12 mb-4 mb-lg-0">
+            <div class="tp-about-img-box">
+              <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/vecteezy_drone-with-camera-drone-videography-aerial-photography_26646800_e7C-S6bU_.jpg?updatedAt=1695547344784" alt="Drone videography and aerial photography monitoring">
+            </div>
+          </div>
+          <div class="col-lg-7 col-md-12 ps-lg-5">
+            <div class="wpo-section-title" style="margin-bottom: 20px;">
+              <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Introducing TrueProgress</span>
+              <h2 style="font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; line-height: 1.25; color: var(--text-main); margin-top: 8px;">Transforming Aerial Survey Progress Tracking</h2>
+            </div>
+            <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 20px;">
+              We are proud to unveil our latest innovation, <strong>TrueProgress</strong> - an advanced progress-tracking tool that brings unprecedented efficiency and clarity to your construction projects. We understand the challenges you face when dealing with numerous project sites across vast geographical areas.
+            </p>
+            <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 24px;">
+              Designed with your needs in mind, TrueProgress empowers engineering teams, government railway officers, and infrastructure stakeholders to compare aerial shots of sites, assess progress milestone by milestone, and ensure seamless coordination across multiple locations.
+            </p>
+            <ul class="tp-check-list">
+              <li>Instant multi-date survey alignment with chainage and landmark indexing</li>
+              <li>Centralized cloud infrastructure eliminating physical drive shipping</li>
+              <li>Multi-tiered enterprise role permissions with active/inactive survey governance</li>
+              <li>1-click Excel backup reporting and synchronized visual evidence logs</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMON CHALLENGES SECTION -->
+    <section class="tp-challenges-section">
+      <div class="container">
+        <div class="row text-center justify-content-center mb-5">
+          <div class="col-lg-8">
+            <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Real-World Engineering Challenges</span>
+            <h2 style="font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: 800; color: var(--text-main); margin-top: 8px;">Solving Common Aerial Survey Challenges</h2>
+            <p style="font-size: 1rem; color: var(--text-muted); max-width: 600px; margin: 12px auto 0;">Overcoming logistical, data, and geographical hurdles with modern aerial intelligence.</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Card 1 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-challenge-card">
+              <div class="tp-challenge-img">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/1920-mulagljufur-canyon-on-the-south-coast-of-iceland_sIFn5XvVYA.jpeg?updatedAt=1695648342628" alt="Vast Geographic Challenges">
+              </div>
+              <div class="tp-challenge-body">
+                <h3 class="tp-challenge-title">Vast Geographic Challenges</h3>
+                <p class="tp-challenge-desc">TrueProgress simplifies multi-site management. Monitor and compare project progress effortlessly. Gain insights, track milestones, and optimize decisions without physical site travel.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-challenge-card">
+              <div class="tp-challenge-img">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/Aerial/2400-aerial-view-of-development-of-new-road-construction-or-overpass-under-construction-top-view-from-a-drone-above-road-construction-workers-among-the-mountains_iyFnLtapq.jpg?updatedAt=1695641680456" alt="Scattered Progress Data">
+              </div>
+              <div class="tp-challenge-body">
+                <h3 class="tp-challenge-title">Scattered Progress Data</h3>
+                <p class="tp-challenge-desc">Coordinating and comprehending project advancements from dispersed aerial shots can be as puzzling as solving a maze blindfolded. TrueProgress unifies all survey data in one timeline.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-challenge-card">
+              <div class="tp-challenge-img">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/1702.i207.010.S.m008.c10.office_paper_drowning_YT_Ye59NUL.jpg?updatedAt=1695648915681" alt="Data Overload">
+              </div>
+              <div class="tp-challenge-body">
+                <h3 class="tp-challenge-title">Data Overload</h3>
+                <p class="tp-challenge-desc">The deluge of data, from high-definition images to intricate maps, can overwhelm even the most organized teams. TrueProgress simplifies this complexity with intuitive visual comparisons.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-challenge-card">
+              <div class="tp-challenge-img">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Fingerprint-pana_FVxjY-g_zv.png?updatedAt=1695649132211" alt="Security Concerns">
+              </div>
+              <div class="tp-challenge-body">
+                <h3 class="tp-challenge-title">Security Concerns</h3>
+                <p class="tp-challenge-desc">At Forgewell, safety and privacy matter. TrueProgress securely stores your data online, eliminating external storage. Multiple security layers protect your sensitive project assets.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-challenge-card">
+              <div class="tp-challenge-img">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Privacy%20policy-rafiki_ogkC7Lc53.png?updatedAt=1695649058768" alt="Communication Gaps">
+              </div>
+              <div class="tp-challenge-body">
+                <h3 class="tp-challenge-title">Communication Gaps</h3>
+                <p class="tp-challenge-desc">Bridging the divide between teams scattered worldwide can feel like sending messages across an ocean. TrueProgress ensures seamless coordination across multiple locations and departments.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-challenge-card">
+              <div class="tp-challenge-img">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/People%20sightseeing%20outdoors-cuate_epMFi3rRJb.png?updatedAt=1695649202949" alt="Need for Precision">
+              </div>
+              <div class="tp-challenge-body">
+                <h3 class="tp-challenge-title">Need for Precision</h3>
+                <p class="tp-challenge-desc">Aerial surveys demand precision, and the quest for minute details can be as challenging as chasing a comet. TrueProgress enables you to gain valuable insights and identify key milestones.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTAL SNAPSHOTS / A PEEK INTO EFFICIENCY -->
+    <section class="tp-snapshots-section">
+      <div class="container">
+        <div class="row text-center justify-content-center mb-5">
+          <div class="col-lg-8">
+            <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Platform Walkthrough</span>
+            <h2 style="font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: 800; color: var(--text-main); margin-top: 8px;">A Peek into Efficiency</h2>
+            <p style="font-size: 1.05rem; color: var(--text-muted); max-width: 660px; margin: 12px auto 0;">
+              Explore our Portal Snapshots, your window into streamlined operations. Witness efficiency, clarity, and control like never before with real-time visuals of your projects, making data-driven decisions a breeze.
+            </p>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Snapshot 1 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-snapshot-card" onclick="openLightbox('https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_08_H7H8VuHOlP.png?updatedAt=1689920888831', '2 Video Mode Comparison')">
+              <div class="tp-snapshot-thumb">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_08_H7H8VuHOlP.png?updatedAt=1689920888831" alt="2 Video Mode Comparison" loading="lazy">
+                <div class="tp-snapshot-overlay">
+                  <span class="tp-zoom-badge">🔍 Click to Preview</span>
+                </div>
+              </div>
+              <div class="tp-snapshot-meta">
+                <h4>2 Video Mode Comparison</h4>
+                <span>Dual View</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snapshot 2 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-snapshot-card" onclick="openLightbox('https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_10_2BzTxnYxE.png?updatedAt=1689920886937', '4 Video Mode Comparison')">
+              <div class="tp-snapshot-thumb">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_10_2BzTxnYxE.png?updatedAt=1689920886937" alt="4 Video Mode Comparison" loading="lazy">
+                <div class="tp-snapshot-overlay">
+                  <span class="tp-zoom-badge">🔍 Click to Preview</span>
+                </div>
+              </div>
+              <div class="tp-snapshot-meta">
+                <h4>4 Video Mode Comparison</h4>
+                <span>Quad Sync</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snapshot 3 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-snapshot-card" onclick="openLightbox('https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_06_WrlY4uqul.png?updatedAt=1689920886568', 'Single Video View Mode')">
+              <div class="tp-snapshot-thumb">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_06_WrlY4uqul.png?updatedAt=1689920886568" alt="Single Video View Mode" loading="lazy">
+                <div class="tp-snapshot-overlay">
+                  <span class="tp-zoom-badge">🔍 Click to Preview</span>
+                </div>
+              </div>
+              <div class="tp-snapshot-meta">
+                <h4>Single Video View Mode</h4>
+                <span>HD Playback</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snapshot 4 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-snapshot-card" onclick="openLightbox('https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_09_JV_vd6EZi.png?updatedAt=1689920886285', 'Full Screen Comparison Mode')">
+              <div class="tp-snapshot-thumb">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_09_JV_vd6EZi.png?updatedAt=1689920886285" alt="Full Screen Comparison Mode" loading="lazy">
+                <div class="tp-snapshot-overlay">
+                  <span class="tp-zoom-badge">🔍 Click to Preview</span>
+                </div>
+              </div>
+              <div class="tp-snapshot-meta">
+                <h4>Full Screen Comparison Mode</h4>
+                <span>Fullscreen</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snapshot 5 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-snapshot-card" onclick="openLightbox('https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_04_Rs1AjZK76.png?updatedAt=1689920883936', 'Survey Listing Dashboard')">
+              <div class="tp-snapshot-thumb">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_04_Rs1AjZK76.png?updatedAt=1689920883936" alt="Survey Listing Dashboard" loading="lazy">
+                <div class="tp-snapshot-overlay">
+                  <span class="tp-zoom-badge">🔍 Click to Preview</span>
+                </div>
+              </div>
+              <div class="tp-snapshot-meta">
+                <h4>Survey Listing Dashboard</h4>
+                <span>Management</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snapshot 6 -->
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="tp-snapshot-card" onclick="openLightbox('https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_05_EycM6s_m3.png?updatedAt=1689920883927', 'Other Features & Controls')">
+              <div class="tp-snapshot-thumb">
+                <img src="https://ik.imagekit.io/ob62ttt1o/Website_data/true_progress_logo/Images/Trueprogress%20Film_Page_05_EycM6s_m3.png?updatedAt=1689920883927" alt="Other Features & Controls" loading="lazy">
+                <div class="tp-snapshot-overlay">
+                  <span class="tp-zoom-badge">🔍 Click to Preview</span>
+                </div>
+              </div>
+              <div class="tp-snapshot-meta">
+                <h4>Other Features &amp; Controls</h4>
+                <span>Controls</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE CAPABILITIES GRID -->
+    <section class="tp-features-section">
+      <div class="container">
+        <div class="row text-center justify-content-center mb-5">
+          <div class="col-lg-8">
+            <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Key Value Pillars</span>
+            <h2 style="font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: 800; color: var(--text-main); margin-top: 8px;">Engineered for Clarity &amp; Security</h2>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-3 col-md-6 mb-4">
+            <div class="tp-feature-box">
+              <div class="tp-feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <h3 class="tp-feature-title">Effortless Progress Tracking</h3>
+              <p class="tp-feature-desc">Effortlessly compare aerial shots and assess progress across project sites with zero guesswork.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mb-4">
+            <div class="tp-feature-box">
+              <div class="tp-feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </div>
+              <h3 class="tp-feature-title">Location Insights Unveiled</h3>
+              <p class="tp-feature-desc">Gain deeper insights with precise location tagging and chainage milestone mapping in this progress tracking tool.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mb-4">
+            <div class="tp-feature-box">
+              <div class="tp-feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                </svg>
+              </div>
+              <h3 class="tp-feature-title">Secure Data Storage</h3>
+              <p class="tp-feature-desc">Safely store and access survey data with our cloud-based system, eliminating fragmented external drives.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mb-4">
+            <div class="tp-feature-box">
+              <div class="tp-feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <h3 class="tp-feature-title">Multi-Tiered Data Security</h3>
+              <p class="tp-feature-desc">Rest easy with multi-tiered security measures, encrypted streaming, and role-based access governance.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALL TO ACTION SECTION -->
+    <section class="tp-cta-section">
+      <div class="container">
+        <h2 class="tp-cta-title">Elevate Your Progress-Tracking Experience</h2>
+        <p class="tp-cta-desc">
+          Join us in revolutionizing the construction industry with TrueProgress. Contact us today to embark on a journey of seamless progress-tracking and drive your projects towards resounding success.
+        </p>
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <a href="/contact" class="tp-btn-primary" style="padding: 15px 36px; font-size: 16px;">
+            Get Started
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+          <a href="/login" class="tp-btn-secondary" style="padding: 14px 32px; font-size: 16px; background: var(--bg-card);">
+            Login to Portal
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Image Lightbox Modal -->
+  <div class="tp-lightbox-modal" id="lightboxModal" onclick="closeLightbox(event)">
+    <div class="tp-lightbox-content" onclick="event.stopPropagation()">
+      <button class="tp-lightbox-close" type="button" aria-label="Close Preview" onclick="closeLightbox()">&times;</button>
+      <img id="lightboxImg" src="" alt="Snapshot Preview" class="tp-lightbox-img">
+      <div class="tp-lightbox-caption">
+        <span id="lightboxCaption">Portal Snapshot</span>
+        <a href="/login" class="trueprogress-login" style="padding: 6px 14px !important; font-size: 13px !important;">Open in Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal Footer -->
+  <footer class="wpo-site-footer">
+    <div class="wpo-upper-footer">
+      <div class="wpo-footer-top">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-12 custom-grid">
+              <div class="widget-title">
+                <img alt="Forgewell Corporation" decoding="async" height="300" loading="lazy" src="/assets/media/logo-full.svg" style="height: 48px; width: auto; max-width: 280px;" width="300">
+              </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6 col-12 custom-grid">
+              <ul>
+                <li><a href="https://www.linkedin.com/company/forgewellcorp/" target="_blank" rel="noopener noreferrer"><i class="ti-linkedin"></i></a></li>
+                <li><a href="/"><i class="ti-facebook"></i></a></li>
+                <li><a href="/"><i class="ti-twitter-alt"></i></a></li>
+                <li><a href="/"><i class="ti-instagram"></i></a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-middle">
+        <div class="container">
+          <div class="row">
+            <div class="col col-md-6 col-sm-12 col-12 col-lg-4">
+              <div class="widget market-widget wpo-service-link-widget">
+                <div class="widget-title"><h3>Contact</h3></div>
+                <div class="contact-ft">
+                  <ul>
+                    <li style="font-weight: bold;">23-B, Sector - D, <br>Govindpura Industrial Area, Near CIPET, JK Road, Bhopal, Madhya Pradesh 462023, India</li>
+                    <li style="font-weight: bold;"><a href="tel:+917554331833" class="contact-link"><span class="contact-icon" aria-hidden="true">☎</span>+91 (0)755-4331833</a></li>
+                    <li style="font-weight: bold;"><a href="mailto:sales@forgewellcorp.com" class="contact-link"><span class="contact-icon" aria-hidden="true">✉</span>sales@forgewellcorp.com</a></li>
+                    <li class="iso" style="font-weight: bold; margin-top: 18px; text-align: left;"><img src="/assets/remote/ISO-9001-2015_aqyWly6lD.jpeg" width="100" height="100" style="border-radius: 6px; background: #fff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);" alt="ISO 9001:2015 Certification"></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col col-md-6 col-sm-12 col-12 col-lg-4">
+              <div class="widget link-widget resource-widget">
+                <div class="widget-title"><h3>Solutions</h3></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/solutions/quantum-&-physics">Quantum &amp; Physics</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/solutions/tactical-&-surveillance-solutions">Tactical &amp; Surveillance Solutions</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/solutions/test-&-measurement-solutions">Test &amp; Measurement Solutions</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/solutions/machine-vision-&-monitoring-solutions">Machine Vision &amp; Monitoring Solutions</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/solutions/automation-&-access-control-systems">Automation &amp; Access Control Systems</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/solutions/aerial-survey">Aerial Survey</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/solutions/bim-&-3d-lidar-scanning">BIM &amp; 3D Lidar Scanning</a></h3></div></div>
+              </div>
+            </div>
+            <div class="col col-md-6 col-sm-12 col-12 col-lg-4">
+              <div class="widget link-widget resource-widget">
+                <div class="widget-title"><h3>Products</h3></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/trueprogress" style="color: var(--primary); font-weight: 700;">TrueProgress</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/#trueprogress">Yokogawa</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/#trueprogress">Pico Tech</a></h3></div></div>
+                <div class="news-wrap"><div class="news-text"><h3><a href="/#trueprogress">Tabor Electronics</a></h3></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wpo-lower-footer">
+      <div class="container">
+        <div class="row">
+          <div class="col col-lg-6 col-md-6 col-12">
+            <div class="term">
+              <ul>
+                <li><a href="/">Privacy Policy</a></li>
+                <li><a href="/">Terms &amp; Condition</a></li>
+                <li><a href="/">Cookies</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col col-lg-6 col-md-6 col-12">
+            <p class="copyright">&copy; 2015-2026 Forgewell Corporation. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="col-lg-12">
+    <div class="header-menu">
+      <ul class="smothscroll">
+        <li><a href="#header" aria-label="Back to top"><i class="ti-arrow-up"></i></a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openLightbox(src, caption) {
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImg');
+    const cap = document.getElementById('lightboxCaption');
+    if (modal && img) {
+      img.src = src;
+      if (cap) cap.innerText = caption || 'Portal Snapshot';
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeLightbox(e) {
+    const modal = document.getElementById('lightboxModal');
+    if (modal) {
+      modal.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle
+    const menuToggle = document.querySelector('.showmenu');
+    const mobileMenu = document.querySelector('.mobileMenu');
+    const menuClose = document.querySelector('.menu-close');
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', function() {
+        mobileMenu.style.right = '0';
+      });
+    }
+    if (menuClose && mobileMenu) {
+      menuClose.addEventListener('click', function() {
+        mobileMenu.style.right = '-320px';
+      });
+    }
+
+    // Smooth scroll back to top
+    const backToTop = document.querySelector('.smothscroll a');
+    if (backToTop) {
+      backToTop.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  });
+</script>
+</body>
+</html>
