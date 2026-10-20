@@ -1,0 +1,3081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Trueprogress by Forgewell Corporation</title>
+  <meta name="description" content="Trueprogress Dashboard" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#14124c" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/index.css" />
+  <script>
+    (function() {
+      try {
+        localStorage.setItem('tp_theme', 'light');
+        document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) {}
+    })();
+  </script>
+  <script src="assets/theme.js"></script>
+  <script src="assets/dataProtection.js"></script>
+  <script src="assets/recycleBin.js"></script>
+  <script src="assets/xlsx.full.min.js"></script>
+  <script src="assets/exceljs.min.js"></script>
+  <script>
+    if (typeof ExcelJS === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <main class="dashboard-content">
+      <div class="dashboard-container">
+        <!-- Top Header Row -->
+        <header class="header-row">
+          <a href="https://forgewellcorp-website-dnhu.vercel.app/" class="logo-link">
+            <span class="logo-wrapper">
+              <span class="logo-sizer">
+                <img
+                  class="logo-img"
+                  alt="Trueprogress"
+                  src="assets/trueprogress_logo.png"
+                />
+              </span>
+            </span>
+          </a>
+
+          <!-- Header Right Actions: Profile Menu -->
+          <div class="header-right-actions">
+            <!-- Profile Menu Container -->
+            <div class="profile-menu-container">
+              <div class="profile-btn-wrapper" id="profileMenuBtn">
+                <span class="profile-name" id="profileName">AV</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              <!-- Profile Dropdown Card -->
+              <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-dropdown-name" id="dropdownName">Admin User</div>
+                <div class="profile-dropdown-role" id="dropdownRole">User</div>
+                <div class="profile-dropdown-detail">
+                  <span class="detail-label">Phone</span>
+                  <span class="detail-value" id="dropdownPhone">N/A</span>
+                </div>
+                <div class="profile-dropdown-detail">
+                  <span class="detail-label">Email</span>
+                  <span class="detail-value" id="dropdownEmail">N/A</span>
+                </div>
+
+
+
+                <button class="profile-dropdown-logout-btn" id="logoutBtn">
+                  Logout
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <ul class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+              </svg>
+              Home
+            </li>
+          </ul>
+          <!-- Admin actions beside breadcrumbs -->
+          <div id="breadcrumbAdminActions" style="display: none; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button class="btn-breadcrumb-action" id="allUsersBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              All Users
+            </button>
+            <button class="btn-breadcrumb-action" id="createBackupBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Create Backup
+            </button>
+            <button class="btn-breadcrumb-action" id="uploadProjectBtn" onclick="openUploadProjectModal()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload Survey Project
+            </button>
+            <button class="btn-breadcrumb-action" id="recycleBinBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              Recycle Bin
+            </button>
+          </div>
+        </nav>
+
+        <!-- Create Survey Button (Visible only to Admin) -->
+        <div id="adminControls" style="display: none;">
+          <button class="btn-create-survey" id="openCreateSurveyModalBtn">Create a survey</button>
+        </div>
+
+        <!-- Create User Button (Visible only to Admin when on users view) -->
+        <div id="adminUserControls" style="display: none;">
+          <button class="btn-create-survey" id="openCreateUserModalBtn">Create a User</button>
+        </div>
+
+        <!-- Table Card -->
+        <div class="table-card">
+          <div class="table-container">
+            <table class="data-table">
+               <thead>
+                  <tr>
+                    <th style="width: 70px;">S.No.</th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Name</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-name" data-column="name" onclick="openExcelFilter(event, 'name')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Department</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-department" data-column="department" onclick="openExcelFilter(event, 'department')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Survey Length</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-survey_length" data-column="survey_length" onclick="openExcelFilter(event, 'survey_length')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Video Count</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-video_count" data-column="video_count" onclick="openExcelFilter(event, 'video_count')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">User Count</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-user_count" data-column="user_count" onclick="openExcelFilter(event, 'user_count')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Created On</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-createdAt" data-column="createdAt" onclick="openExcelFilter(event, 'createdAt')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th>
+                      <div class="excel-header-cell">
+                        <span class="excel-header-title">Status</span>
+                        <button type="button" class="excel-filter-btn" id="excel-btn-status" data-column="status" onclick="openExcelFilter(event, 'status')" title="Click to filter or sort">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                        </button>
+                      </div>
+                    </th>
+                    <th id="actionHeader" style="display: none;">Action</th>
+                  </tr>
+                </thead>
+              <tbody id="tableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p class="footer-text">© 2023 Forgewell Corporation</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Create / Edit Survey -->
+  <div class="modal-overlay" id="surveyModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Create a survey</h3>
+        <button class="modal-close-btn" onclick="closeSurveyModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="surveyForm" onsubmit="return handleSaveSurvey(event)">
+        <input type="hidden" id="editSurveyId" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Survey Name</label>
+            <input type="text" id="surveyNameInput" class="form-input" placeholder="Enter your Survey Name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department Name</label>
+            <input type="text" id="surveyDeptInput" class="form-input" placeholder="Enter your Department Name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Survey Length</label>
+            <input type="text" id="surveyLengthInput" class="form-input" placeholder="Enter your Survey Length" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Created At</label>
+            <input type="date" id="surveyDateInput" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div class="form-radio-group">
+              <label class="form-radio-label">
+                <input type="radio" name="surveyStatus" value="active" checked class="form-radio-input" /> ACTIVE
+              </label>
+              <label class="form-radio-label">
+                <input type="radio" name="surveyStatus" value="inactive" class="form-radio-input" /> INACTIVE
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeSurveyModal()">Cancel</button>
+          <button type="submit" class="btn-modal-submit" id="saveSurveyBtn">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Create / Edit User -->
+  <div class="modal-overlay" id="userModal">
+    <div class="modal-container" style="max-width: 600px; width: 90%;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="userModalTitle">Edit</h3>
+        <button class="modal-close-btn" onclick="closeUserModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="userForm" onsubmit="return handleSaveUser(event)">
+        <input type="hidden" id="editUserUid" />
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px;">
+          <!-- Two-column grid -->
+          <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;" data-responsive-grid>
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input type="text" id="userNameInput" class="form-input" placeholder="Name" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Organization</label>
+              <input type="text" id="userOrgInput" class="form-input" placeholder="Organization" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <input type="text" id="userDeptInput" class="form-input" placeholder="Department" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">State</label>
+              <input type="text" id="userStateInput" class="form-input" placeholder="State" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="userEmailInput" class="form-input" placeholder="Email Address" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password (for first-time use only)</label>
+              <input type="text" id="userPasswordInput" class="form-input" placeholder="Enter password" autocomplete="new-password" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="text" id="userPhoneInput" class="form-input" placeholder="Phone Number" />
+            </div>
+            <div></div> <!-- Blank cell for layout grid alignment -->
+          </div>
+
+          <!-- Radio columns -->
+          <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;" data-responsive-grid>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600;">Is Admin</label>
+              <div class="form-radio-group" style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userIsAdmin" value="true" class="form-radio-input" /> TRUE
+                </label>
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userIsAdmin" value="false" checked class="form-radio-input" /> FALSE
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600;">Disable User</label>
+              <div class="form-radio-group" style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userDisable" value="true" class="form-radio-input" /> TRUE
+                </label>
+                <label class="form-radio-label" style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 500;">
+                  <input type="radio" name="userDisable" value="false" checked class="form-radio-input" /> FALSE
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Survey checkboxes -->
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <div class="survey-assign-header">
+              <label class="form-label" style="font-weight: 600; margin-bottom: 0;">Assign Survey</label>
+              <div class="survey-select-all-wrap">
+                <label class="survey-select-all-label">
+                  <input type="checkbox" id="selectAllSurveysCheckbox" onchange="toggleSelectAllSurveys(this.checked)" />
+                  <span>Select All</span>
+                </label>
+                <button type="button" class="btn-survey-toggle" onclick="toggleSelectAllSurveys(false)">Deselect All</button>
+              </div>
+            </div>
+            <div id="surveyAssignGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
+              <!-- Dynamically populated checkbox chips -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeUserModal()">Cancel</button>
+          <button type="submit" class="btn-modal-submit" id="saveUserBtn" style="background-color: #14124c; border-color: #14124c;">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL: Recycle Bin -->
+  <div class="modal-overlay" id="recycleBinModal">
+    <div class="modal-container" style="max-width: 840px; width: 92%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <h3 class="modal-title">Recycle Bin</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeRecycleBinModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
+          Deleted items across TrueProgress (surveys, users, videos, landmarks) are preserved here. You can restore them anytime or delete them permanently.
+        </p>
+        <div class="bin-filter-bar">
+          <!-- Dynamically populated filter buttons -->
+        </div>
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="users-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align: left; width: 110px;">Type</th>
+                <th style="text-align: left;">Item &amp; Details</th>
+                <th style="text-align: left; width: 160px;">Deleted Date</th>
+                <th style="text-align: right; width: 190px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="recycleBinTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div id="recycleBinEmptyMsg" style="text-align: center; padding: 2rem; color: var(--text-tertiary); display: none;">
+          Recycle Bin is empty
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-recycle-restore-all" id="restoreAllBinBtn" onclick="handleRestoreAllBin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            Restore All
+          </button>
+          <button type="button" class="btn-action-delete" id="emptyRecycleBinBtn" style="border-radius: var(--radius-sm); font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="handleEmptyRecycleBin()">Empty Recycle Bin</button>
+        </div>
+        <button type="button" class="btn-modal-cancel" onclick="closeRecycleBinModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Upload Survey Project -->
+  <div class="modal-overlay" id="uploadProjectModal">
+    <div class="modal-container" style="max-width: 520px; width: 92%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <h3 class="modal-title">Upload Survey Project</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeUploadProjectModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding-top: 1rem;">
+        <div style="background-color: var(--input-bg, #f8fafc); border: 1px solid var(--surface-border, #e2e8f0); border-radius: var(--radius-md, 8px); padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.8125rem; font-weight: 700; color: var(--text-color); text-transform: uppercase; letter-spacing: 0.04em;">Supported File Format</span>
+            <span style="background: rgba(37, 99, 235, 0.12); color: #2563eb; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 9999px;">
+              Excel (.xlsx, .xls) only
+            </span>
+          </div>
+          <p style="font-size: 0.8125rem; color: var(--text-secondary, #64748b); margin: 0; line-height: 1.45;">
+            Upload an Excel workbook containing survey project details. Only <strong>.xlsx</strong> and <strong>.xls</strong> formats are supported.
+          </p>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; display: block;">Select Project File</label>
+          <div class="file-upload-container" style="border: 2px dashed var(--surface-border, #cbd5e1); border-radius: var(--radius-md, 8px); padding: 1.5rem 1rem; text-align: center; background: var(--surface-card, #fff); flex-direction: column; align-items: center; justify-content: center;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
+              <label class="file-input-wrapper" style="border-right: none; background: #2563eb; color: #fff; border-radius: var(--radius-sm, 6px); display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.25rem; cursor: pointer; font-size: 0.875rem; font-weight: 600;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Choose Excel File</span>
+                <input type="file" id="surveyProjectFileInput" accept=".xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onclick="this.value = null" onchange="handleSurveyProjectFileChange(this)" style="display: none;" />
+              </label>
+              <button type="button" class="btn-remove-file" id="removeSurveyProjectFileBtn" onclick="removeSurveyProjectFile()" style="display: none; border: 1px solid #ef4444; border-radius: var(--radius-sm, 6px); padding: 0.55rem 0.85rem; color: #ef4444; font-size: 0.8125rem; font-weight: 600; cursor: pointer; align-items: center; gap: 0.35rem;" title="Remove chosen file">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Remove</span>
+              </button>
+            </div>
+            <div id="surveyProjectFileName" style="margin-top: 0.75rem; font-size: 0.8125rem; color: var(--text-secondary, #64748b); font-weight: 500; word-break: break-all;">No file chosen</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn-modal-cancel" onclick="closeUploadProjectModal()">Cancel</button>
+        <button type="button" class="btn-modal-submit" id="submitUploadProjectBtn" onclick="processSurveyProjectUpload()" style="background-color: #14124c; border-color: #14124c;">Import Project</button>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+  <script>
+    let surveysList = [];
+    let currentUser = null;
+    let allVideos = [];
+    let allUsers = [];
+    let surveyUserMap = {};
+    let currentView = 'surveys'; // 'surveys' or 'users'
+
+    function renderBreadcrumbs() {
+      const breadcrumbList = document.querySelector('.breadcrumb-list');
+      if (!breadcrumbList) return;
+
+      if (currentView === 'users') {
+        breadcrumbList.innerHTML = `
+          <li class="breadcrumb-item clickable" onclick="navigateToView('surveys')" style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+            <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem; margin-right: 0.25rem;">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+            </svg>
+            Home
+          </li>
+          <li class="breadcrumb-item" style="color: #9ca3af; margin: 0 0.5rem;">&gt;</li>
+          <li class="breadcrumb-item">Users</li>
+        `;
+      } else {
+        breadcrumbList.innerHTML = `
+          <li class="breadcrumb-item" style="display: flex; align-items: center; gap: 0.25rem;">
+            <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem; margin-right: 0.25rem;">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+            </svg>
+            Home
+          </li>
+        `;
+      }
+    }
+
+    function navigateToView(view) {
+      currentView = view;
+      renderBreadcrumbs();
+
+      const adminControls = document.getElementById('adminControls');
+      const adminUserControls = document.getElementById('adminUserControls');
+      
+      if (isUserAdmin()) {
+        if (currentView === 'surveys') {
+          if (adminControls) adminControls.style.display = 'block';
+          if (adminUserControls) adminUserControls.style.display = 'none';
+        } else if (currentView === 'users') {
+          if (adminControls) adminControls.style.display = 'none';
+          if (adminUserControls) adminUserControls.style.display = 'block';
+        }
+      } else {
+        if (adminControls) adminControls.style.display = 'none';
+        if (adminUserControls) adminUserControls.style.display = 'none';
+      }
+
+      renderSurveysTable();
+    }
+
+    // Excel Column AutoFilter & Sort State
+    let excelFilterState = {
+      surveys: {},
+      users: {}
+    };
+
+    let excelSortState = {
+      surveys: { column: null, direction: 'asc' },
+      users: { column: null, direction: 'asc' }
+    };
+
+    let currentExcelFilterPopoverColumn = null;
+    let currentExcelFilterItems = [];
+
+    const COLUMN_LABELS = {
+      name: 'Name',
+      department: 'Department',
+      survey_length: 'Survey Length',
+      video_count: 'Video Count',
+      user_count: 'User Count',
+      createdAt: 'Created On',
+      status: 'Status',
+      email: 'Email',
+      organization: 'Organization',
+      state: 'State',
+      admin: 'Is Admin'
+    };
+
+    // Backward compatibility fallback
+    let activeFilters = {};
+
+    // Safe storage guardians
+    function safeGet(key, fallback = []) {
+      if (window.TPStorage && window.TPStorage.get) {
+        const val = window.TPStorage.get(key, fallback);
+        return val !== null && val !== undefined ? val : fallback;
+      }
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function safeSet(key, value) {
+      if (window.TPStorage && window.TPStorage.set) {
+        return window.TPStorage.set(key, value);
+      }
+      try {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        return true;
+      } catch (e) {
+        console.warn('safeSet error for ' + key, e);
+        return false;
+      }
+    }
+
+    function isUserAdmin(u = currentUser) {
+      return Boolean(u && (u.admin === "true" || u.admin === true));
+    }
+
+    function getInitials(name) {
+      if (!name) return 'AV';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    // Verify session
+    const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+    if (!userSession) {
+      window.location.href = 'login.html';
+    } else {
+      currentUser = JSON.parse(userSession);
+      
+      // Update UI Header details
+      document.getElementById('profileName').innerText = getInitials(currentUser.name);
+
+      // Update Dropdown details
+      document.getElementById('dropdownName').innerText = currentUser.name || '';
+      document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
+      document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
+
+      if (isUserAdmin()) {
+        document.getElementById('dropdownRole').innerText = "Admin";
+        document.getElementById('breadcrumbAdminActions').style.display = "flex";
+        document.getElementById('adminControls').style.display = "block";
+        document.getElementById('actionHeader').style.display = "table-cell";
+      } else {
+        document.getElementById('dropdownRole').innerText = "User";
+      }
+
+      // Initialize App
+      initializeApp();
+    }
+
+    async function initializeApp() {
+      await fetchSurveys();
+      await fetchVideos();
+      await fetchUsers();
+      buildSurveyUserMap();
+      populateSurveyCheckboxes();
+      renderSurveysTable();
+
+      // Check query params for user deep-linking
+      const params = new URLSearchParams(window.location.search);
+      const nameParam = params.get('name');
+      if (nameParam) {
+        const user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === nameParam.trim().toLowerCase());
+        if (user) {
+          navigateToView('users');
+          openEditUserModal(user.uid);
+        }
+      }
+    }
+
+    // Fetch surveys from surveys.json and safe storage overrides
+    async function fetchSurveys() {
+      try {
+        let defaultSurveys = [];
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          defaultSurveys = await window.TPDataLoader.fetchJson('surveys.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/surveys.json',
+            '/backup%20details%20of%20trueprogress/surveys.json',
+            'trueprogress/backup%20details%20of%20trueprogress/surveys.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/surveys.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                defaultSurveys = await res.json();
+                break;
+              }
+            } catch (e) {}
+          }
+        }
+
+        // Get custom surveys from safe storage
+        const customSurveys = safeGet('custom_surveys', []);
+
+        // All deleted survey IDs from universal Recycle Bin & legacy stores
+        const binDeletedSurveys = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('survey') : [];
+        const deletedSurveys = safeGet('deleted_surveys', []);
+        const allDeletedSurveyIds = new Set([...deletedSurveys, ...binDeletedSurveys]);
+
+        // Apply edits / deletions to default list
+        const editedSurveys = safeGet('edited_surveys', []);
+
+        // Filter default surveys
+        surveysList = (defaultSurveys || []).filter(s => !allDeletedSurveyIds.has(s.id));
+
+        // Merge edited details
+        surveysList = surveysList.map(s => {
+          const edited = editedSurveys.find(e => e.id === s.id);
+          return edited ? { ...s, ...edited } : s;
+        });
+
+        // Add completely new custom ones (strictly filtering out deleted ones)
+        const activeCustomSurveys = (customSurveys || []).filter(s => !allDeletedSurveyIds.has(s.id));
+        surveysList = [...surveysList, ...activeCustomSurveys];
+
+        // Hard Anti-Wipe guarantee: default surveys must never be zero if source data exists
+        if (window.TPDataLoader && typeof window.TPDataLoader.protectSurveys === 'function') {
+          surveysList = window.TPDataLoader.protectSurveys(surveysList, defaultSurveys);
+        }
+      } catch (error) {
+        console.error('Error fetching surveys:', error);
+      }
+    }
+
+    // Fetch videos list
+    async function fetchVideos() {
+      try {
+        let defaultVideos = [];
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          defaultVideos = await window.TPDataLoader.fetchJson('videos.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/videos.json',
+            '/backup%20details%20of%20trueprogress/videos.json',
+            'trueprogress/backup%20details%20of%20trueprogress/videos.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/videos.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                defaultVideos = await res.json();
+                break;
+              }
+            } catch (e) {}
+          }
+        }
+
+        const binDeletedVideos = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('video') : [];
+        const deletedVideos = safeGet('deleted_videos', []);
+        const allDeletedVideoIds = new Set([...deletedVideos, ...binDeletedVideos]);
+        const customVideos = safeGet('custom_videos', []);
+        const editedVideos = safeGet('edited_videos', []);
+
+        let activeVideos = (defaultVideos || []).filter(v => !allDeletedVideoIds.has(v.id));
+        activeVideos = activeVideos.map(v => {
+          const edited = editedVideos.find(e => e.id === v.id);
+          return edited ? { ...v, ...edited } : v;
+        });
+
+        const activeCustomVideos = (customVideos || []).filter(v => !allDeletedVideoIds.has(v.id));
+        allVideos = [...activeVideos, ...activeCustomVideos];
+
+        if (window.TPDataLoader && typeof window.TPDataLoader.protectVideos === 'function') {
+          allVideos = window.TPDataLoader.protectVideos(allVideos, defaultVideos);
+        }
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      }
+    }
+
+    // Fetch all users
+    async function fetchUsers() {
+      try {
+        let baseUsers = [];
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          baseUsers = await window.TPDataLoader.fetchJson('users.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/users.json',
+            '/backup%20details%20of%20trueprogress/users.json',
+            'trueprogress/backup%20details%20of%20trueprogress/users.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/users.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                baseUsers = await res.json();
+                break;
+              }
+            } catch (e) {}
+          }
+        }
+
+        // Apply edits / creations / deletions from safe storage & universal bin
+        const binDeletedUsers = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('user') : [];
+        const deletedUsers = safeGet('deleted_users', []);
+        const allDeletedUserIds = new Set([...deletedUsers, ...binDeletedUsers]);
+
+        const customUsers = safeGet('custom_users', []);
+        const editedUsers = safeGet('edited_users', []);
+
+        // Start with base users (excluding deleted ones)
+        allUsers = (baseUsers || []).filter(u => !allDeletedUserIds.has(u.uid));
+
+        // Merge edited users
+        editedUsers.forEach(edited => {
+          if (allDeletedUserIds.has(edited.uid)) return;
+          const idx = allUsers.findIndex(u => u.uid === edited.uid);
+          if (idx > -1) {
+            allUsers[idx] = { ...allUsers[idx], ...edited };
+          } else {
+            allUsers.push(edited);
+          }
+        });
+
+        // Add custom users
+        customUsers.forEach(custom => {
+          if (allDeletedUserIds.has(custom.uid)) return;
+          const idx = allUsers.findIndex(u => u.uid === custom.uid);
+          if (idx > -1) {
+            allUsers[idx] = { ...allUsers[idx], ...custom };
+          } else {
+            allUsers.push(custom);
+          }
+        });
+
+        // Anti-Wipe protect for users
+        if (window.TPDataLoader && typeof window.TPDataLoader.protectUsers === 'function') {
+          allUsers = window.TPDataLoader.protectUsers(allUsers, baseUsers);
+        }
+
+        // Enrich any user in recycle bin that only has a placeholder name
+        if (window.TrueProgressBin) {
+          const binItems = window.TrueProgressBin.getBinItems();
+          let binUpdated = false;
+          binItems.forEach(item => {
+            if (item.type === 'user' && (!item.data || !item.data.name || item.name.startsWith('User '))) {
+              const foundInBase = (baseUsers || []).find(bu => bu.uid === item.id);
+              if (foundInBase) {
+                item.name = foundInBase.name || item.name;
+                item.subtitle = (foundInBase.email || 'No email') + ' • ' + (foundInBase.organization || foundInBase.department || 'Account');
+                item.data = { ...foundInBase, ...(item.data || {}) };
+                binUpdated = true;
+              }
+            }
+          });
+          if (binUpdated) {
+            window.TrueProgressBin.saveBinItems(binItems);
+          }
+        }
+
+        // Sync currentUser with allUsers in case edits were made in localStorage
+        if (currentUser) {
+          const syncedCurrent = allUsers.find(u => u.uid === currentUser.uid || (u.email && currentUser.email && u.email.trim().toLowerCase() === currentUser.email.trim().toLowerCase()));
+          if (syncedCurrent) {
+            currentUser = { ...currentUser, ...syncedCurrent };
+            sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+            localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+          }
+        }
+        window.allUsers = allUsers;
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    }
+
+    // Build a map of survey name -> list of user names who have access
+    function buildSurveyUserMap() {
+      surveyUserMap = {};
+      surveysList.forEach(survey => {
+        if (!survey || !survey.id) return;
+        const surveyNameLower = (survey.name || '').trim().toLowerCase();
+        const matchingUserNames = [];
+        allUsers.forEach(user => {
+          if (user && user.survey && Array.isArray(user.survey)) {
+            const hasAccess = user.survey.some(s => {
+              if (!s) return false;
+              const sStr = String(s).trim();
+              return sStr === '*' || sStr.toLowerCase() === surveyNameLower;
+            });
+            if (hasAccess && user.name) {
+              matchingUserNames.push(user.name);
+            }
+          }
+        });
+        surveyUserMap[survey.id] = matchingUserNames;
+      });
+    }
+
+    function isExcelColumnFiltered(colKey) {
+      const viewState = excelFilterState[currentView];
+      return Boolean(viewState && viewState[colKey] instanceof Set);
+    }
+
+    function makeExcelHeaderTh(colKey, label, options = {}) {
+      const isFiltered = isExcelColumnFiltered(colKey);
+      const widthAttr = options.width ? ` style="${options.width}"` : '';
+      const filterBtnClass = `excel-filter-btn${isFiltered ? ' is-filtered' : ''}`;
+      const titleAttr = isFiltered ? 'Filter applied (click to edit)' : 'Click to filter or sort';
+
+      return `
+        <th${widthAttr}>
+          <div class="excel-header-cell">
+            <span class="excel-header-title">${escapeHtml(label)}</span>
+            <button type="button" class="${filterBtnClass}" id="excel-btn-${colKey}" data-column="${colKey}" onclick="openExcelFilter(event, '${colKey}')" title="${titleAttr}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
+          </div>
+        </th>
+      `;
+    }
+
+    function updateFilterButtonStates() {
+      document.querySelectorAll('.excel-filter-btn').forEach(btn => {
+        const colKey = btn.dataset.column;
+        if (colKey && isExcelColumnFiltered(colKey)) {
+          btn.classList.add('is-filtered');
+          btn.title = 'Filter applied (click to edit)';
+        } else if (colKey) {
+          btn.classList.remove('is-filtered');
+          btn.title = 'Click to filter or sort';
+        }
+      });
+    }
+
+    function renderTableHeader() {
+      const thead = document.querySelector('.data-table thead');
+      if (!thead) return;
+
+      let headersHtml = '';
+      if (currentView === 'users') {
+        headersHtml = `
+          <tr>
+            <th style="width: 70px;">S.No.</th>
+            ${makeExcelHeaderTh('name', 'Name')}
+            ${makeExcelHeaderTh('email', 'Email')}
+            ${makeExcelHeaderTh('organization', 'Organization')}
+            ${makeExcelHeaderTh('department', 'Department')}
+            ${makeExcelHeaderTh('state', 'State')}
+            ${makeExcelHeaderTh('status', 'Status')}
+            ${makeExcelHeaderTh('admin', 'Is Admin')}
+            <th>Action</th>
+          </tr>
+        `;
+        thead.innerHTML = headersHtml;
+        return;
+      }
+
+      if (isUserAdmin()) {
+        headersHtml = `
+          <tr>
+            <th style="width: 70px;">S.No.</th>
+            ${makeExcelHeaderTh('name', 'Name')}
+            ${makeExcelHeaderTh('department', 'Department')}
+            ${makeExcelHeaderTh('survey_length', 'Survey Length')}
+            ${makeExcelHeaderTh('video_count', 'Video Count')}
+            ${makeExcelHeaderTh('user_count', 'User Count')}
+            ${makeExcelHeaderTh('createdAt', 'Created On')}
+            ${makeExcelHeaderTh('status', 'Status')}
+            <th>Action</th>
+          </tr>
+        `;
+      } else {
+        // Non-admin headers: S.No., Name, Department, Video Count, Survey Length, Created On, Status
+        headersHtml = `
+          <tr>
+            <th style="width: 70px;">S.No.</th>
+            ${makeExcelHeaderTh('name', 'Name')}
+            ${makeExcelHeaderTh('department', 'Department')}
+            ${makeExcelHeaderTh('video_count', 'Video Count')}
+            ${makeExcelHeaderTh('survey_length', 'Survey Length')}
+            ${makeExcelHeaderTh('createdAt', 'Created On')}
+            ${makeExcelHeaderTh('status', 'Status')}
+          </tr>
+        `;
+      }
+      thead.innerHTML = headersHtml;
+    }
+
+    function formatSurveyDate(createdOn) {
+      if (!createdOn || createdOn === 'N/A') return 'N/A';
+      let date = null;
+      if (typeof createdOn === 'number') {
+        date = new Date(createdOn);
+      } else if (typeof createdOn === 'object' && createdOn.seconds) {
+        date = new Date(createdOn.seconds * 1000);
+      } else if (typeof createdOn === 'string') {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(createdOn)) {
+          date = new Date(createdOn + 'T00:00:00');
+        } else {
+          date = new Date(createdOn);
+        }
+      }
+      if (date && !isNaN(date.getTime())) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}/${date.getFullYear()}`;
+      }
+      return String(createdOn);
+    }
+
+    function getNormalizedColumnValue(item, colKey, view) {
+      if (!item) return '(Blanks)';
+
+      if (view === 'users') {
+        switch (colKey) {
+          case 'name': return (item.name || '').trim() || '(Blanks)';
+          case 'email': return (item.email || '').trim() || '(Blanks)';
+          case 'organization': return (item.organization || '').trim() || '(Blanks)';
+          case 'department': return (item.department || '').trim() || '(Blanks)';
+          case 'state': return (item.state || '').trim() || '(Blanks)';
+          case 'status': return item.status !== 'Disable' ? 'Active' : 'Disabled';
+          case 'admin': return (item.admin === 'true' || item.admin === true) ? 'Yes' : 'No';
+          default: return (item[colKey] ? String(item[colKey]).trim() : '') || '(Blanks)';
+        }
+      }
+
+      // surveys view
+      switch (colKey) {
+        case 'name':
+          return (item.name || '').trim() || '(Blanks)';
+        case 'department':
+          return (item.department || '').trim() || '(Blanks)';
+        case 'survey_length':
+          return (item.survey_length || '').trim() || '(Blanks)';
+        case 'video_count': {
+          const matchingVideos = allVideos.filter(v => v.survey === item.id);
+          const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (item.video_count !== undefined ? item.video_count : (item.total_surveys || 0));
+          return String(videoCount);
+        }
+        case 'user_count': {
+          const dynamicUsers = surveyUserMap[item.id] || [];
+          return String(dynamicUsers.length);
+        }
+        case 'createdAt': {
+          return formatSurveyDate(item.createdAt);
+        }
+        case 'status':
+          return (item.status || 'Active').trim() || '(Blanks)';
+        default:
+          return (item[colKey] ? String(item[colKey]).trim() : '') || '(Blanks)';
+      }
+    }
+
+    function getAuthorizedSurveys() {
+      return surveysList.filter(survey => {
+        if (!survey) return false;
+        if (isUserAdmin()) return true;
+
+        const hasSurveyConfig = currentUser && currentUser.survey && Array.isArray(currentUser.survey);
+        const wildcardAccess = hasSurveyConfig && currentUser.survey.some(s => s && String(s).trim() === '*');
+
+        if (!wildcardAccess) {
+          if (hasSurveyConfig) {
+            const surveyNameLower = (survey.name || '').trim().toLowerCase();
+            const hasAccess = currentUser.survey.some(s => s && String(s).trim().toLowerCase() === surveyNameLower);
+            if (!hasAccess) return false;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    function renderSurveysTable() {
+      // Render breadcrumbs to keep in sync
+      renderBreadcrumbs();
+
+      // Render the table header dynamically
+      renderTableHeader();
+
+      const tableBody = document.getElementById('tableBody');
+      tableBody.innerHTML = '';
+
+      if (currentView === 'users') {
+        const activeFilters = excelFilterState.users || {};
+        const filteredUsers = allUsers.filter(user => {
+          for (const [col, allowedSet] of Object.entries(activeFilters)) {
+            if (allowedSet instanceof Set) {
+              const val = getNormalizedColumnValue(user, col, 'users');
+              if (!allowedSet.has(val)) return false;
+            }
+          }
+          return true;
+        });
+
+        const sortConfig = excelSortState.users;
+        if (sortConfig && sortConfig.column) {
+          filteredUsers.sort((a, b) => {
+            const valA = getNormalizedColumnValue(a, sortConfig.column, 'users');
+            const valB = getNormalizedColumnValue(b, sortConfig.column, 'users');
+            const cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+            return sortConfig.direction === 'desc' ? -cmp : cmp;
+          });
+        } else {
+          filteredUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        }
+
+        if (filteredUsers.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #9ca3af; padding: 2rem;">No users match the current filter.</td></tr>`;
+          updateFilterButtonStates();
+          return;
+        }
+
+        filteredUsers.forEach((user, idx) => {
+          const row = document.createElement('tr');
+          const isActive = user.status !== 'Disable';
+          const statusBadge = isActive 
+            ? `<span class="status-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Active</span>`
+            : `<span class="status-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Disabled</span>`;
+            
+          const isAdminBadge = (user.admin === 'true' || user.admin === true)
+            ? `<span class="admin-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Yes</span>`
+            : `<span class="admin-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">No</span>`;
+
+          row.innerHTML = `
+            <td>${idx + 1}</td>
+            <td>${escapeHtml(user.name || 'N/A')}</td>
+            <td>${escapeHtml(user.email || 'N/A')}</td>
+            <td>${escapeHtml(user.organization || 'N/A')}</td>
+            <td>${escapeHtml(user.department || 'N/A')}</td>
+            <td>${escapeHtml(user.state || 'N/A')}</td>
+            <td>${statusBadge}</td>
+            <td>${isAdminBadge}</td>
+            <td>
+              <div class="action-btn-group">
+                <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #3b82f6;" title="Edit User">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button class="action-icon-btn delete" onclick="handleDeleteUser('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #ef4444;" title="Delete User">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+        updateFilterButtonStates();
+        return;
+      }
+
+      // Filter surveys based on user access and excel column filters
+      const allowedSurveys = getAuthorizedSurveys();
+      const activeFilters = excelFilterState.surveys || {};
+
+      const filteredSurveys = allowedSurveys.filter(survey => {
+        for (const [col, allowedSet] of Object.entries(activeFilters)) {
+          if (allowedSet instanceof Set) {
+            const val = getNormalizedColumnValue(survey, col, 'surveys');
+            if (!allowedSet.has(val)) return false;
+          }
+        }
+        return true;
+      });
+
+      // Sort surveys
+      const sortConfig = excelSortState.surveys;
+      if (sortConfig && sortConfig.column) {
+        filteredSurveys.sort((a, b) => {
+          const valA = getNormalizedColumnValue(a, sortConfig.column, 'surveys');
+          const valB = getNormalizedColumnValue(b, sortConfig.column, 'surveys');
+          const numA = Number(valA);
+          const numB = Number(valB);
+          let cmp = 0;
+          if (!isNaN(numA) && !isNaN(numB) && valA !== '(Blanks)' && valB !== '(Blanks)') {
+            cmp = numA - numB;
+          } else {
+            cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+          }
+          return sortConfig.direction === 'desc' ? -cmp : cmp;
+        });
+      } else {
+        // Default alphabetical by name
+        filteredSurveys.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true }));
+      }
+
+      if (filteredSurveys.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="${isUserAdmin() ? '9' : '7'}" style="text-align: center; color: #9ca3af; padding: 2rem;">No authorized surveys found matching the filter.</td></tr>`;
+        updateFilterButtonStates();
+        return;
+      }
+
+      filteredSurveys.forEach((survey, index) => {
+        const row = document.createElement('tr');
+        row.id = `survey-row-${survey.id}`;
+        
+        const snoCell = `<td>${index + 1}</td>`;
+        const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name || '')}">${escapeHtml(survey.name || 'Survey')}</a></td>`;
+        const deptCell = `<td>${escapeHtml(survey.department || '')}</td>`;
+        const lengthCell = `<td>${escapeHtml(survey.survey_length || '')}</td>`;
+
+        // Video Count
+        const matchingVideos = allVideos.filter(v => v.survey === survey.id);
+        const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (survey.video_count !== undefined ? survey.video_count : (survey.total_surveys || 0));
+        const videoCell = `<td>${videoCount}</td>`;
+
+        // User count with popover click event (dynamic from users.json)
+        const dynamicUserNames = surveyUserMap[survey.id] || [];
+        let userCell = `<td>N/A</td>`;
+        if (dynamicUserNames.length > 0) {
+          const namesData = JSON.stringify(dynamicUserNames).replace(/"/g, '&quot;');
+          userCell = `<td><span class="user-count-clickable" onclick="showUsersPopover(event, ${namesData})">${dynamicUserNames.length} Users</span></td>`;
+        } else if (dynamicUserNames.length === 0 && allUsers.length > 0) {
+          userCell = `<td>0 Users</td>`;
+        }
+        
+        const rawStatus = (survey.status || 'active').trim();
+        const statusClass = rawStatus.toLowerCase();
+        const statusCell = `<td><span class="status-badge ${statusClass}">${escapeHtml(statusClass)}</span></td>`;
+
+        let actionCell = '';
+        if (isUserAdmin()) {
+          actionCell = `
+            <td>
+              <div class="action-btn-group">
+                <button class="action-icon-btn edit" onclick="openEditSurveyModal('${survey.id}')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button class="action-icon-btn delete" onclick="handleDeleteSurvey('${survey.id}')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          `;
+        }
+
+        if (isUserAdmin()) {
+          row.innerHTML = snoCell + nameCell + deptCell + lengthCell + videoCell + userCell + dateCell + statusCell + actionCell;
+        } else {
+          row.innerHTML = snoCell + nameCell + deptCell + videoCell + lengthCell + dateCell + statusCell;
+        }
+        tableBody.appendChild(row);
+      });
+
+      updateFilterButtonStates();
+    }
+
+    const renderUsersTable = renderSurveysTable;
+
+    // Excel Filter Popover Management
+    function openExcelFilter(event, colKey) {
+      event.stopPropagation();
+      closeUsersPopover();
+
+      let popover = document.getElementById('excelFilterPopover');
+      if (!popover) {
+        popover = document.createElement('div');
+        popover.id = 'excelFilterPopover';
+        popover.className = 'excel-filter-popover';
+        document.body.appendChild(popover);
+      }
+
+      // If clicking same column filter when already open, toggle close
+      if (popover.style.display === 'flex' && currentExcelFilterPopoverColumn === colKey) {
+        closeExcelFilterPopover();
+        return;
+      }
+
+      currentExcelFilterPopoverColumn = colKey;
+      const colLabel = COLUMN_LABELS[colKey] || colKey;
+      const isNumeric = (colKey === 'video_count' || colKey === 'user_count');
+      const isFiltered = isExcelColumnFiltered(colKey);
+
+      // Collect distinct values from rows matching other active filters
+      const baseRows = (currentView === 'users' ? allUsers : getAuthorizedSurveys()).filter(row => {
+        const filters = excelFilterState[currentView] || {};
+        for (const [c, set] of Object.entries(filters)) {
+          if (c !== colKey && set instanceof Set) {
+            const val = getNormalizedColumnValue(row, c, currentView);
+            if (!set.has(val)) return false;
+          }
+        }
+        return true;
+      });
+
+      const counts = {};
+      baseRows.forEach(row => {
+        const val = getNormalizedColumnValue(row, colKey, currentView);
+        counts[val] = (counts[val] || 0) + 1;
+      });
+
+      const distinctValues = Object.keys(counts).sort((a, b) => {
+        if (a === '(Blanks)') return 1;
+        if (b === '(Blanks)') return -1;
+        if (isNumeric) {
+          const numA = Number(a);
+          const numB = Number(b);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        }
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      });
+
+      const currentActiveSet = (excelFilterState[currentView] || {})[colKey];
+      currentExcelFilterItems = distinctValues.map(val => ({
+        value: val,
+        display: val,
+        count: counts[val],
+        checked: currentActiveSet instanceof Set ? currentActiveSet.has(val) : true,
+        visible: true
+      }));
+
+      popover.innerHTML = `
+        <button type="button" class="excel-filter-menu-item" onclick="applyExcelSort('${colKey}', 'asc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h7M3 12h5M3 18h3M17 4v16m0 0l-3-3m3 3l3-3"></path>
+          </svg>
+          <span>${isNumeric ? 'Sort Smallest to Largest' : 'Sort A to Z'}</span>
+        </button>
+        <button type="button" class="excel-filter-menu-item" onclick="applyExcelSort('${colKey}', 'desc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h3M3 12h5M3 18h7M17 20V4m0 0l-3 3m3-3l3 3"></path>
+          </svg>
+          <span>${isNumeric ? 'Sort Largest to Smallest' : 'Sort Z to A'}</span>
+        </button>
+        <button type="button" class="excel-filter-menu-item" onclick="clearCurrentColumnFilter('${colKey}')" ${isFiltered ? '' : 'disabled'}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            <line x1="2" y1="2" x2="22" y2="22"></line>
+          </svg>
+          <span>Clear Filter From "${escapeHtml(colLabel)}"</span>
+        </button>
+        <div class="excel-filter-divider"></div>
+        <div class="excel-filter-search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="excelFilterSearchInput" placeholder="Search..." oninput="handleExcelSearchInput(event)" autocomplete="off" />
+        </div>
+        <div class="excel-filter-checklist-box">
+          <label class="excel-filter-select-all" for="excelSelectAllCheckbox">
+            <input type="checkbox" id="excelSelectAllCheckbox" onchange="toggleExcelSelectAll(event)" />
+            <span id="excelSelectAllLabel">(Select All)</span>
+          </label>
+          <div class="excel-filter-checklist-scroll" id="excelFilterChecklistScroll"></div>
+        </div>
+        <div class="excel-filter-footer-actions">
+          <button type="button" class="btn-excel-filter-ok" onclick="commitExcelFilter('${colKey}')">OK</button>
+          <button type="button" class="btn-excel-filter-cancel" onclick="closeExcelFilterPopover()">Cancel</button>
+        </div>
+      `;
+
+      // Position popover
+      popover.style.display = 'flex';
+      popover.style.flexDirection = 'column';
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      const popoverWidth = 260;
+      let left = rect.left + scrollLeft - 180;
+      if (left + popoverWidth > window.innerWidth - 12) {
+        left = window.innerWidth - popoverWidth - 12;
+      }
+      if (left < 12) left = 12;
+
+      popover.style.left = `${left}px`;
+      popover.style.top = `${rect.bottom + scrollTop + 6}px`;
+
+      renderExcelChecklistItemsDOM();
+      syncExcelSelectAllCheckbox();
+
+      popover.onpointerdown = (e) => e.stopPropagation();
+    }
+
+    function handleExcelSearchInput(event) {
+      const query = event.target.value.trim().toLowerCase();
+      currentExcelFilterItems.forEach(item => {
+        item.visible = (query === '' || item.display.toLowerCase().includes(query));
+      });
+      
+      const selectAllLabel = document.getElementById('excelSelectAllLabel');
+      if (selectAllLabel) {
+        selectAllLabel.textContent = query === '' ? '(Select All)' : '(Select All Search Results)';
+      }
+
+      renderExcelChecklistItemsDOM();
+      syncExcelSelectAllCheckbox();
+    }
+
+    function toggleExcelSelectAll(event) {
+      const isChecked = event.target.checked;
+      currentExcelFilterItems.forEach(item => {
+        if (item.visible) {
+          item.checked = isChecked;
+        }
+      });
+      renderExcelChecklistItemsDOM();
+      syncExcelSelectAllCheckbox();
+    }
+
+    function handleExcelItemCheck(idx, checked) {
+      if (currentExcelFilterItems[idx]) {
+        currentExcelFilterItems[idx].checked = checked;
+        syncExcelSelectAllCheckbox();
+      }
+    }
+
+    function syncExcelSelectAllCheckbox() {
+      const selectAllCb = document.getElementById('excelSelectAllCheckbox');
+      if (!selectAllCb) return;
+
+      const visibleItems = currentExcelFilterItems.filter(i => i.visible);
+      if (visibleItems.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        selectAllCb.disabled = true;
+        return;
+      }
+
+      selectAllCb.disabled = false;
+      const checkedVisible = visibleItems.filter(i => i.checked).length;
+      if (checkedVisible === visibleItems.length) {
+        selectAllCb.checked = true;
+        selectAllCb.indeterminate = false;
+      } else if (checkedVisible === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+      } else {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = true;
+      }
+    }
+
+    function renderExcelChecklistItemsDOM() {
+      const container = document.getElementById('excelFilterChecklistScroll');
+      if (!container) return;
+
+      const visibleItems = currentExcelFilterItems
+        .map((item, idx) => ({ ...item, originalIndex: idx }))
+        .filter(item => item.visible);
+
+      if (visibleItems.length === 0) {
+        container.innerHTML = `<div style="padding: 0.6rem 0.2rem; font-size: 0.8rem; color: var(--text-tertiary); text-align: center;">No matches found</div>`;
+        return;
+      }
+
+      let html = '';
+      visibleItems.forEach(item => {
+        const isCheckedAttr = item.checked ? 'checked' : '';
+        const safeDisplay = escapeHtml(item.display);
+        html += `
+          <label class="excel-filter-item-label">
+            <div class="excel-filter-item-left">
+              <input type="checkbox" ${isCheckedAttr} onchange="handleExcelItemCheck(${item.originalIndex}, this.checked)" />
+              <span class="excel-filter-item-text" title="${safeDisplay}">${safeDisplay}</span>
+            </div>
+            <span class="excel-filter-item-count">(${item.count})</span>
+          </label>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function commitExcelFilter(colKey) {
+      if (!excelFilterState[currentView]) {
+        excelFilterState[currentView] = {};
+      }
+
+      const allChecked = currentExcelFilterItems.every(i => i.checked);
+      if (allChecked) {
+        delete excelFilterState[currentView][colKey];
+      } else {
+        const checkedValues = new Set(
+          currentExcelFilterItems.filter(i => i.checked).map(i => i.value)
+        );
+        excelFilterState[currentView][colKey] = checkedValues;
+      }
+
+      closeExcelFilterPopover();
+      renderSurveysTable();
+    }
+
+    function clearCurrentColumnFilter(colKey) {
+      if (excelFilterState[currentView]) {
+        delete excelFilterState[currentView][colKey];
+      }
+      closeExcelFilterPopover();
+      renderSurveysTable();
+    }
+
+    function applyExcelSort(colKey, direction) {
+      if (!excelSortState[currentView]) {
+        excelSortState[currentView] = {};
+      }
+      excelSortState[currentView] = { column: colKey, direction: direction };
+      closeExcelFilterPopover();
+      renderSurveysTable();
+    }
+
+    function closeExcelFilterPopover() {
+      const popover = document.getElementById('excelFilterPopover');
+      if (popover) {
+        popover.style.display = 'none';
+      }
+      currentExcelFilterPopoverColumn = null;
+    }
+
+    // Retain legacy function names as fallbacks
+    function toggleFilterPopover(event, column) {
+      openExcelFilter(event, column);
+    }
+    function closeFilterPopover() {
+      closeExcelFilterPopover();
+    }
+
+    // Show Users Popover
+    function showUsersPopover(event, userNames) {
+      event.stopPropagation();
+      let popover = document.getElementById('usersPopover');
+      if (!popover) {
+        popover = document.createElement('div');
+        popover.id = 'usersPopover';
+        popover.className = 'users-popover';
+        document.body.appendChild(popover);
+      }
+
+      // Close filters popover
+      closeFilterPopover();
+
+      if (userNames.length === 0) return;
+
+      let listHtml = '';
+      userNames.forEach((name, idx) => {
+        listHtml += `
+          <li class="users-popover-item" style="margin-bottom: 0.25rem;">
+            ${idx + 1}. - <a href="#" onclick="event.preventDefault(); navigateToUserByName('${escapeHtml(name).replace(/'/g, "\\'")}')" class="user-popover-link">${escapeHtml(name)}</a>
+          </li>
+        `;
+      });
+
+      popover.innerHTML = `
+        <div class="users-popover-title">${userNames.length} Users in this survey</div>
+        <ul class="users-popover-list">
+          ${listHtml}
+        </ul>
+      `;
+
+      popover.style.display = 'block';
+
+      // Position the popover near the clicked cell
+      const rect = event.target.getBoundingClientRect();
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      let left = rect.left + scrollLeft - 50;
+      const popoverWidth = 260; // matching .users-popover width in CSS
+      if (left + popoverWidth > window.innerWidth) {
+        left = window.innerWidth - popoverWidth - 16;
+      }
+      if (left < 16) left = 16;
+
+      popover.style.left = `${left}px`;
+      popover.style.top = `${rect.bottom + scrollTop + 8}px`;
+
+      // Prevent closing when clicking inside popover
+      popover.onmousedown = (e) => e.stopPropagation();
+    }
+
+    function closeUsersPopover() {
+      const popover = document.getElementById('usersPopover');
+      if (popover) {
+        popover.style.display = 'none';
+      }
+    }
+
+    // Global listener to close popovers on pointerdown outside
+    document.addEventListener('pointerdown', (e) => {
+      const userPopover = document.getElementById('usersPopover');
+      const excelPopover = document.getElementById('excelFilterPopover');
+      if (userPopover && userPopover.contains(e.target)) return;
+      if (excelPopover && excelPopover.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('.excel-filter-btn')) return;
+      closeExcelFilterPopover();
+      closeUsersPopover();
+    });
+
+    // Modal Control: Create / Edit
+    const surveyModal = document.getElementById('surveyModal');
+    const openCreateSurveyModalBtn = document.getElementById('openCreateSurveyModalBtn');
+
+    if (openCreateSurveyModalBtn) {
+      openCreateSurveyModalBtn.addEventListener('click', () => {
+        document.getElementById('modalTitle').innerText = "Create a survey";
+        document.getElementById('editSurveyId').value = "";
+        document.getElementById('surveyForm').reset();
+        document.getElementById('saveSurveyBtn').innerText = "Create";
+        
+        // Default today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('surveyDateInput').value = today;
+
+        surveyModal.classList.add('show');
+      });
+    }
+
+    function closeSurveyModal() {
+      surveyModal.classList.remove('show');
+    }
+
+    function openEditSurveyModal(id) {
+      const survey = surveysList.find(s => s.id === id);
+      if (!survey) return;
+
+      document.getElementById('modalTitle').innerText = "Edit survey";
+      document.getElementById('editSurveyId').value = survey.id;
+      document.getElementById('surveyNameInput').value = survey.name;
+      document.getElementById('surveyDeptInput').value = survey.department;
+      document.getElementById('surveyLengthInput').value = survey.survey_length || '';
+      document.getElementById('saveSurveyBtn').innerText = "Save";
+
+      let createdOn = survey.createdAt || '';
+      if (createdOn && typeof createdOn === 'object' && createdOn.seconds) {
+        const date = new Date(createdOn.seconds * 1000);
+        createdOn = date.toISOString().split('T')[0];
+      }
+      document.getElementById('surveyDateInput').value = createdOn;
+
+      const radios = document.getElementsByName('surveyStatus');
+      const curStatus = (survey.status || 'active').trim().toLowerCase();
+      for (let radio of radios) {
+        if (radio.value.toLowerCase() === curStatus) {
+          radio.checked = true;
+        }
+      }
+
+      surveyModal.classList.add('show');
+    }
+
+    async function handleSaveSurvey(event) {
+      event.preventDefault();
+      if (!isUserAdmin()) {
+        alert('Permission denied.');
+        return false;
+      }
+      const id = document.getElementById('editSurveyId').value;
+      const name = document.getElementById('surveyNameInput').value;
+      const department = document.getElementById('surveyDeptInput').value;
+      const survey_length = document.getElementById('surveyLengthInput').value;
+      const createdAt = document.getElementById('surveyDateInput').value;
+      
+      const radios = document.getElementsByName('surveyStatus');
+      let status = 'active';
+      for (let r of radios) {
+        if (r.checked) status = r.value;
+      }
+
+      if (id) {
+        // Edit Survey
+        let editedSurveys = safeGet('edited_surveys', []);
+        const existingIdx = editedSurveys.findIndex(e => e.id === id);
+        
+        const surveyUpdate = { id, name, department, survey_length, createdAt, status };
+        if (existingIdx > -1) {
+          editedSurveys[existingIdx] = surveyUpdate;
+        } else {
+          editedSurveys.push(surveyUpdate);
+        }
+        safeSet('edited_surveys', editedSurveys);
+      } else {
+        // Create Survey
+        const newSurvey = {
+          id: 'custom-' + Math.random().toString(36).substring(2, 10),
+          name,
+          department,
+          survey_length,
+          createdAt,
+          status,
+          video_count: 0,
+          user_count: []
+        };
+        let customSurveys = safeGet('custom_surveys', []);
+        customSurveys.push(newSurvey);
+        safeSet('custom_surveys', customSurveys);
+      }
+
+      closeSurveyModal();
+      await fetchSurveys();
+      buildSurveyUserMap();
+      populateSurveyCheckboxes();
+      renderSurveysTable();
+    }
+
+    async function handleDeleteSurvey(id) {
+      if (!isUserAdmin()) {
+        alert('Permission denied.');
+        return;
+      }
+      if (confirm('Are you sure you want to delete this survey?')) {
+        let customSurveys = safeGet('custom_surveys', []);
+        const isCustom = id.startsWith('custom-');
+        const surveyToDelete = surveysList.find(s => s.id === id) || customSurveys.find(s => s.id === id);
+
+        // Add to universal Recycle Bin
+        if (window.TrueProgressBin) {
+          window.TrueProgressBin.addItem({
+            type: 'survey',
+            id: id,
+            name: surveyToDelete ? surveyToDelete.name : ('Survey #' + id),
+            subtitle: (surveyToDelete && surveyToDelete.department ? surveyToDelete.department : 'Survey') + ' • ' + (surveyToDelete && surveyToDelete.survey_length ? surveyToDelete.survey_length : 'N/A'),
+            data: surveyToDelete || { id: id },
+            meta: { isCustom: isCustom }
+          });
+        }
+
+        let deletedSurveys = safeGet('deleted_surveys', []);
+        
+        if (isCustom) {
+          if (surveyToDelete) {
+            let deletedCustomSurveys = safeGet('deleted_custom_surveys', []);
+            if (!deletedCustomSurveys.some(s => s.id === id)) {
+              deletedCustomSurveys.push(surveyToDelete);
+              safeSet('deleted_custom_surveys', deletedCustomSurveys);
+            }
+          }
+          customSurveys = customSurveys.filter(s => s.id !== id);
+          safeSet('custom_surveys', customSurveys);
+        }
+        
+        if (!deletedSurveys.includes(id)) {
+          deletedSurveys.push(id);
+        }
+        safeSet('deleted_surveys', deletedSurveys);
+
+        await fetchSurveys();
+        buildSurveyUserMap();
+        populateSurveyCheckboxes();
+        renderSurveysTable();
+      }
+    }
+
+
+
+    // ===== Recycle Bin Functionality =====
+    function openRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.add('show');
+        renderRecycleBin();
+      }
+    }
+
+    function closeRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.remove('show');
+      }
+    }
+
+    async function renderRecycleBin() {
+      if (window.TrueProgressBin) {
+        window.TrueProgressBin.renderModal({
+          modalId: 'recycleBinModal',
+          onUpdate: async function () {
+            await fetchSurveys();
+            await fetchUsers();
+            buildSurveyUserMap();
+            populateSurveyCheckboxes();
+            if (currentView === 'users') {
+              renderUsersTable();
+            } else {
+              renderSurveysTable();
+            }
+          }
+        });
+      }
+    }
+
+    async function handleRestoreAllBin() {
+      if (!window.TrueProgressBin) return;
+      const filter = window.TrueProgressBin.activeFilter;
+      const count = window.TrueProgressBin.getBinItems().length;
+      if (count === 0) return;
+      if (confirm('Are you sure you want to restore all items in the Recycle Bin?')) {
+        window.TrueProgressBin.restoreAll(filter);
+        await fetchSurveys();
+        await fetchUsers();
+        buildSurveyUserMap();
+        populateSurveyCheckboxes();
+        if (currentView === 'users') {
+          renderUsersTable();
+        } else {
+          renderSurveysTable();
+        }
+        renderRecycleBin();
+      }
+    }
+
+    async function handleEmptyRecycleBin() {
+      if (!window.TrueProgressBin) return;
+      if (confirm('Are you sure you want to permanently delete all items in the Recycle Bin? This action cannot be undone.')) {
+        window.TrueProgressBin.emptyBin();
+        await fetchSurveys();
+        await fetchUsers();
+        buildSurveyUserMap();
+        populateSurveyCheckboxes();
+        renderRecycleBin();
+      }
+    }
+
+    // View Control: All Users
+    document.getElementById('allUsersBtn').addEventListener('click', () => {
+      // Close dropdown first
+      const profileDropdown = document.getElementById('profileDropdown');
+      if (profileDropdown) {
+        profileDropdown.classList.remove('show');
+      }
+      navigateToView('users');
+    });
+
+
+
+    // Backup Generation (Excel Download in Exact User Specified Format)
+    document.getElementById('createBackupBtn').addEventListener('click', async () => {
+      try {
+        if (typeof ExcelJS === 'undefined' && typeof XLSX === 'undefined') {
+          alert('Excel processing library is not loaded. Please reload the page.');
+          return;
+        }
+
+        // Ensure surveys are available
+        let surveysToExport = surveysList;
+        if (!surveysToExport || surveysToExport.length === 0) {
+          surveysToExport = await fetchSurveys();
+        }
+
+        // Ensure videos are available
+        let videosToExport = allVideos;
+        if (!videosToExport || videosToExport.length === 0) {
+          try {
+            videosToExport = await fetchVideos();
+          } catch (e) {
+            console.warn('Could not fetch videos for backup:', e);
+          }
+        }
+
+        // Ensure users are available
+        let usersToExport = allUsers;
+        if (!usersToExport || usersToExport.length === 0) {
+          try {
+            usersToExport = await fetchUsers();
+          } catch (e) {
+            console.warn('Could not fetch users for backup:', e);
+          }
+        }
+
+        // Rebuild user mapping to ensure fresh numbers
+        buildSurveyUserMap();
+
+        function formatExcelCreatedDate(val) {
+          if (!val || val === 'N/A') return '';
+          let d = null;
+          if (typeof val === 'number') d = new Date(val);
+          else if (typeof val === 'object' && val.seconds) d = new Date(val.seconds * 1000);
+          else if (typeof val === 'string') {
+            const trimmed = val.trim();
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) return trimmed;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) d = new Date(trimmed + 'T00:00:00');
+            else d = new Date(trimmed);
+          }
+          if (d && !isNaN(d.getTime())) {
+            return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+          }
+          return String(val || '');
+        }
+
+        function formatExcelSurveyDate(val) {
+          if (!val || val === 'N/A') return '';
+          let d = null;
+          if (typeof val === 'number') d = new Date(val);
+          else if (typeof val === 'object' && val.seconds) d = new Date(val.seconds * 1000);
+          else if (typeof val === 'string') {
+            const trimmed = val.trim();
+            if (/^[A-Za-z]{3}\s+\d{1,2}\s+\d{4}$/.test(trimmed)) return trimmed;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) d = new Date(trimmed + 'T00:00:00');
+            else d = new Date(trimmed);
+          }
+          if (d && !isNaN(d.getTime())) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const m = months[d.getMonth()];
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${m} ${day} ${d.getFullYear()}`;
+          }
+          return String(val || '');
+        }
+
+        function formatExcelLength(val) {
+          if (!val && val !== 0) return '';
+          const s = String(val).trim();
+          if (!s) return '';
+          if (/km$/i.test(s)) return s.replace(/\s*km$/i, ' km');
+          return `${s} km`;
+        }
+
+        if (typeof ExcelJS !== 'undefined') {
+          const wb = new ExcelJS.Workbook();
+          wb.creator = 'TrueProgress';
+          wb.created = new Date();
+
+          // 1. Primary Sheet1: Exact format matching user screenshot
+          const ws = wb.addWorksheet('Sheet1', {
+            views: [{ showGridLines: true }]
+          });
+
+          // Set column widths matching screenshot
+          ws.columns = [
+            { key: 'A', width: 4 },
+            { key: 'B', width: 8 },
+            { key: 'C', width: 34 },
+            { key: 'D', width: 14 },
+            { key: 'E', width: 15 },
+            { key: 'F', width: 14 },
+            { key: 'G', width: 16 },
+            { key: 'H', width: 4 },
+            { key: 'I', width: 42 }
+          ];
+
+          // Row 1 is empty
+          ws.getRow(1).height = 18;
+
+          // Row 2 is Header with light green fill and bold centered text
+          const headerRow = ws.getRow(2);
+          headerRow.height = 26;
+
+          const headers = {
+            B: 'S.No.',
+            C: 'Project Name',
+            D: 'No. of Surveys',
+            E: 'Survey Length',
+            F: 'Created On',
+            G: 'Survey Date',
+            I: 'YouTube URL'
+          };
+
+          const borderStyle = {
+            top: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            left: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+            right: { style: 'thin', color: { argb: 'FFBFBFBF' } }
+          };
+
+          for (const [col, title] of Object.entries(headers)) {
+            const cell = headerRow.getCell(col);
+            cell.value = title;
+            cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF000000' } };
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFE2EFD9' }
+            };
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            cell.border = borderStyle;
+          }
+          headerRow.getCell('H').border = borderStyle;
+
+          let currentRowNum = 3;
+
+          (surveysToExport || []).forEach((s, pIdx) => {
+            const matchingVideos = (videosToExport || []).filter(v => 
+              (v.survey && (v.survey === s.id || v.survey === s.name)) || 
+              (v.surveyId && (v.surveyId === s.id || v.surveyId === s.name))
+            );
+
+            const numRows = Math.max(1, matchingVideos.length);
+            const startR = currentRowNum;
+            const endR = startR + numRows - 1;
+
+            if (numRows > 1) {
+              ws.mergeCells(startR, 2, endR, 2); // B (S.No.)
+              ws.mergeCells(startR, 3, endR, 3); // C (Project Name)
+              ws.mergeCells(startR, 5, endR, 5); // E (Survey Length)
+              ws.mergeCells(startR, 6, endR, 6); // F (Created On)
+            }
+
+            // Populate merged project columns
+            const cellB = ws.getCell(startR, 2);
+            cellB.value = pIdx + 1;
+            cellB.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellB.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellC = ws.getCell(startR, 3);
+            cellC.value = s.name || '';
+            cellC.alignment = { horizontal: 'left', vertical: 'middle' };
+            cellC.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellE = ws.getCell(startR, 5);
+            cellE.value = formatExcelLength(s.survey_length);
+            cellE.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellE.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellF = ws.getCell(startR, 6);
+            cellF.value = formatExcelCreatedDate(s.createdAt);
+            cellF.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellF.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            for (let i = 0; i < numRows; i++) {
+              const r = startR + i;
+              const v = matchingVideos[i] || null;
+
+              // D: No. of Surveys (1, 2, 3...)
+              const cellD = ws.getCell(r, 4);
+              cellD.value = i + 1;
+              cellD.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellD.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+              // G: Survey Date
+              const cellG = ws.getCell(r, 7);
+              const videoDate = v ? (v.createdAt || v.surveyDate || '') : (s.createdAt || '');
+              cellG.value = formatExcelSurveyDate(videoDate);
+              cellG.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellG.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+              // H: Blank Separator
+              const cellH = ws.getCell(r, 8);
+              cellH.value = '';
+
+              // I: YouTube URL
+              const cellI = ws.getCell(r, 9);
+              const ytUrl = v ? (v.videoURL || '') : '';
+              cellI.value = ytUrl;
+              cellI.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellI.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+              if (ytUrl) {
+                cellI.fill = {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: 'FF92D050' }
+                };
+              }
+
+              ws.getRow(r).height = 22;
+              for (let c = 2; c <= 9; c++) {
+                ws.getCell(r, c).border = borderStyle;
+              }
+            }
+
+            currentRowNum = endR + 1;
+          });
+
+          // 2. Users Sheet (Accurate phone, status, and survey permissions)
+          const wsUsers = wb.addWorksheet('Users', { views: [{ showGridLines: true }] });
+          wsUsers.columns = [
+            { header: 'S.No.', key: 'sno', width: 8 },
+            { header: 'UID', key: 'uid', width: 32 },
+            { header: 'Name', key: 'name', width: 24 },
+            { header: 'Email', key: 'email', width: 28 },
+            { header: 'Phone Number', key: 'phone', width: 16 },
+            { header: 'Organization', key: 'org', width: 20 },
+            { header: 'Department', key: 'dept', width: 20 },
+            { header: 'State', key: 'state', width: 16 },
+            { header: 'Status', key: 'status', width: 12 },
+            { header: 'Is Admin', key: 'admin', width: 10 },
+            { header: 'Assigned Surveys Count', key: 'count', width: 22 },
+            { header: 'Assigned Surveys', key: 'surveys', width: 45 }
+          ];
+          const userHeaderRow = wsUsers.getRow(1);
+          userHeaderRow.height = 24;
+          userHeaderRow.eachCell(cell => {
+            cell.font = { bold: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFD9' } };
+            cell.border = borderStyle;
+            cell.alignment = { vertical: 'middle' };
+          });
+
+          (usersToExport || []).forEach((u, idx) => {
+            const rawSurveys = Array.isArray(u.survey) ? u.survey : (Array.isArray(u.assignedSurveys) ? u.assignedSurveys : (u.survey || u.assignedSurveys ? [u.survey || u.assignedSurveys] : []));
+            const hasWildcard = rawSurveys.some(s => String(s).trim() === '*');
+            const assignedSurveysStr = hasWildcard ? 'All Surveys (*)' : rawSurveys.join(', ');
+            const assignedCount = hasWildcard ? 'All (*)' : rawSurveys.length;
+            const status = (u.status === 'Disable' || u.status === 'Disabled') ? 'Disabled' : 'Active';
+            const isAdmin = (u.admin === 'true' || u.admin === true) ? 'Yes' : 'No';
+
+            const row = wsUsers.addRow({
+              sno: idx + 1,
+              uid: u.uid || '',
+              name: u.name || '',
+              email: u.email || '',
+              phone: u.phoneNumber || u.phone || '',
+              org: u.organization || '',
+              dept: u.department || '',
+              state: u.state || '',
+              status: status,
+              admin: isAdmin,
+              count: assignedCount,
+              surveys: assignedSurveysStr
+            });
+            row.height = 20;
+            row.eachCell(cell => {
+              cell.border = borderStyle;
+              cell.alignment = { vertical: 'middle' };
+            });
+          });
+
+          // 3. Metadata Sheet
+          const wsMeta = wb.addWorksheet('Metadata', { views: [{ showGridLines: true }] });
+          wsMeta.columns = [
+            { header: 'Property', key: 'prop', width: 22 },
+            { header: 'Value', key: 'val', width: 45 }
+          ];
+          wsMeta.getRow(1).eachCell(cell => {
+            cell.font = { bold: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFD9' } };
+            cell.border = borderStyle;
+          });
+          const metaEntries = [
+            { prop: 'Backup Date', val: new Date().toLocaleString() },
+            { prop: 'System', val: 'TrueProgress Dashboard' },
+            { prop: 'Total Projects', val: (surveysToExport || []).length },
+            { prop: 'Total Videos', val: (videosToExport || []).length },
+            { prop: 'Total Users', val: (usersToExport || []).length },
+            { prop: 'Generated By', val: currentUser ? `${currentUser.name || 'User'} (${currentUser.email || ''})` : 'Administrator' }
+          ];
+          metaEntries.forEach(m => {
+            const r = wsMeta.addRow(m);
+            r.eachCell(cell => { cell.border = borderStyle; });
+          });
+
+          const buffer = await wb.xlsx.writeBuffer();
+          const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const todayStr = new Date().toISOString().split('T')[0];
+          const filename = `AWS_Projects_Backup_${todayStr}.xlsx`;
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl);
+        } else {
+          // SheetJS Fallback
+          const wb = XLSX.utils.book_new();
+          const rows = [
+            [], // Row 1 empty
+            ['', 'S.No.', 'Project Name', 'No. of Surveys', 'Survey Length', 'Created On', 'Survey Date', '', 'YouTube URL']
+          ];
+          const merges = [];
+          let currentR = 2; // 0-indexed row 2 is 3rd row in sheet
+
+          (surveysToExport || []).forEach((s, pIdx) => {
+            const matchingVideos = (videosToExport || []).filter(v => 
+              (v.survey && (v.survey === s.id || v.survey === s.name)) || 
+              (v.surveyId && (v.surveyId === s.id || v.surveyId === s.name))
+            );
+            const numRows = Math.max(1, matchingVideos.length);
+            const startR = currentR;
+            const endR = startR + numRows - 1;
+
+            if (numRows > 1) {
+              merges.push({ s: { r: startR, c: 1 }, e: { r: endR, c: 1 } }); // B
+              merges.push({ s: { r: startR, c: 2 }, e: { r: endR, c: 2 } }); // C
+              merges.push({ s: { r: startR, c: 4 }, e: { r: endR, c: 4 } }); // E
+              merges.push({ s: { r: startR, c: 5 }, e: { r: endR, c: 5 } }); // F
+            }
+
+            for (let i = 0; i < numRows; i++) {
+              const v = matchingVideos[i] || null;
+              const isFirst = i === 0;
+              const sno = isFirst ? (pIdx + 1) : '';
+              const pName = isFirst ? (s.name || '') : '';
+              const sNum = i + 1;
+              const sLen = isFirst ? formatExcelLength(s.survey_length) : '';
+              const cOn = isFirst ? formatExcelCreatedDate(s.createdAt) : '';
+              const sDate = formatExcelSurveyDate(v ? (v.createdAt || v.surveyDate || '') : (s.createdAt || ''));
+              const ytUrl = v ? (v.videoURL || '') : '';
+
+              rows.push(['', sno, pName, sNum, sLen, cOn, sDate, '', ytUrl]);
+            }
+            currentR = endR + 1;
+          });
+
+          const ws1 = XLSX.utils.aoa_to_sheet(rows);
+          ws1['!merges'] = merges;
+          ws1['!cols'] = [
+            { wch: 4 },
+            { wch: 8 },
+            { wch: 34 },
+            { wch: 14 },
+            { wch: 15 },
+            { wch: 14 },
+            { wch: 16 },
+            { wch: 4 },
+            { wch: 42 }
+          ];
+          XLSX.utils.book_append_sheet(wb, ws1, 'Sheet1');
+
+          const todayStr = new Date().toISOString().split('T')[0];
+          XLSX.writeFile(wb, `AWS_Projects_Backup_${todayStr}.xlsx`);
+        }
+      } catch (err) {
+        console.error('Failed to create Excel backup:', err);
+        alert('Failed to create Excel backup: ' + err.message);
+      }
+    });
+
+    // Upload Survey Project Modal and Import Handlers
+    function openUploadProjectModal() {
+      const modal = document.getElementById('uploadProjectModal');
+      const fileInput = document.getElementById('surveyProjectFileInput');
+      const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      const removeBtn = document.getElementById('removeSurveyProjectFileBtn');
+      if (fileInput) fileInput.value = '';
+      if (fileNameDisplay) fileNameDisplay.innerText = 'No file chosen';
+      if (removeBtn) removeBtn.style.display = 'none';
+      if (modal) modal.classList.add('show');
+    }
+
+    function closeUploadProjectModal() {
+      const modal = document.getElementById('uploadProjectModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function removeSurveyProjectFile() {
+      const fileInput = document.getElementById('surveyProjectFileInput');
+      const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      const removeBtn = document.getElementById('removeSurveyProjectFileBtn');
+      if (fileInput) fileInput.value = '';
+      if (fileNameDisplay) fileNameDisplay.innerText = 'No file chosen';
+      if (removeBtn) removeBtn.style.display = 'none';
+    }
+
+    function handleSurveyProjectFileChange(input) {
+      const fileNameDisplay = document.getElementById('surveyProjectFileName');
+      const removeBtn = document.getElementById('removeSurveyProjectFileBtn');
+      if (!fileNameDisplay) return;
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        if (ext !== '.xlsx' && ext !== '.xls') {
+          alert('Only Excel files (.xlsx, .xls) are supported.');
+          input.value = '';
+          fileNameDisplay.innerText = 'No file chosen';
+          if (removeBtn) removeBtn.style.display = 'none';
+          return;
+        }
+        fileNameDisplay.innerHTML = `<strong>Selected:</strong> ${escapeHtml(file.name)} (${(file.size / 1024).toFixed(1)} KB)`;
+        if (removeBtn) removeBtn.style.display = 'inline-flex';
+      } else {
+        fileNameDisplay.innerText = 'No file chosen';
+        if (removeBtn) removeBtn.style.display = 'none';
+      }
+    }
+
+    async function processSurveyProjectUpload() {
+      if (!isUserAdmin()) {
+        alert('Permission denied. Admin privileges required.');
+        return;
+      }
+      const fileInput = document.getElementById('surveyProjectFileInput');
+      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        alert('Please choose an Excel file (.xlsx, .xls) first.');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (ext !== '.xlsx' && ext !== '.xls') {
+        alert('Only Excel files (.xlsx, .xls) are supported.');
+        return;
+      }
+
+      if (typeof XLSX === 'undefined') {
+        alert('Excel processing library is not loaded. Please reload the page.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+            alert('The uploaded Excel workbook contains no sheets.');
+            return;
+          }
+
+          // Check for Sheets
+          let surveysSheet = null;
+          let videosSheet = null;
+          let usersSheet = null;
+          let sheet1 = null;
+
+          for (const name of workbook.SheetNames) {
+            const lower = name.toLowerCase().trim();
+            if (lower === 'surveys' || lower === 'survey') {
+              surveysSheet = workbook.Sheets[name];
+            } else if (lower === 'videos' || lower === 'video') {
+              videosSheet = workbook.Sheets[name];
+            } else if (lower === 'users' || lower === 'user') {
+              usersSheet = workbook.Sheets[name];
+            } else if (lower === 'sheet1' || lower === 'sheet 1' || lower === 'projects') {
+              sheet1 = workbook.Sheets[name];
+            }
+          }
+
+          const primarySheet = sheet1 || surveysSheet || workbook.Sheets[workbook.SheetNames[0]];
+          const rawGrid = XLSX.utils.sheet_to_json(primarySheet, { header: 1, defval: '' });
+          if (!rawGrid || rawGrid.length === 0) {
+            alert('Could not find any data records in the Excel file.');
+            return;
+          }
+
+          // Check for header row index (e.g. Row 2 in Sheet1 format)
+          let headerRowIdx = -1;
+          for (let i = 0; i < Math.min(10, rawGrid.length); i++) {
+            const rowStr = (rawGrid[i] || []).map(x => String(x).toLowerCase()).join(' ');
+            if (rowStr.includes('project name') || rowStr.includes('survey name') || (rowStr.includes('survey') && rowStr.includes('url'))) {
+              headerRowIdx = i;
+              break;
+            }
+          }
+
+          const importedSurveys = [];
+          const additionalVideosFromSurveys = [];
+
+          if (headerRowIdx !== -1) {
+            // High-fidelity grid parsing (supports Sheet1 format with merged project rows and multi-video rows)
+            const headerRow = rawGrid[headerRowIdx];
+            const colMap = {};
+            headerRow.forEach((cell, idx) => {
+              const c = String(cell).toLowerCase().trim();
+              if (c.includes('project name') || c === 'project' || c === 'survey name' || c === 'name') colMap.name = idx;
+              else if (c.includes('s.no') || c === 'sno' || c === 'sl.no' || c === 'sr.no') colMap.sno = idx;
+              else if (c.includes('no. of survey') || c.includes('survey count') || c === 'no of surveys' || c === 'surveys count') colMap.surveyNum = idx;
+              else if (c.includes('length') || c.includes('distance')) colMap.length = idx;
+              else if (c.includes('created')) colMap.createdOn = idx;
+              else if (c.includes('survey date') || c.includes('video date')) colMap.surveyDate = idx;
+              else if (c.includes('url') || c.includes('youtube') || c.includes('link')) colMap.url = idx;
+              else if (c.includes('dept') || c.includes('department')) colMap.dept = idx;
+            });
+
+            let currentSurvey = null;
+            for (let r = headerRowIdx + 1; r < rawGrid.length; r++) {
+              const row = rawGrid[r] || [];
+              const nameVal = colMap.name !== undefined ? String(row[colMap.name] || '').trim() : '';
+              const snoVal = colMap.sno !== undefined ? String(row[colMap.sno] || '').trim() : '';
+              const numVal = colMap.surveyNum !== undefined ? String(row[colMap.surveyNum] || '').trim() : '';
+              const lenVal = colMap.length !== undefined ? String(row[colMap.length] || '').trim() : '';
+              const createdVal = colMap.createdOn !== undefined ? String(row[colMap.createdOn] || '').trim() : '';
+              const dateVal = colMap.surveyDate !== undefined ? String(row[colMap.surveyDate] || '').trim() : '';
+              const urlVal = colMap.url !== undefined ? String(row[colMap.url] || '').trim() : '';
+              const deptVal = colMap.dept !== undefined ? String(row[colMap.dept] || '').trim() : '';
+
+              if (nameVal) {
+                const surveyId = `survey_${snoVal || (importedSurveys.length + 1)}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+                currentSurvey = {
+                  id: surveyId,
+                  name: nameVal,
+                  department: deptVal || 'General',
+                  survey_length: lenVal || '0 KM',
+                  createdAt: createdVal || new Date().toISOString(),
+                  status: 'Active',
+                  video_count: 0
+                };
+                importedSurveys.push(currentSurvey);
+              }
+
+              if (currentSurvey && (urlVal || dateVal || numVal)) {
+                currentSurvey.video_count++;
+                additionalVideosFromSurveys.push({
+                  id: `video_${currentSurvey.id}_${currentSurvey.video_count}`,
+                  survey: currentSurvey.id,
+                  surveyId: currentSurvey.id,
+                  name: `${currentSurvey.name} - Survey ${numVal || currentSurvey.video_count}`,
+                  videoURL: urlVal,
+                  createdAt: dateVal || currentSurvey.createdAt,
+                  status: 'active'
+                });
+              }
+            }
+          }
+
+          // Fallback to key-value row parsing if grid parser didn't match
+          if (importedSurveys.length === 0) {
+            const surveyRows = XLSX.utils.sheet_to_json(primarySheet, { defval: '' });
+            surveyRows.forEach((row, idx) => {
+              let id = '';
+              let name = '';
+              let dept = '';
+              let len = '';
+              let vCount = 0;
+              let status = 'Active';
+              let createdAt = '';
+
+              for (const [k, v] of Object.entries(row)) {
+                const key = k.trim().toLowerCase();
+                const val = String(v).trim();
+                if (key === 'id' || key === 'survey id') id = val;
+                else if (/survey\s*name|name|title/i.test(key) && !name) name = val;
+                else if (/department|dept/i.test(key) && !dept) dept = val;
+                else if (/survey\s*length|length|distance/i.test(key) && !len) len = val;
+                else if (/video\s*count|videos/i.test(key)) vCount = parseInt(val, 10) || 0;
+                else if (/status/i.test(key)) status = val || 'Active';
+                else if (/created/i.test(key)) createdAt = val;
+              }
+
+              if (!name) {
+                const vals = Object.values(row).filter(x => x !== '');
+                if (vals.length > 0) name = String(vals[0]);
+              }
+
+              if (name) {
+                const surveyId = id || `survey_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 5)}`;
+                importedSurveys.push({
+                  id: surveyId,
+                  name: name,
+                  department: dept || 'General',
+                  survey_length: len || '0 KM',
+                  video_count: vCount || 0,
+                  status: status || 'Active',
+                  createdAt: createdAt || new Date().toISOString()
+                });
+
+                const videoUrlsCol = row['Video URLs'] || row['Video URL'] || row['videoURL'];
+                if (videoUrlsCol) {
+                  const urls = String(videoUrlsCol).split(/[\r\n,]+/).map(u => u.trim()).filter(Boolean);
+                  urls.forEach((url, uIdx) => {
+                    additionalVideosFromSurveys.push({
+                      id: `video_${surveyId}_${uIdx}`,
+                      survey: surveyId,
+                      surveyId: surveyId,
+                      name: `Video ${uIdx + 1} - ${name}`,
+                      videoURL: url,
+                      status: 'active',
+                      createdAt: createdAt || new Date().toISOString()
+                    });
+                  });
+                }
+              }
+            });
+          }
+
+          if (importedSurveys.length === 0) {
+            alert('No valid survey rows found in the uploaded file.');
+            return;
+          }
+
+          // Merge into custom_surveys in safe storage
+          const existingCustomSurveys = safeGet('custom_surveys', []);
+          const binDeletedSurveys = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('survey') : [];
+          const deletedSurveys = safeGet('deleted_surveys', []);
+          const deletedSet = new Set([...deletedSurveys, ...binDeletedSurveys]);
+
+          importedSurveys.forEach(imported => {
+            deletedSet.delete(imported.id);
+            const existIdx = existingCustomSurveys.findIndex(s => s.id === imported.id || s.name.trim().toLowerCase() === imported.name.trim().toLowerCase());
+            if (existIdx >= 0) {
+              existingCustomSurveys[existIdx] = { ...existingCustomSurveys[existIdx], ...imported };
+            } else {
+              existingCustomSurveys.push(imported);
+            }
+          });
+
+          safeSet('custom_surveys', existingCustomSurveys);
+          safeSet('deleted_surveys', Array.from(deletedSet));
+
+          // Parse Videos if Videos sheet present or from survey Video URLs
+          let importedVideosCount = 0;
+          const existingCustomVideos = safeGet('custom_videos', []);
+
+          if (videosSheet) {
+            const videoRows = XLSX.utils.sheet_to_json(videosSheet, { defval: '' });
+            if (videoRows && videoRows.length > 0) {
+              videoRows.forEach((row, vIdx) => {
+                let vId = row['ID'] || row['Video ID'] || row['id'] || `video_${Date.now()}_${vIdx}`;
+                let vSurveyId = row['Survey ID'] || row['surveyId'] || row['Survey'] || row['survey'] || '';
+                let vName = row['Video Name'] || row['name'] || 'Survey Video';
+                let vUrl = row['Video URL'] || row['videoURL'] || row['url'] || '';
+                let vLen = row['Length (km)'] || row['length'] || '';
+                let vCreatedAt = row['Survey Date'] || row['Created At'] || row['createdAt'] || new Date().toISOString();
+                let vStatus = row['Status'] || row['status'] || 'active';
+
+                if (vName || vUrl) {
+                  const evIdx = existingCustomVideos.findIndex(v => v.id === vId);
+                  const vObj = { id: vId, survey: vSurveyId, surveyId: vSurveyId, name: vName, videoURL: vUrl, length: vLen, createdAt: vCreatedAt, status: vStatus };
+                  if (evIdx >= 0) {
+                    existingCustomVideos[evIdx] = { ...existingCustomVideos[evIdx], ...vObj };
+                  } else {
+                    existingCustomVideos.push(vObj);
+                  }
+                  importedVideosCount++;
+                }
+              });
+            }
+          }
+
+          // Add any videos found directly in Surveys sheet
+          additionalVideosFromSurveys.forEach(vObj => {
+            const evIdx = existingCustomVideos.findIndex(v => v.id === vObj.id || (v.survey === vObj.survey && v.videoURL === vObj.videoURL));
+            if (evIdx >= 0) {
+              existingCustomVideos[evIdx] = { ...existingCustomVideos[evIdx], ...vObj };
+            } else {
+              existingCustomVideos.push(vObj);
+              importedVideosCount++;
+            }
+          });
+
+          safeSet('custom_videos', existingCustomVideos);
+
+          // Parse Users if Users sheet present
+          let importedUsersCount = 0;
+          if (usersSheet) {
+            const userRows = XLSX.utils.sheet_to_json(usersSheet, { defval: '' });
+            if (userRows && userRows.length > 0) {
+              const existingCustomUsers = safeGet('custom_users', []);
+              userRows.forEach((row, uIdx) => {
+                const uUid = row['UID'] || row['uid'] || `user_${Date.now()}_${uIdx}`;
+                const uName = row['Name'] || row['name'] || '';
+                const uEmail = row['Email'] || row['email'] || '';
+                const uPhone = row['Phone Number'] || row['phone'] || row['phoneNumber'] || '';
+                const uOrg = row['Organization'] || row['organization'] || '';
+                const uDept = row['Department'] || row['department'] || '';
+                const uState = row['State'] || row['state'] || '';
+                const uStatus = (row['Status'] || '').toLowerCase() === 'disabled' ? 'Disable' : '';
+                const uAdmin = (String(row['Is Admin'] || row['admin']).toLowerCase() === 'yes' || String(row['Is Admin'] || row['admin']).toLowerCase() === 'true') ? 'true' : 'false';
+
+                let rawSurveys = row['Assigned Surveys'] || row['survey'] || '';
+                let uSurveys = [];
+                if (typeof rawSurveys === 'string') {
+                  if (rawSurveys.includes('*') || rawSurveys.toLowerCase().includes('all surveys')) {
+                    uSurveys = ['*'];
+                  } else {
+                    uSurveys = rawSurveys.split(',').map(s => s.trim()).filter(Boolean);
+                  }
+                } else if (Array.isArray(rawSurveys)) {
+                  uSurveys = rawSurveys;
+                }
+
+                if (uName || uEmail) {
+                  const euIdx = existingCustomUsers.findIndex(u => u.uid === uUid || (u.email && uEmail && u.email.toLowerCase() === uEmail.toLowerCase()));
+                  const uObj = {
+                    uid: uUid,
+                    name: uName,
+                    email: uEmail,
+                    phoneNumber: uPhone,
+                    organization: uOrg,
+                    department: uDept,
+                    state: uState,
+                    status: uStatus,
+                    admin: uAdmin,
+                    survey: uSurveys
+                  };
+                  if (euIdx >= 0) {
+                    existingCustomUsers[euIdx] = { ...existingCustomUsers[euIdx], ...uObj };
+                  } else {
+                    existingCustomUsers.push(uObj);
+                  }
+                  importedUsersCount++;
+                }
+              });
+              safeSet('custom_users', existingCustomUsers);
+              await fetchUsers();
+            }
+          }
+
+          // Reload surveys and videos data and refresh UI
+          await fetchSurveys();
+          await fetchVideos();
+          buildSurveyUserMap();
+          if (currentView === 'surveys') {
+            renderSurveysTable();
+          } else if (currentView === 'users') {
+            renderUsersTable();
+          }
+
+          closeUploadProjectModal();
+          alert(`Successfully imported ${importedSurveys.length} survey(s)${importedVideosCount > 0 ? `, ${importedVideosCount} video(s)` : ''}${importedUsersCount > 0 ? `, and ${importedUsersCount} user(s)` : ''} from Excel.`);
+        } catch (error) {
+          console.error('Failed to import survey project:', error);
+          alert('Failed to import survey project: ' + error.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+
+
+    // Recycle Bin modal open
+    const rBinBtn = document.getElementById('recycleBinBtn');
+    if (rBinBtn) {
+      rBinBtn.addEventListener('click', () => {
+        openRecycleBinModal();
+      });
+    }
+
+    window.addEventListener('tp_item_restored', async function () {
+      await fetchSurveys();
+      await fetchUsers();
+      buildSurveyUserMap();
+      if (currentView === 'users') {
+        renderUsersTable();
+      } else {
+        renderSurveysTable();
+      }
+    });
+
+    // Dropdown toggle logic
+    const profileMenuBtn = document.getElementById('profileMenuBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    profileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('show');
+    });
+
+    // Close dropdown on click outside
+    document.addEventListener('pointerdown', (e) => {
+      if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
+        profileDropdown.classList.remove('show');
+      }
+    });
+
+    // Handle logout button click
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (confirm('Do you want to log out?')) {
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser');
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Users management operations
+    const userModal = document.getElementById('userModal');
+    const openCreateUserModalBtn = document.getElementById('openCreateUserModalBtn');
+    
+    if (openCreateUserModalBtn) {
+      openCreateUserModalBtn.addEventListener('click', () => {
+        openCreateUserModal();
+      });
+    }
+
+    function navigateToUserByName(name) {
+      const user = allUsers.find(u => u.name && u.name.trim().toLowerCase() === name.trim().toLowerCase());
+      if (user) {
+        // Update URL to match exactly
+        history.pushState(null, '', `?name=${encodeURIComponent(name)}`);
+        
+        // Hide popover
+        const popover = document.getElementById('usersPopover');
+        if (popover) popover.style.display = 'none';
+
+        navigateToView('users');
+        openEditUserModal(user.uid);
+      } else {
+        alert("User details not found.");
+      }
+    }
+
+    function populateSurveyCheckboxes() {
+      const grid = document.getElementById('surveyAssignGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      
+      const sortedSurveys = [...surveysList].sort((a, b) => {
+        return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true });
+      });
+
+      sortedSurveys.forEach(survey => {
+        const label = document.createElement('label');
+        label.className = 'survey-chip';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = survey.name;
+        checkbox.className = 'survey-checkbox';
+        
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            label.classList.add('checked');
+          } else {
+            label.classList.remove('checked');
+          }
+          syncSelectAllCheckboxState();
+        });
+        
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' ' + survey.name));
+        grid.appendChild(label);
+      });
+      syncSelectAllCheckboxState();
+    }
+
+    function toggleSelectAllSurveys(shouldSelect) {
+      const checkboxes = document.querySelectorAll('.survey-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = shouldSelect;
+        const chip = cb.closest('.survey-chip');
+        if (chip) {
+          if (shouldSelect) {
+            chip.classList.add('checked');
+          } else {
+            chip.classList.remove('checked');
+          }
+        }
+      });
+      const selectAll = document.getElementById('selectAllSurveysCheckbox');
+      if (selectAll) {
+        selectAll.checked = shouldSelect;
+        selectAll.indeterminate = false;
+      }
+    }
+
+    function syncSelectAllCheckboxState() {
+      const selectAll = document.getElementById('selectAllSurveysCheckbox');
+      if (!selectAll) return;
+      const checkboxes = Array.from(document.querySelectorAll('.survey-checkbox'));
+      if (checkboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+      }
+      const checkedCount = checkboxes.filter(cb => cb.checked).length;
+      if (checkedCount === checkboxes.length) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+      } else if (checkedCount === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+      }
+    }
+
+    function openEditUserModal(uid) {
+      if (!isUserAdmin()) {
+        alert("Permission denied.");
+        return;
+      }
+      
+      const user = allUsers.find(u => u.uid === uid);
+      if (!user) {
+        alert("User not found.");
+        return;
+      }
+      
+      document.getElementById('userModalTitle').innerText = "Edit";
+      document.getElementById('editUserUid').value = user.uid;
+      document.getElementById('userNameInput').value = user.name || '';
+      document.getElementById('userOrgInput').value = user.organization || '';
+      document.getElementById('userDeptInput').value = user.department || '';
+      document.getElementById('userStateInput').value = user.state || '';
+      document.getElementById('userEmailInput').value = user.email || '';
+      document.getElementById('userPasswordInput').value = user.password || '';
+      document.getElementById('userPhoneInput').value = user.phoneNumber || '';
+      
+      // Set admin radios
+      const isAdmin = user.admin === 'true';
+      const adminRadios = document.getElementsByName('userIsAdmin');
+      for (let r of adminRadios) {
+        r.checked = (r.value === 'true' && isAdmin) || (r.value === 'false' && !isAdmin);
+      }
+      
+      // Set status radios (Disable User)
+      const isDisabled = user.status === 'Disable';
+      const disableRadios = document.getElementsByName('userDisable');
+      for (let r of disableRadios) {
+        r.checked = (r.value === 'true' && isDisabled) || (r.value === 'false' && !isDisabled);
+      }
+      
+      // Set survey checkboxes
+      const hasExplicitSurveyList = Array.isArray(user.survey);
+      const assignedSurveys = (user.survey || []).map(s => s.trim().toLowerCase());
+      const hasWildcard = assignedSurveys.includes('*');
+      
+      const chips = document.querySelectorAll('.survey-chip');
+      chips.forEach(chip => {
+        const checkbox = chip.querySelector('input[type="checkbox"]');
+        let isAssigned = false;
+        if (hasExplicitSurveyList) {
+          isAssigned = hasWildcard || assignedSurveys.includes(checkbox.value.trim().toLowerCase());
+        } else if (user.admin === 'true') {
+          // If admin has no explicit restriction configured yet, start with all selected
+          isAssigned = true;
+        }
+        checkbox.checked = isAssigned;
+        if (isAssigned) {
+          chip.classList.add('checked');
+        } else {
+          chip.classList.remove('checked');
+        }
+      });
+      syncSelectAllCheckboxState();
+      
+      if (userModal) userModal.classList.add('show');
+    }
+
+    function openCreateUserModal() {
+      if (!isUserAdmin()) {
+        alert("Permission denied.");
+        return;
+      }
+      
+      document.getElementById('userModalTitle').innerText = "Create a User";
+      document.getElementById('editUserUid').value = '';
+      document.getElementById('userNameInput').value = '';
+      document.getElementById('userOrgInput').value = '';
+      document.getElementById('userDeptInput').value = '';
+      document.getElementById('userStateInput').value = '';
+      document.getElementById('userEmailInput').value = '';
+      document.getElementById('userPasswordInput').value = '';
+      document.getElementById('userPhoneInput').value = '';
+      
+      // Default radios
+      const adminRadios = document.getElementsByName('userIsAdmin');
+      for (let r of adminRadios) {
+        r.checked = r.value === 'false';
+      }
+      const disableRadios = document.getElementsByName('userDisable');
+      for (let r of disableRadios) {
+        r.checked = r.value === 'false';
+      }
+      
+      // Uncheck all survey checkboxes
+      const chips = document.querySelectorAll('.survey-chip');
+      chips.forEach(chip => {
+        const checkbox = chip.querySelector('input[type="checkbox"]');
+        checkbox.checked = false;
+        chip.classList.remove('checked');
+      });
+      syncSelectAllCheckboxState();
+      
+      if (userModal) userModal.classList.add('show');
+    }
+
+    function closeUserModal() {
+      if (userModal) userModal.classList.remove('show');
+      // Clean query parameter
+      const url = new URL(window.location);
+      if (url.searchParams.has('name')) {
+        url.searchParams.delete('name');
+        history.pushState(null, '', url.pathname);
+      }
+    }
+
+    async function handleSaveUser(event) {
+      event.preventDefault();
+      if (!isUserAdmin()) {
+        alert('Permission denied.');
+        return false;
+      }
+      
+      const uid = document.getElementById('editUserUid').value;
+      const name = document.getElementById('userNameInput').value.trim();
+      const organization = document.getElementById('userOrgInput').value.trim();
+      const department = document.getElementById('userDeptInput').value.trim();
+      const state = document.getElementById('userStateInput').value.trim();
+      const email = document.getElementById('userEmailInput').value.trim();
+      let password = document.getElementById('userPasswordInput').value.trim();
+      const phoneNumber = document.getElementById('userPhoneInput').value.trim();
+
+      if (!uid && !password) {
+        alert('Please enter a password for the new user.');
+        return false;
+      }
+
+      if (uid && !password) {
+        const existingUser = allUsers.find(u => u.uid === uid);
+        if (existingUser) password = existingUser.password;
+      }
+      
+      const adminRadios = document.getElementsByName('userIsAdmin');
+      let admin = 'false';
+      for (let r of adminRadios) {
+        if (r.checked) admin = r.value;
+      }
+      
+      const disableRadios = document.getElementsByName('userDisable');
+      let status = '';
+      for (let r of disableRadios) {
+        if (r.checked && r.value === 'true') {
+          status = 'Disable';
+        }
+      }
+      
+      // Gather assigned surveys
+      const selectedSurveys = [];
+      const checkboxes = document.querySelectorAll('.survey-checkbox');
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          selectedSurveys.push(cb.value);
+        }
+      });
+      
+      if (uid) {
+        // Edit User
+        let editedUsers = safeGet('edited_users', []);
+        const existingIdx = editedUsers.findIndex(e => e.uid === uid);
+        
+        const userUpdate = {
+          uid,
+          name,
+          organization,
+          department,
+          state,
+          email,
+          password,
+          phoneNumber,
+          admin,
+          status,
+          survey: selectedSurveys
+        };
+        
+        if (existingIdx > -1) {
+          editedUsers[existingIdx] = userUpdate;
+        } else {
+          editedUsers.push(userUpdate);
+        }
+        safeSet('edited_users', editedUsers);
+
+        // If the edited user is the current logged-in user, immediately sync currentUser
+        if (currentUser && (currentUser.uid === uid || (currentUser.email && email && currentUser.email.trim().toLowerCase() === email.trim().toLowerCase()))) {
+          currentUser = { ...currentUser, ...userUpdate };
+          sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+          safeSet('loggedInUser', currentUser);
+          
+          if (document.getElementById('profileName')) {
+            document.getElementById('profileName').innerText = getInitials(currentUser.name);
+          }
+          if (document.getElementById('dropdownName')) {
+            document.getElementById('dropdownName').innerText = currentUser.name || '';
+          }
+          if (document.getElementById('dropdownPhone')) {
+            document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
+          }
+          if (document.getElementById('dropdownEmail')) {
+            document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
+          }
+        }
+      } else {
+        // Create User
+        const newUser = {
+          uid: 'user-' + Math.random().toString(36).substring(2, 15),
+          name,
+          organization,
+          department,
+          state,
+          email,
+          password,
+          phoneNumber,
+          admin,
+          status,
+          survey: selectedSurveys,
+          createdAt: {
+            seconds: Math.floor(Date.now() / 1000),
+            nanoseconds: 0
+          }
+        };
+        let customUsers = safeGet('custom_users', []);
+        customUsers.push(newUser);
+        safeSet('custom_users', customUsers);
+      }
+      
+      closeUserModal();
+      await fetchUsers();
+      buildSurveyUserMap();
+      renderSurveysTable();
+    }
+
+    async function handleDeleteUser(uid) {
+      if (!isUserAdmin()) {
+        alert('Permission denied.');
+        return;
+      }
+      if (uid === currentUser.uid) {
+        alert('You cannot delete your own logged-in account.');
+        return;
+      }
+
+      if (confirm('Are you sure you want to delete this user?')) {
+        const userToDelete = allUsers.find(u => u.uid === uid);
+        let customUsers = safeGet('custom_users', []);
+        const isCustom = uid.startsWith('user-') || customUsers.some(u => u.uid === uid);
+        let editedUsers = safeGet('edited_users', []);
+        const isEdited = editedUsers.some(u => u.uid === uid);
+
+        // Add to universal Recycle Bin
+        if (window.TrueProgressBin) {
+          window.TrueProgressBin.addItem({
+            type: 'user',
+            id: uid,
+            name: userToDelete ? userToDelete.name : ('User ' + uid),
+            subtitle: (userToDelete && userToDelete.email ? userToDelete.email : 'No email') + ' • ' + (userToDelete ? (userToDelete.organization || userToDelete.department || 'User') : 'Account'),
+            data: userToDelete || { uid: uid },
+            meta: { isCustom: isCustom, isEdited: isEdited }
+          });
+          window.TrueProgressBin.showToast('User moved to Recycle Bin', 'info');
+        }
+
+        // 1. Remove from custom_users if present and backup to deleted_custom_users
+        const customIdx = customUsers.findIndex(u => u.uid === uid);
+        if (customIdx > -1) {
+          const removed = customUsers.splice(customIdx, 1)[0];
+          safeSet('custom_users', customUsers);
+          let deletedCustomUsers = safeGet('deleted_custom_users', []);
+          if (!deletedCustomUsers.some(u => (u.uid || u.id) === uid)) {
+            deletedCustomUsers.push(removed);
+            safeSet('deleted_custom_users', deletedCustomUsers);
+          }
+        }
+
+        // 2. Remove from edited_users if present
+        const editedIdx = editedUsers.findIndex(u => u.uid === uid);
+        if (editedIdx > -1) {
+          editedUsers.splice(editedIdx, 1);
+          safeSet('edited_users', editedUsers);
+        }
+
+        // 3. Add to deleted_users array
+        let deletedUsers = safeGet('deleted_users', []);
+        if (!deletedUsers.includes(uid)) {
+          deletedUsers.push(uid);
+          safeSet('deleted_users', deletedUsers);
+        }
+
+        await fetchUsers();
+        buildSurveyUserMap();
+        if (currentView === 'users') {
+          renderUsersTable();
+        } else {
+          renderSurveysTable();
+        }
+      }
+    }
+
+    // Helpers
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Mobile-responsive grid handler for inline-styled modal grids
+    function handleResponsiveGrids() {
+      const grids = document.querySelectorAll('[data-responsive-grid]');
+      const isMobile = window.innerWidth <= 768;
+      grids.forEach(g => {
+        g.style.gridTemplateColumns = isMobile ? '1fr' : '1fr 1fr';
+      });
+    }
+    handleResponsiveGrids();
+    window.addEventListener('resize', handleResponsiveGrids);
+
+    // Register Service Worker for offline capability & asset caching
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

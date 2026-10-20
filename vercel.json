@@ -91,7 +91,7 @@
     },
     {
       "source": "/dashboard",
-      "destination": "/trueprogress/index.html"
+      "destination": "/trueprogress/dashboard.html"
     },
     {
       "source": "/survey",
@@ -103,15 +103,15 @@
     },
     {
       "source": "/trueprogress",
-      "destination": "/trueprogress/index.html"
+      "destination": "/trueprogress/dashboard.html"
     },
     {
       "source": "/trueprogress/",
-      "destination": "/trueprogress/index.html"
+      "destination": "/trueprogress/dashboard.html"
     },
     {
       "source": "/trueprogress/index",
-      "destination": "/trueprogress/index.html"
+      "destination": "/trueprogress/dashboard.html"
     },
     {
       "source": "/trueprogress/survey",

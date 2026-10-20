@@ -1,126 +1,93 @@
 /**
  * Forgewell Corporation & TrueProgress Global Theme Manager
- * Supports Light & Dark mode with default set to Light mode.
- * Persists user choice in localStorage ('tp_theme').
+ * Fixed to Light Mode across all user and admin panels.
  */
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'tp_theme';
-  var DEFAULT_THEME = 'light';
+  var memoryCache = {};
 
-  function getStoredTheme() {
-    try {
-      var saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('theme');
-      if (saved === 'dark' || saved === 'light') {
-        return saved;
-      }
-    } catch (e) {}
-    return DEFAULT_THEME;
-  }
-
-  function applyTheme(theme, save) {
-    if (theme !== 'dark' && theme !== 'light') {
-      theme = DEFAULT_THEME;
-    }
-
-    document.documentElement.setAttribute('data-theme', theme);
-    if (document.body) {
-      document.body.setAttribute('data-theme', theme);
-    }
-
-    if (save !== false) {
+  // Global safe storage helper to protect all data against quota errors, corrupted JSON, and private browsing limitations
+  window.TPStorage = {
+    get: function (key, fallback) {
       try {
-        localStorage.setItem(STORAGE_KEY, theme);
-        localStorage.setItem('theme', theme);
+        var raw = localStorage.getItem(key);
+        if (raw === null || raw === undefined) {
+          if (memoryCache.hasOwnProperty(key)) return memoryCache[key];
+          try {
+            var sRaw = sessionStorage.getItem(key);
+            if (sRaw !== null && sRaw !== undefined) return JSON.parse(sRaw);
+          } catch (e) {}
+          return fallback;
+        }
+        return JSON.parse(raw);
+      } catch (e) {
+        try {
+          var unparsed = localStorage.getItem(key);
+          if (unparsed !== null && unparsed !== undefined) return unparsed;
+        } catch (err) {}
+        return memoryCache.hasOwnProperty(key) ? memoryCache[key] : fallback;
+      }
+    },
+    set: function (key, val) {
+      try {
+        memoryCache[key] = val;
+        var serialized = typeof val === 'string' ? val : JSON.stringify(val);
+        localStorage.setItem(key, serialized);
+        try {
+          sessionStorage.setItem(key, serialized);
+        } catch (sErr) {}
+        return true;
+      } catch (e) {
+        console.warn('[TPStorage] localStorage write failed for key:', key, e);
+        try {
+          var serializedFallback = typeof val === 'string' ? val : JSON.stringify(val);
+          sessionStorage.setItem(key, serializedFallback);
+        } catch (sErr) {}
+        return false;
+      }
+    },
+    remove: function (key) {
+      delete memoryCache[key];
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {}
+      try {
+        sessionStorage.removeItem(key);
       } catch (e) {}
     }
+  };
 
-    // Update meta theme-color if present
+  var DEFAULT_THEME = 'light';
+
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', 'light');
+    if (document.body) {
+      document.body.setAttribute('data-theme', 'light');
+    }
+    try {
+      localStorage.setItem('tp_theme', 'light');
+      localStorage.setItem('theme', 'light');
+    } catch (e) {}
+
     var metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', theme === 'dark' ? '#08080c' : '#ffffff');
-    }
-
-    updateUI(theme);
-
-    // Dispatch event
-    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: theme } }));
-  }
-
-  function updateUI(theme) {
-    var isDark = theme === 'dark';
-
-    // Update all theme toggle buttons on the page
-    var buttons = document.querySelectorAll('.theme-toggle-btn, #themeToggleBtn, .mobile-theme-btn');
-    buttons.forEach(function (btn) {
-      var label = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-      btn.setAttribute('aria-label', label);
-      btn.setAttribute('title', label);
-    });
-
-    // Update any dropdown text or indicator
-    var dropdownText = document.getElementById('dropdownThemeText');
-    if (dropdownText) {
-      dropdownText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+      metaThemeColor.setAttribute('content', '#ffffff');
     }
   }
 
-  // Apply immediately upon script load (before DOM rendering to avoid flash)
-  var initialTheme = getStoredTheme();
-  document.documentElement.setAttribute('data-theme', initialTheme);
-
-  // Global toggle function
-  window.toggleTheme = function () {
-    var current = document.documentElement.getAttribute('data-theme') || DEFAULT_THEME;
-    var next = current === 'dark' ? 'light' : 'dark';
-    applyTheme(next, true);
-    return next;
-  };
-  window.toggleTrueProgressTheme = window.toggleTheme;
-
-  // Listen to storage changes across tabs
-  window.addEventListener('storage', function (e) {
-    if (e.key === STORAGE_KEY || e.key === 'theme') {
-      var newTheme = e.newValue;
-      if (newTheme === 'dark' || newTheme === 'light') {
-        applyTheme(newTheme, false);
-      }
-    }
-  });
-
-  // Wire up click handlers when DOM is ready
-  function initThemeControls() {
-    var currentTheme = document.documentElement.getAttribute('data-theme') || DEFAULT_THEME;
-    applyTheme(currentTheme, false);
-
-    // Attach click listeners to all toggle buttons
-    document.querySelectorAll('.theme-toggle-btn, #themeToggleBtn, .mobile-theme-btn').forEach(function (btn) {
-      if (btn.dataset.themeBound) return;
-      btn.dataset.themeBound = 'true';
-
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        window.toggleTheme();
-      });
-    });
-
-    // Attach click listener to dropdown theme action if present
-    var dropdownToggle = document.getElementById('dropdownThemeToggleBtn');
-    if (dropdownToggle && !dropdownToggle.dataset.themeBound) {
-      dropdownToggle.dataset.themeBound = 'true';
-      dropdownToggle.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        window.toggleTheme();
-      });
-    }
-  }
+  // Apply immediately upon script load
+  applyTheme();
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initThemeControls);
+    document.addEventListener('DOMContentLoaded', applyTheme);
   } else {
-    initThemeControls();
+    applyTheme();
   }
+
+  window.toggleTheme = function () {
+    applyTheme();
+    return 'light';
+  };
+  window.toggleTrueProgressTheme = window.toggleTheme;
 })();
