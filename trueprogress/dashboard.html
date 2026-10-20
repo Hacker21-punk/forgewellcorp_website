@@ -1225,6 +1225,7 @@
           userCell = `<td>0 Users</td>`;
         }
         
+        const dateCell = `<td>${formatSurveyDate(survey.createdAt)}</td>`;
         const rawStatus = (survey.status || 'active').trim();
         const statusClass = rawStatus.toLowerCase();
         const statusCell = `<td><span class="status-badge ${statusClass}">${escapeHtml(statusClass)}</span></td>`;
