@@ -399,13 +399,26 @@ p { color: var(--text-dim); line-height: 1.8; }
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   opacity: 0;
   visibility: hidden;
-  transform: translate(-50%, 12px);
-  transition: all var(--tr);
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
+  will-change: opacity, transform;
+}
+.desktop-nav .has-menu ul::before {
+  content: "";
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: transparent;
+  display: block;
 }
 .desktop-nav .has-menu:hover ul,
 .desktop-nav .has-menu:focus-within ul {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
   transform: translate(-50%, 0);
 }
 .desktop-nav .has-menu ul a {
@@ -436,7 +449,7 @@ p { color: var(--text-dim); line-height: 1.8; }
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-  transform: translate(-50%, 12px);
+  transform: translate(-50%, 8px);
 }
 .desktop-nav .has-menu.solutions-menu:hover ul.solutions-dropdown,
 .desktop-nav .has-menu.solutions-menu:focus-within ul.solutions-dropdown {

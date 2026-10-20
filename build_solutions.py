@@ -51,44 +51,71 @@ SOLUTIONS_CONFIG = [
 CUSTOM_CSS = """
 <style id="custom-solutions-css">
   /* 2-Column Dropdown Menu */
-  nav ul li.solutions-nav-item {
+  nav ul li.solutions-nav-item, nav ul li.product-nav-item {
     position: relative;
+  }
+  nav ul li.solutions-nav-item > a,
+  nav ul li.product-nav-item > a {
+    cursor: pointer;
+    user-select: none;
   }
   nav ul li.solutions-nav-item > ul.solutions-dropdown-menu {
     position: absolute !important;
-    top: 104% !important;
+    top: 100% !important;
     left: -240px !important;
     width: 634px !important;
     max-width: 90vw !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     background: #ffffff !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
     border: 1px solid #e5e7eb !important;
     opacity: 0 !important;
     visibility: hidden !important;
-    transform: translateY(10px);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    pointer-events: none !important;
+    transform: translateY(8px) !important;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease !important;
+    will-change: opacity, transform;
     z-index: 9999 !important;
     padding: 0 !important;
     margin: 0 !important;
     list-style: none !important;
-    border-radius: 4px;
+    border-radius: 8px !important;
     text-align: left !important;
+  }
+  /* Invisible hover bridge to eliminate any mouseleave gap */
+  nav ul li.solutions-nav-item > ul.solutions-dropdown-menu::before {
+    content: "" !important;
+    position: absolute !important;
+    top: -16px !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 16px !important;
+    background: transparent !important;
+    display: block !important;
   }
   nav ul li.solutions-nav-item:hover > ul.solutions-dropdown-menu,
   nav ul li.solutions-nav-item:focus-within > ul.solutions-dropdown-menu {
     opacity: 1 !important;
     visibility: visible !important;
+    pointer-events: auto !important;
     transform: translateY(0) !important;
   }
   nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li {
     width: 100% !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
     padding: 12px 18px !important;
     border-bottom: 1px solid #f3f3f3 !important;
     background: #ffffff !important;
-    transition: background-color 0.2s ease;
     box-sizing: border-box !important;
+    transform: none !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+  }
+  nav ul li.solutions-nav-item:hover > ul.solutions-dropdown-menu > li {
+    margin: 0 !important;
+    margin-top: 0 !important;
   }
   nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li:hover {
     background-color: #f9fafb !important;
@@ -99,9 +126,10 @@ CUSTOM_CSS = """
     font-weight: 500 !important;
     display: block !important;
     text-align: left !important;
-    transition: color 0.2s ease !important;
     padding: 0 !important;
     background: transparent !important;
+    text-decoration: none !important;
+    transition: color 0.15s ease !important;
   }
   nav ul li.solutions-nav-item > ul.solutions-dropdown-menu > li > a:hover {
     color: #00d690 !important;
@@ -114,37 +142,68 @@ CUSTOM_CSS = """
   }
 
   /* Product Submenu */
-  nav ul li.product-nav-item {
-    position: relative;
-  }
   nav ul li.product-nav-item > ul.product-dropdown-menu {
     position: absolute !important;
-    top: 104% !important;
+    top: 100% !important;
     left: 0 !important;
     width: 220px !important;
+    display: block !important;
     background: #ffffff !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
     border: 1px solid #e5e7eb !important;
     opacity: 0 !important;
     visibility: hidden !important;
-    transform: translateY(10px);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    pointer-events: none !important;
+    transform: translateY(8px) !important;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease !important;
+    will-change: opacity, transform;
     z-index: 9999 !important;
-    padding: 0 !important;
+    padding: 6px 0 !important;
     margin: 0 !important;
     list-style: none !important;
-    border-radius: 4px;
+    border-radius: 8px !important;
     text-align: left !important;
+  }
+  /* Invisible hover bridge to eliminate any mouseleave gap */
+  nav ul li.product-nav-item > ul.product-dropdown-menu::before {
+    content: "" !important;
+    position: absolute !important;
+    top: -16px !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 16px !important;
+    background: transparent !important;
+    display: block !important;
   }
   nav ul li.product-nav-item:hover > ul.product-dropdown-menu,
   nav ul li.product-nav-item:focus-within > ul.product-dropdown-menu {
     opacity: 1 !important;
     visibility: visible !important;
+    pointer-events: auto !important;
     transform: translateY(0) !important;
   }
   nav ul li.product-nav-item > ul.product-dropdown-menu > li {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
     padding: 10px 18px !important;
     border-bottom: 1px solid #f3f3f3 !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+  }
+  nav ul li.product-nav-item:hover > ul.product-dropdown-menu > li {
+    margin: 0 !important;
+    margin-top: 0 !important;
+  }
+  nav ul li.product-nav-item > ul.product-dropdown-menu > li:last-child {
+    border-bottom: none !important;
+  }
+  nav ul li.product-nav-item > ul.product-dropdown-menu > li:hover {
+    background-color: #f9fafb !important;
   }
   nav ul li.product-nav-item > ul.product-dropdown-menu > li > a {
     color: #1f2937 !important;
@@ -152,6 +211,10 @@ CUSTOM_CSS = """
     font-weight: 500 !important;
     display: block !important;
     text-align: left !important;
+    padding: 0 !important;
+    background: transparent !important;
+    text-decoration: none !important;
+    transition: color 0.15s ease !important;
   }
   nav ul li.product-nav-item > ul.product-dropdown-menu > li > a:hover {
     color: #00d690 !important;
@@ -664,7 +727,7 @@ def process_file(source_path, title):
           <li><a href="/" title="">Home</a></li>
           <li><a href="/#about" title="">About Us</a></li>
           <li class="has-menu solutions-nav-item">
-            <a href="/solutions/quantum-&-physics" class="solutions-main-link" title="">Solutions</a>
+            <a class="solutions-main-link" role="button" tabindex="0" style="cursor: pointer;" onclick="event.preventDefault();">Solutions</a>
             <ul class="solutions-dropdown-menu">
               <li><a href="/solutions/quantum-&-physics">Quantum &amp; Physics</a></li>
               <li><a href="/solutions/tactical-&-surveillance-solutions">Tactical &amp; Surveillance Solutions</a></li>
@@ -676,9 +739,9 @@ def process_file(source_path, title):
             </ul>
           </li>
           <li class="has-menu product-nav-item">
-            <a href="/#trueprogress" title="">Product</a>
+            <a class="product-main-link" role="button" tabindex="0" style="cursor: pointer;" onclick="event.preventDefault();">Product</a>
             <ul class="product-dropdown-menu">
-              <li><a href="/login">TrueProgress</a></li>
+              <li><a href="/trueprogress">TrueProgress</a></li>
               <li><a href="/#trueprogress">Yokogawa</a></li>
               <li><a href="/#trueprogress">Pico Tech</a></li>
               <li><a href="/#trueprogress">Tabor Electronics</a></li>
@@ -805,7 +868,7 @@ def process_file(source_path, title):
             t = a.text.strip().lower()
             href = a.get("href", "")
             if "trueprogress" in t:
-                a["href"] = "/login"
+                a["href"] = "/trueprogress"
             elif "dashboard builder" in t:
                 a.string = "Yokogawa"
                 a["href"] = "/#trueprogress"
