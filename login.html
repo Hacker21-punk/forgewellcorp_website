@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Trueprogress by Forgewell Corporation</title>
   <meta name="description" content="Trueprogress - Login to your account" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
-  <link rel="icon" href="assets/trueprogress/favicon.png" />
+  <meta name="theme-color" content="#14124c" />
+  <link rel="icon" href="assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/trueprogress/login.css" />
+  <link rel="stylesheet" href="assets/login.css" />
   <script>
     (function() {
       try {
@@ -19,7 +19,8 @@
       } catch (e) {}
     })();
   </script>
-  <script src="assets/trueprogress/theme.js"></script>
+  <script src="assets/theme.js"></script>
+  <script src="assets/dataProtection.js"></script>
 </head>
 <body>
   <div id="__next">
@@ -30,7 +31,7 @@
             <!-- Left Column: Illustration -->
             <div class="login-illustration-col">
               <img
-                src="assets/trueprogress/login_illustration.png"
+                src="assets/login_illustration.png"
                 alt="Drone survey illustration"
               />
             </div>
@@ -39,13 +40,14 @@
             <div class="login-form-col">
               <form id="loginForm" onsubmit="return handleLogin(event)">
                 <!-- Logo -->
-                <a href="/" class="login-logo-link">
+                <a href="https://www.forgewellcorp.com/" class="login-logo-link" title="Forgewell Corporation">
                   <span class="login-logo-wrapper">
                     <span class="login-logo-sizer">
                       <img
                         class="login-logo-img"
                         alt="Trueprogress"
-                        src="assets/trueprogress/trueprogress_logo.png"
+                        src="/trueprogress/assets/trueprogress_logo.png"
+                        onerror="this.onerror=null;this.src='assets/trueprogress_logo.png';"
                       />
                     </span>
                   </span>
@@ -84,13 +86,13 @@
                 </div>
 
                 <!-- Sign In Button -->
-                <button type="submit" id="loginBtn" class="login-btn">
+                <button type="submit" class="login-btn" id="loginSubmitBtn">
                   SIGN IN
                 </button>
 
                 <!-- Forgot Password -->
                 <div class="login-forgot-row">
-                  <a href="/reset-password" class="login-forgot-link">Forgot Password?</a>
+                  <a id="forgotPasswordLink" href="/reset-password" class="login-forgot-link">Forgot Password?</a>
                 </div>
               </form>
             </div>
@@ -107,7 +109,7 @@
       try {
         const parsed = JSON.parse(existingUser);
         if (parsed && (parsed.uid || parsed.email)) {
-          window.location.href = '/dashboard';
+          window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
         }
       } catch (e) {}
     }
@@ -118,8 +120,8 @@
       const loginId = rawInput.toLowerCase();
       const loginDigits = rawInput.replace(/\D/g, '');
       const passwordInput = document.getElementById('loginPassword').value;
-      const btn = document.getElementById('loginBtn');
 
+      const btn = document.getElementById('loginSubmitBtn') || document.getElementById('loginBtn');
       if (btn) {
         btn.disabled = true;
         btn.innerText = 'SIGNING IN...';
@@ -128,10 +130,10 @@
       try {
         let response = null;
         const userUrls = [
-          'trueprogress/backup%20details%20of%20trueprogress/users.json',
-          '/trueprogress/backup%20details%20of%20trueprogress/users.json',
           'backup%20details%20of%20trueprogress/users.json',
-          '/backup%20details%20of%20trueprogress/users.json'
+          '/backup%20details%20of%20trueprogress/users.json',
+          'trueprogress/backup%20details%20of%20trueprogress/users.json',
+          '/trueprogress/backup%20details%20of%20trueprogress/users.json'
         ];
         for (const u of userUrls) {
           try {
@@ -214,14 +216,9 @@
           }
 
           sessionStorage.setItem('loggedInUser', JSON.stringify(user));
-          try {
-            if (window.TPStorage && window.TPStorage.set) {
-              window.TPStorage.set('loggedInUser', user);
-            } else {
-              localStorage.setItem('loggedInUser', JSON.stringify(user));
-            }
-          } catch (e) {}
-          window.location.href = '/dashboard';
+          localStorage.setItem('loggedInUser', JSON.stringify(user));
+          try { if (window.TPStorage && window.TPStorage.set) window.TPStorage.set('loggedInUser', user); } catch(e) {}
+          window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
         } else {
           alert('Invalid ID/Email or password.');
           if (btn) {
@@ -229,9 +226,9 @@
             btn.innerText = 'SIGN IN';
           }
         }
-      } catch (err) {
-        console.error('Login error:', err);
-        alert('An error occurred during login. Please try again.');
+      } catch (error) {
+        console.error('Sign in error:', error);
+        alert('An error occurred during sign in. Please try again.');
         if (btn) {
           btn.disabled = false;
           btn.innerText = 'SIGN IN';

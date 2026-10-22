@@ -20,6 +20,7 @@
     })();
   </script>
   <script src="assets/theme.js"></script>
+  <script src="assets/dataProtection.js"></script>
 </head>
 <body>
   <div id="__next">
@@ -39,7 +40,7 @@
             <div class="login-form-col">
               <form id="loginForm" onsubmit="return handleLogin(event)">
                 <!-- Logo -->
-                <a href="https://forgewellcorp-website-dnhu.vercel.app/" class="login-logo-link">
+                <a href="https://www.forgewellcorp.com/" class="login-logo-link" title="Forgewell Corporation">
                   <span class="login-logo-wrapper">
                     <span class="login-logo-sizer">
                       <img
@@ -91,7 +92,7 @@
 
                 <!-- Forgot Password -->
                 <div class="login-forgot-row">
-                  <a href="reset-password.html" class="login-forgot-link">Forgot Password?</a>
+                  <a id="forgotPasswordLink" href="/reset-password" class="login-forgot-link">Forgot Password?</a>
                 </div>
               </form>
             </div>
@@ -108,7 +109,7 @@
       try {
         const parsed = JSON.parse(existingUser);
         if (parsed && (parsed.uid || parsed.email)) {
-          window.location.href = '/dashboard';
+          window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
         }
       } catch (e) {}
     }
@@ -120,7 +121,7 @@
       const loginDigits = rawInput.replace(/\D/g, '');
       const passwordInput = document.getElementById('loginPassword').value;
 
-      const btn = document.getElementById('loginSubmitBtn');
+      const btn = document.getElementById('loginSubmitBtn') || document.getElementById('loginBtn');
       if (btn) {
         btn.disabled = true;
         btn.innerText = 'SIGNING IN...';
@@ -216,7 +217,8 @@
 
           sessionStorage.setItem('loggedInUser', JSON.stringify(user));
           localStorage.setItem('loggedInUser', JSON.stringify(user));
-          window.location.href = '/dashboard';
+          try { if (window.TPStorage && window.TPStorage.set) window.TPStorage.set('loggedInUser', user); } catch(e) {}
+          window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
         } else {
           alert('Invalid ID/Email or password.');
           if (btn) {

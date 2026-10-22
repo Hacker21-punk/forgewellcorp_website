@@ -10,7 +10,15 @@
       "destination": "/login.html"
     },
     {
+      "source": "/login.html",
+      "destination": "/login.html"
+    },
+    {
       "source": "/reset-password",
+      "destination": "/reset-password.html"
+    },
+    {
+      "source": "/reset-password.html",
       "destination": "/reset-password.html"
     },
     {
@@ -18,12 +26,40 @@
       "destination": "/index.html"
     },
     {
+      "source": "/index.html",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/dashboard.html",
+      "destination": "/dashboard.html"
+    },
+    {
       "source": "/survey",
+      "destination": "/survey.html"
+    },
+    {
+      "source": "/survey.html",
       "destination": "/survey.html"
     },
     {
       "source": "/video",
       "destination": "/video.html"
+    },
+    {
+      "source": "/video.html",
+      "destination": "/video.html"
+    },
+    {
+      "source": "/backup%20details%20of%20trueprogress/(.*)",
+      "destination": "/backup details of trueprogress/$1"
+    },
+    {
+      "source": "/backup details of trueprogress/(.*)",
+      "destination": "/backup details of trueprogress/$1"
     }
   ],
   "headers": [
@@ -53,6 +89,10 @@
         {
           "key": "X-Permitted-Cross-Domain-Policies",
           "value": "none"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: blob: https://ik.imagekit.io https://img.youtube.com https://i.ytimg.com https://*.google.com https://*.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://*.google.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; media-src 'self' blob: https://forgewell.s3.ap-south-1.amazonaws.com https://*.amazonaws.com; frame-src 'self' https://www.youtube.com https://youtube.com https://www.google.com https://maps.google.com https://*.google.com; connect-src 'self' https://forgewell.s3.ap-south-1.amazonaws.com https://*.amazonaws.com https://*.google.com https://*.gstatic.com https://*.googleapis.com https://api.github.com https://gist.githubusercontent.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; block-all-mixed-content"
         }
       ]
     }

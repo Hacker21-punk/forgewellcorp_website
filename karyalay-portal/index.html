@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Karyalay Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: operations console — fixed left rail of modules, scrolling work area; rail becomes a drawer under 900px. Brand hue comes from the active company's logo. */
+:root{
+  --brand:#0f6b5c;
+  --bg:#f1f4f3; --surface:#ffffff; --sunk:#e7ecea; --fg:#141a18; --muted:#566360; --line:#d3dbd8; --line-2:#e3e8e6;
+  --accent:var(--brand); --accent-ink:#ffffff;
+  --accent-soft:color-mix(in oklab, var(--brand) 11%, var(--surface));
+  --accent-line:color-mix(in oklab, var(--brand) 35%, var(--line));
+  --ok:#17733a; --ok-soft:#e1f2e6; --warn:#945600; --warn-soft:#fbeed6; --bad:#b0261a; --bad-soft:#fbe3df; --info:#2b5aa8; --info-soft:#e2eaf8;
+  --side:#10201c; --side-fg:#d9e6e1; --side-muted:#8ea39c; --side-hi:color-mix(in oklab, var(--brand) 55%, #10201c);
+  --paper:#ffffff; --ink:#111111; --ink-line:#3b3b3b;
+  --f-ui:'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-num:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --r:8px; --shadow:0 1px 2px rgb(16 32 28 / .06), 0 8px 24px rgb(16 32 28 / .08);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1311; --surface:#141c19; --sunk:#1a2420; --fg:#e4ece8; --muted:#97a7a1; --line:#2a3632; --line-2:#212c28;
+  --accent:color-mix(in oklab, var(--brand) 62%, #ffffff); --accent-ink:#0d1311;
+  --accent-soft:color-mix(in oklab, var(--brand) 22%, var(--surface));
+  --accent-line:color-mix(in oklab, var(--brand) 45%, var(--line));
+  --ok:#5cc583; --ok-soft:#163222; --warn:#e3a54a; --warn-soft:#33260f; --bad:#f07a6b; --bad-soft:#3a1915; --info:#8db2f2; --info-soft:#17243a;
+  --side:#0a110f; --side-fg:#d9e6e1; --side-muted:#7e918a; --side-hi:color-mix(in oklab, var(--brand) 45%, #0a110f);
+  --shadow:0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .35); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1311; --surface:#141c19; --sunk:#1a2420; --fg:#e4ece8; --muted:#97a7a1; --line:#2a3632; --line-2:#212c28;
+  --accent:color-mix(in oklab, var(--brand) 62%, #ffffff); --accent-ink:#0d1311;
+  --accent-soft:color-mix(in oklab, var(--brand) 22%, var(--surface));
+  --accent-line:color-mix(in oklab, var(--brand) 45%, var(--line));
+  --ok:#5cc583; --ok-soft:#163222; --warn:#e3a54a; --warn-soft:#33260f; --bad:#f07a6b; --bad-soft:#3a1915; --info:#8db2f2; --info-soft:#17243a;
+  --side:#0a110f; --side-fg:#d9e6e1; --side-muted:#7e918a; --side-hi:color-mix(in oklab, var(--brand) 45%, #0a110f);
+  --shadow:0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .35); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:14px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.45rem;font-weight:800}
+h2{font-size:1.08rem;font-weight:700}
+h3{font-size:.95rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num,.mono{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:.92em}
+.muted{color:var(--muted)}
+.small{font-size:.82rem}
+.ic{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* shell */
+.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{background:var(--side);color:var(--side-fg);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;padding:14px 10px calc(14px + env(safe-area-inset-bottom,0px)) max(10px, env(safe-area-inset-left,0px))}
+.brandblk{display:flex;gap:10px;align-items:center;padding:6px 8px 14px;border-bottom:1px solid rgb(255 255 255 / .08);margin-bottom:10px}
+.brandlogo{width:38px;height:38px;border-radius:8px;background:#fff;display:grid;place-items:center;overflow:hidden;flex:none;color:var(--brand);font-weight:800}
+.brandlogo img{width:100%;height:100%;object-fit:contain}
+.brandname{font-weight:700;font-size:.95rem;line-height:1.2}
+.brandsub{font-size:.72rem;color:var(--side-muted);text-transform:uppercase;letter-spacing:.06em}
+.navg{font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;color:var(--side-muted);padding:12px 10px 4px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--side-fg);padding:7px 10px;border-radius:7px;cursor:pointer;text-align:left;font-size:.9rem}
+.nav:hover{background:rgb(255 255 255 / .06)}
+.nav.on{background:var(--side-hi);color:#fff;font-weight:600}
+.nav .badge{margin-left:auto;background:#e5484d;color:#fff;font-size:.7rem;border-radius:99px;padding:0 6px;font-weight:700}
+.sidefoot{margin-top:auto;border-top:1px solid rgb(255 255 255 / .08);padding:12px 8px 0;display:flex;gap:10px;align-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--side-hi);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.8rem;flex:none}
+.sidefoot .who{min-width:0;flex:1}
+.sidefoot .who b{display:block;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidefoot .who span{font-size:.72rem;color:var(--side-muted)}
+.iconbtn{border:0;background:none;color:inherit;padding:6px;border-radius:6px;cursor:pointer;display:inline-grid;place-items:center}
+.iconbtn:hover{background:rgb(127 127 127 / .14)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding-block:10px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.topbar .crumb{font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .crumb small{color:var(--muted);font-weight:500}
+.topbar .sp{flex:1}
+.menubtn{display:none}
+.bell{position:relative}
+.bell b{position:absolute;top:0;right:0;background:var(--bad);color:#fff;font-size:.62rem;border-radius:99px;padding:0 4px;min-width:15px;text-align:center}
+.fyTag{font-family:var(--f-num);font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:2px 8px;color:var(--muted)}
+.main{padding-block:20px 80px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));max-width:1320px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.scrim{display:none}
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;top:0;bottom:0;width:270px;z-index:50;transform:translateX(-102%);transition:transform .2s ease;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+  .side.open{transform:none}
+  .scrim.open{display:block;position:fixed;inset:0;background:rgb(0 0 0 / .4);z-index:40}
+  .menubtn{display:inline-grid}
+}
+
+/* page pieces */
+.phead{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.phead p{color:var(--muted);margin-top:3px}
+.pacts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:.86rem;white-space:nowrap;text-decoration:none;color:var(--fg)}
+.btn:hover{border-color:var(--accent-line);background:var(--accent-soft)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.sm{padding:4px 9px;font-size:.78rem}
+.btn.ghost{border-color:transparent;background:none}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.danger{color:var(--bad)}
+.btn.ok{color:var(--ok)}
+.btn .ic{width:15px;height:15px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.card > h2,.card > .ch{margin-bottom:12px}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.stat span{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.stat b{display:block;font-family:var(--f-num);font-size:1.35rem;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted)}
+.stat.bad b{color:var(--bad)}
+.kv{display:grid;grid-template-columns:minmax(110px,max-content) minmax(0,1fr);gap:6px 14px;font-size:.88rem}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:.74rem;font-weight:600;border-radius:99px;padding:2px 9px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.info{background:var(--info-soft);color:var(--info)}
+.chip.acc{background:var(--accent-soft);color:var(--accent)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{border:0;background:none;padding:9px 14px;cursor:pointer;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:var(--fg);border-bottom-color:var(--accent)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters input,.filters select{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 10px;min-width:0}
+.filters input[type=search]{flex:1 1 220px;max-width:340px}
+.filters label{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r);background:var(--surface)}
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.tbl{width:100%;border-collapse:collapse;font-size:.86rem}
+.tbl th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--sunk);white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:var(--accent-soft)}
+.tbl .r{text-align:right}
+.tbl td.r{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.tbl .acts{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.tbl tfoot td{font-weight:700;background:var(--sunk)}
+@media (max-width:700px){
+  .tbl.cards thead{display:none}
+  .tbl.cards,.tbl.cards tbody,.tbl.cards tr,.tbl.cards td,.tbl.cards tfoot{display:block;width:100%}
+  .tbl.cards tr{padding:10px 12px;border-bottom:1px solid var(--line)}
+  .tbl.cards td{border:0;padding:3px 0;display:flex;justify-content:space-between;gap:12px;text-align:right}
+  .tbl.cards td::before{content:attr(data-label);color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;text-align:left;flex:none}
+  .tbl.cards td.r{text-align:right}
+  .tbl.cards .acts{justify-content:flex-end}
+}
+/* board */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:12px;overflow-x:auto;padding-bottom:8px}
+.col{background:var(--sunk);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.col header{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-weight:700;font-size:.85rem;padding:2px 4px}
+.col header span{color:var(--muted);font-weight:600}
+.col header b{margin-left:auto;font-family:var(--f-num);font-size:.75rem;color:var(--muted);font-weight:500}
+.lcard{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.lcard:hover{border-color:var(--accent-line)}
+.lcard .t{font-weight:700;font-size:.88rem}
+.lcard .row{display:flex;justify-content:space-between;gap:6px;align-items:center;flex-wrap:wrap}
+.lcard select{border:1px solid var(--line);border-radius:6px;padding:3px 6px;background:var(--surface);font-size:.78rem}
+/* reminders */
+.rems{display:flex;flex-direction:column}
+.rem{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2);align-items:center}
+.rem:last-child{border-bottom:0}
+.rem .bar{align-self:stretch;border-radius:4px;background:var(--line)}
+.rem.bad .bar{background:var(--bad)} .rem.warn .bar{background:var(--warn)} .rem.info .bar{background:var(--info)}
+.rem .t{font-weight:600}
+.rem .s{color:var(--muted);font-size:.82rem}
+.rem .a{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:600px){.rem{grid-template-columns:4px minmax(0,1fr)}.rem .a{grid-column:2;justify-content:flex-start}}
+.bars{display:flex;flex-direction:column;gap:9px}
+.barrow{display:grid;grid-template-columns:110px minmax(0,1fr) 90px;gap:10px;align-items:center;font-size:.84rem}
+.barrow .track{height:10px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.barrow .fill{height:100%;background:var(--accent);border-radius:99px}
+.barrow .v{text-align:right;font-family:var(--f-num);font-size:.8rem}
+/* forms */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field.span{grid-column:1/-1}
+.field > span{font-size:.76rem;font-weight:600;color:var(--muted)}
+.field input:not([type=checkbox]),.field select,.field textarea,.inp{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:8px 10px;width:100%;min-width:0}
+.field textarea{min-height:72px;resize:vertical}
+.field small{color:var(--muted);font-size:.74rem}
+.chk{display:flex;gap:8px;align-items:center;font-size:.88rem;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+.fsec{grid-column:1/-1;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--accent);border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+.permgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px 14px;grid-column:1/-1;background:var(--sunk);border-radius:var(--r);padding:12px}
+.attach{display:flex;flex-direction:column;gap:8px}
+.attach .chips{display:flex;flex-wrap:wrap;gap:6px}
+.attach-btns{display:flex;gap:6px;flex-wrap:wrap}
+.chip.file{background:var(--accent-soft);color:var(--fg);padding:0;overflow:hidden}
+.chip.file button{border:0;background:none;padding:4px 8px;cursor:pointer;font-weight:600;font-size:.76rem;display:flex;gap:4px;align-items:center;max-width:220px}
+.chip.file button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.file .x{padding:4px 7px;color:var(--muted);border-left:1px solid var(--line)}
+.banks{display:flex;flex-direction:column;gap:10px;grid-column:1/-1}
+.bankrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;background:var(--sunk);padding:10px;border-radius:var(--r);align-items:end}
+/* doc editor */
+.items{display:flex;flex-direction:column;gap:8px}
+.item{display:grid;grid-template-columns:28px minmax(160px,2.2fr) minmax(70px,.8fr) 64px 64px minmax(80px,1fr) 56px 64px minmax(90px,1fr) 32px;gap:6px;align-items:end;background:var(--sunk);padding:8px;border-radius:7px}
+.item label{display:flex;flex-direction:column;gap:3px;font-size:.68rem;color:var(--muted);font-weight:600;min-width:0}
+.item input,.item select{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 7px;width:100%;min-width:0;font-size:.85rem}
+.item .sl{font-family:var(--f-num);color:var(--muted);padding-bottom:7px}
+.item .amt{font-family:var(--f-num);text-align:right;padding-bottom:7px;font-weight:600}
+.item .desc{grid-column:2/-2}
+@media (max-width:980px){.item{grid-template-columns:repeat(4,minmax(0,1fr))}.item .sl{display:none}.item .pname,.item .desc{grid-column:1/-1}.item .amt{grid-column:span 2}}
+.totals{display:grid;grid-template-columns:auto auto;gap:5px 24px;justify-content:end;font-size:.9rem}
+.totals .num{text-align:right}
+.totals .g{font-weight:800;font-size:1.05rem;border-top:1px solid var(--line);padding-top:6px}
+.actionbar{position:sticky;bottom:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;box-shadow:var(--shadow)}
+/* timeline */
+.tl{display:flex;flex-direction:column;gap:0}
+.tli{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;padding-bottom:12px}
+.tli .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);margin-top:5px;box-shadow:0 0 0 3px var(--accent-soft)}
+.tli .m{font-size:.76rem;color:var(--muted)}
+/* products */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.pcard .img{aspect-ratio:16/10;background:var(--sunk);display:grid;place-items:center;color:var(--muted);max-width:100%}
+.pcard .img img{width:100%;height:100%;object-fit:cover}
+.pcard .b{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.pcard .b .row{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:auto}
+/* modal */
+#modal,#viewer{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+#viewer{z-index:80}
+.mback{position:absolute;inset:0;background:rgb(8 14 12 / .55)}
+.mbox{position:relative;background:var(--surface);border-radius:12px;width:min(720px,100%);max-height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);overflow:hidden}
+.mbox.wide{width:min(1000px,100%)}
+.mbox > header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.mbody{overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line);background:var(--sunk)}
+#mform{display:flex;flex-direction:column;min-height:0;flex:1}
+.viewimg{max-width:100%;max-height:70vh;object-fit:contain;display:block;margin:0 auto;border-radius:6px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:8px;font-weight:600;z-index:90;font-size:.86rem;max-width:calc(100% - 32px)}
+/* login */
+.login{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+.login .art{background:var(--side);color:var(--side-fg);padding-block:48px;padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:40px;display:flex;flex-direction:column;justify-content:space-between;gap:30px}
+.login .art h1{font-size:2.3rem;line-height:1.1;color:#fff;max-width:14ch}
+.login .art p{color:var(--side-muted);max-width:46ch;margin-top:12px}
+.ledger{font-family:var(--f-num);font-size:.78rem;color:var(--side-muted);display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;max-width:440px;border-top:1px solid rgb(255 255 255 / .1);padding-top:16px}
+.ledger b{color:#fff;font-weight:500}
+.login .frm{display:grid;place-items:center;padding-block:40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login form{width:min(380px,100%);display:flex;flex-direction:column;gap:14px}
+.demo{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.demo button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:8px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;font-size:.82rem}
+.demo button:hover{border-color:var(--accent-line)}
+@media (max-width:820px){.login{grid-template-columns:minmax(0,1fr)}.login .art{padding-block:28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}.login .art h1{font-size:1.7rem}.ledger{display:none}}
+.cocard{display:flex;gap:12px;align-items:flex-start}
+.cocard .brandlogo{border:1px solid var(--line);width:46px;height:46px}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;border:1px solid var(--line)}
+.paperwrap{overflow-x:auto;background:var(--sunk);border-radius:var(--r);padding:12px}
+.note{background:var(--info-soft);color:var(--fg);border-radius:var(--r);padding:10px 12px;font-size:.84rem}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div id="app"></div>
+<div id="modal" hidden></div>
+<div id="viewer" hidden></div>
+<div id="toast" hidden></div>
+
+<script>
+'use strict';
+/* ================= utilities ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>(p||'id')+'_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const T=()=>ymd(new Date());
+const addDays=(iso,n)=>{const[y,m,d]=iso.split('-').map(Number);return ymd(new Date(y,m-1,d+n))};
+const dBetween=(a,b)=>{const p=a.split('-').map(Number),q=b.split('-').map(Number);return Math.round((Date.UTC(q[0],q[1]-1,q[2])-Date.UTC(p[0],p[1]-1,p[2]))/864e5)};
+const r2=n=>Math.round((+n||0)*100)/100;
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const inr0=n=>'₹'+Math.round(+n||0).toLocaleString('en-IN');
+const money=n=>Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fd=iso=>iso?new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';
+const fdt=iso=>iso?new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).replace(/ /g,'-'):'';
+const sum=(a,f)=>a.reduce((s,x)=>s+(+(typeof f==='function'?f(x):x[f])||0),0);
+const initials=n=>String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+const fmtSize=b=>b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB';
+function words(n){
+  const a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const b=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  const two=n=>n<20?a[n]:b[Math.floor(n/10)]+(n%10?' '+a[n%10]:'');
+  const three=n=>(n>=100?a[Math.floor(n/100)]+' Hundred'+(n%100?' ':''):'')+(n%100?two(n%100):'');
+  const conv=n=>{ if(n===0) return ''; let s=[]; const cr=Math.floor(n/1e7); n%=1e7; const l=Math.floor(n/1e5); n%=1e5; const t=Math.floor(n/1000); n%=1000;
+    if(cr) s.push(conv(cr)+' Crore'); if(l) s.push(two(l)+' Lakh'); if(t) s.push(two(t)+' Thousand'); if(n) s.push(three(n)); return s.join(' ');};
+  const neg=n<0; n=Math.abs(+n||0); const rs=Math.floor(n), ps=Math.round((n-rs)*100);
+  let out='INR '+(conv(rs)||'Zero'); if(ps) out+=' and '+two(ps)+' paise'; return (neg?'Minus ':'')+out+' Only';
+}
+const STATES=[['01','Jammu & Kashmir'],['02','Himachal Pradesh'],['03','Punjab'],['04','Chandigarh'],['05','Uttarakhand'],['06','Haryana'],['07','Delhi'],['08','Rajasthan'],['09','Uttar Pradesh'],['10','Bihar'],['11','Sikkim'],['12','Arunachal Pradesh'],['13','Nagaland'],['14','Manipur'],['15','Mizoram'],['16','Tripura'],['17','Meghalaya'],['18','Assam'],['19','West Bengal'],['20','Jharkhand'],['21','Odisha'],['22','Chhattisgarh'],['23','Madhya Pradesh'],['24','Gujarat'],['26','Dadra & Nagar Haveli and Daman & Diu'],['27','Maharashtra'],['29','Karnataka'],['30','Goa'],['31','Lakshadweep'],['32','Kerala'],['33','Tamil Nadu'],['34','Puducherry'],['35','Andaman & Nicobar'],['36','Telangana'],['37','Andhra Pradesh'],['38','Ladakh']];
+const stateName=c=>(STATES.find(s=>s[0]===c)||[,''])[1];
+
+const ICONS={
+ dashboard:'M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z', leads:'M3 4h18l-7 8v6l-4 2v-8z',
+ customers:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+ doc:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8', shield:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+ truck:'M1 3h15v13H1zM16 8h4l3 3v5h-7zM5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+ po:'M9 2h6v4H9zM16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 13l2 2 4-4',
+ rupee:'M6 3h12M6 8h12M6 13l8.5 8M6 13h3a5 5 0 0 0 0-10', wallet:'M20 7H5a2 2 0 0 1 0-4h13v4M3 5v14a2 2 0 0 0 2 2h15V7M16 14h.01',
+ advance:'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+ cart:'M6 6h15l-1.5 9h-12zM6 6L5 3H2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',
+ box:'M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8', chart:'M3 3v18h18M7 15l4-4 3 3 5-6',
+ gear:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z',
+ users:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', building:'M3 21h18M5 21V5l7-3v19M19 21V10l-7-3M9 9h.01M9 13h.01M9 17h.01',
+ payroll:'M3 5h18v14H3zM7 15h4M7 11h2M15 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', plus:'M12 5v14M5 12h14', menu:'M3 6h18M3 12h18M3 18h18',
+ bell:'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0', upload:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
+ camera:'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+ download:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3', eye:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+ edit:'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z', logout:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+ msg:'M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.6A8.5 8.5 0 1 1 21 11.5z', file:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6',
+ back:'M19 12H5M12 19l-7-7 7-7', x:'M18 6L6 18M6 6l12 12', check:'M20 6L9 17l-5-5', copy:'M9 9h13v13H9zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',
+ xls:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 12l5 6M13 12l-5 6', convert:'M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3',
+ phone:'M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z'
+};
+const ic=(n,cls='')=>`<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[n]||ICONS.file}"/></svg>`;
+
+/* ================= storage (IndexedDB, falls back to memory) ================= */
+const MEMF={};
+const IDB={db:null,
+  open(){return new Promise(res=>{try{const r=indexedDB.open('karyalay-portal',1);r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('kv');d.createObjectStore('files')};r.onsuccess=()=>{IDB.db=r.result;res(true)};r.onerror=()=>res(false);r.onblocked=()=>res(false)}catch(e){res(false)}})},
+  get(st,k){return new Promise(res=>{if(!IDB.db)return res(st==='files'?MEMF[k]:null);try{const q=IDB.db.transaction(st).objectStore(st).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)}catch(e){res(null)}})},
+  put(st,k,v){return new Promise(res=>{if(st==='files')MEMF[k]=v;if(!IDB.db)return res(false);try{const tx=IDB.db.transaction(st,'readwrite');tx.objectStore(st).put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false)}catch(e){res(false)}})},
+  clear(){return new Promise(res=>{if(!IDB.db)return res();try{const tx=IDB.db.transaction(['kv','files'],'readwrite');tx.objectStore('kv').clear();tx.objectStore('files').clear();tx.oncomplete=()=>res()}catch(e){res()}})}
+};
+let S=null; let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>IDB.put('kv','state',S),250)}
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ================= domain config ================= */
+const MODULES=[
+ {k:'dashboard',l:'Dashboard',g:'Overview',i:'dashboard'},
+ {k:'leads',l:'Leads & CRM',g:'Sales',i:'leads'},
+ {k:'customers',l:'Customers',g:'Sales',i:'customers'},
+ {k:'pos',l:'Purchase Orders',g:'Sales',i:'po'},
+ {k:'pbg',l:'PBG Register',g:'Sales',i:'shield'},
+ {k:'quotation',l:'Quotations',g:'Documents',i:'doc'},
+ {k:'pi',l:'Proforma Invoices',g:'Documents',i:'doc'},
+ {k:'invoice',l:'Tax Invoices',g:'Documents',i:'doc'},
+ {k:'challan',l:'Delivery Challans',g:'Documents',i:'truck'},
+ {k:'payments',l:'Payment Collection',g:'Finance',i:'rupee'},
+ {k:'expenses',l:'Expenses',g:'Finance',i:'wallet'},
+ {k:'advances',l:'Advance Requests',g:'Finance',i:'advance'},
+ {k:'purchases',l:'Purchases',g:'Finance',i:'cart'},
+ {k:'payroll',l:'Payroll',g:'People',i:'payroll'},
+ {k:'products',l:'Products & Solutions',g:'Masters',i:'box'},
+ {k:'reports',l:'Reports',g:'Masters',i:'chart'},
+ {k:'settings',l:'Company Settings',g:'Admin',i:'gear'},
+ {k:'users',l:'Users & Access',g:'Admin',i:'users'}
+];
+const EXTRA_PERMS=[['approve','Approve expenses & advances'],['allexp','See everyone’s expenses'],['alllead','See all leads (not only own)']];
+const GRANTABLE=MODULES.filter(m=>m.k!=='dashboard');
+const DOCT={quotation:{label:'Quotation',title:'QUOTATION',next:'pi'},pi:{label:'Proforma Invoice',title:'PROFORMA INVOICE',next:'invoice'},invoice:{label:'Tax Invoice',title:'TAX INVOICE',next:'challan'},challan:{label:'Delivery Challan',title:'DELIVERY CHALLAN',next:null}};
+const STAGES=['New','Contacted','Qualified','Quotation Sent','Negotiation','Won','Lost'];
+const SOURCES=['IndiaMART','Website','Phone call','WhatsApp','Email','Referral','Tender / GeM','Walk-in','Exhibition','Other'];
+const PBG_FORMATS=['Bank Guarantee','Demand Draft','Third Party FD','FDR (own)','Insurance Surety Bond','Cash / NEFT deposit','Other'];
+const PAY_MODES=['NEFT','RTGS','IMPS','UPI','Cheque','Cash','DD'];
+const DEF_HEADS=['Travel','Fuel / Petrol','Food & Lodging','Site Expenses','Material Purchase','Courier & Logistics','Office Supplies','Client Entertainment','Tender Fee / EMD','Repairs & Maintenance','Miscellaneous'];
+const UNITS=['Nos','Set','Mtr','Kg','Ltr','Box','Lot','Job','Hrs','Month'];
+const DEF_NUMBERING=()=>({quotation:{prefix:'QT',format:'{PREFIX}/{FY}/{SEQ}',pad:3,start:1},pi:{prefix:'PI',format:'{PREFIX}/{FY}/{SEQ}',pad:3,start:1},invoice:{prefix:'INV',format:'{PREFIX}/{FY}/{SEQ}',pad:3,start:1},challan:{prefix:'DC',format:'{PREFIX}/{FY}/{SEQ}',pad:3,start:1}});
+
+/* ================= financial year + numbering ================= */
+function fyOf(iso,startM=4){const[y,m]=iso.split('-').map(Number);const s=m>=startM?y:y-1;return{full:`${s}-${String(s+1).slice(2)}`,short:`${String(s).slice(2)}-${String(s+1).slice(2)}`,start:s}}
+function fmtNo(c,type,seq,iso){const n=c.numbering[type];const fy=fyOf(iso,c.fyStart||4);return String(n.format||'{PREFIX}/{FY}/{SEQ}').replace('{PREFIX}',n.prefix||'').replace('{FYS}',fy.short).replace('{FY}',fy.full).replace('{SEQ}',String(seq).padStart(+n.pad||1,'0'))}
+function peekNo(c,type,iso){const fy=fyOf(iso,c.fyStart||4).full;const last=c.counters[type+'|'+fy];const seq=last!=null?last+1:(+c.numbering[type].start||1);return{seq,fy,no:fmtNo(c,type,seq,iso)}}
+function takeNo(c,type,iso){const p=peekNo(c,type,iso);c.counters[type+'|'+p.fy]=p.seq;return p}
+
+/* ================= seed (example data, clearly marked) ================= */
+function seed(){
+  const t=T(), d=n=>addDays(t,n);
+  const mkCo=(id,name,city,gst,pan,brand,addr)=>({id,name,legalName:name,address:addr,city,stateCode:gst.slice(0,2),gstin:gst,pan,email:'accounts@'+name.split(' ')[0].toLowerCase()+'.example',phone:'0755 4000000',website:'',cin:'',logo:null,signature:null,brand,
+    banks:[{id:uid('bk'),bank:'State Bank of India',holder:name,ac:'3912'+gst.slice(2,10).replace(/\D/g,'7'),ifsc:'SBIN0001308',branch:city+' Main',upi:''},{id:uid('bk'),bank:'HDFC Bank',holder:name,ac:'50200077'+gst.slice(5,9).replace(/\D/g,'3'),ifsc:'HDFC0000215',branch:city},],
+    numbering:DEF_NUMBERING(),counters:{},fyStart:4,heads:DEF_HEADS.slice(),petrolRate:4.5,modules:GRANTABLE.map(m=>m.k),
+    terms:'1. Goods once sold will not be taken back.\n2. Interest @18% p.a. will be charged if payment is not made within the due date.\n3. Subject to '+city+' jurisdiction.',
+    quoteTerms:'1. Prices are ex-works, GST extra as applicable.\n2. Delivery: 4–6 weeks from receipt of PO with advance.\n3. Payment: 30% advance, balance against delivery.\n4. Validity: 30 days from the date of quotation.',
+    created:t});
+  const c1=mkCo('co_narmada','Narmada Power Systems (Sample)','Bhopal','23AABCN1234F1Z5','AABCN1234F','#0f6b5c','Plot 14, Govindpura Industrial Area, Bhopal, Madhya Pradesh 462023');
+  const c2=mkCo('co_malwa','Malwa Infra Projects (Sample)','Indore','23AACCM5678K1Z2','AACCM5678K','#2547a8','201, Shekhar Central, AB Road, Indore, Madhya Pradesh 452001');
+  const c3=mkCo('co_vindhya','Vindhya Automation (Sample)','Jabalpur','23AADCV9012L1Z8','AADCV9012L','#9a3b16','Richhai Industrial Area, Jabalpur, Madhya Pradesh 482010');
+  const all=GRANTABLE.map(m=>m.k);
+  const users=[
+    {id:'u_super',companyId:null,name:'Group Super Admin',email:'super@portal.in',password:'super123',role:'super',perms:[],active:true,phone:''},
+    {id:'u_a1',companyId:c1.id,name:'Rakesh Sharma',email:'admin@narmada.in',password:'admin123',role:'admin',perms:all.concat(['approve','allexp','alllead']),active:true,phone:'9826000001',designation:'Director'},
+    {id:'u_s1',companyId:c1.id,name:'Neha Verma',email:'sales@narmada.in',password:'user123',role:'user',perms:['leads','customers','quotation','pi','expenses','advances','products'],active:true,phone:'9826000002',designation:'Sales Engineer'},
+    {id:'u_s2',companyId:c1.id,name:'Amit Patel',email:'site@narmada.in',password:'user123',role:'user',perms:['leads','pos','challan','expenses','advances'],active:true,phone:'9826000003',designation:'Site Engineer'},
+    {id:'u_a2',companyId:c2.id,name:'Sanjay Joshi',email:'admin@malwa.in',password:'admin123',role:'admin',perms:all.concat(['approve','allexp','alllead']),active:true,phone:'9826000011'},
+    {id:'u_a3',companyId:c3.id,name:'Priya Tiwari',email:'admin@vindhya.in',password:'admin123',role:'admin',perms:all.concat(['approve','allexp','alllead']),active:true,phone:'9826000021'}
+  ];
+  const co=c1.id;
+  const customers=[
+    {id:'cu1',companyId:co,name:'MP Paschim Kshetra Vidyut Vitaran Co. (Sample)',contact:'Er. S.K. Mishra',phone:'9893000101',email:'se.purchase@example.in',gstin:'23AAACM1234A1ZB',pan:'AAACM1234A',stateCode:'23',address:'GPH Compound, Polo Ground, Indore, MP 452003',shipTo:'',creditDays:45},
+    {id:'cu2',companyId:co,name:'Satpura Cement Works (Sample)',contact:'Mr. Vivek Rao',phone:'9893000102',email:'vivek.rao@example.in',gstin:'23AAFCS4321Q1Z9',pan:'AAFCS4321Q',stateCode:'23',address:'Village Bankhedi, Narmadapuram, MP 461990',shipTo:'',creditDays:30},
+    {id:'cu3',companyId:co,name:'Deccan Agro Processors (Sample)',contact:'Ms. Kavita Kulkarni',phone:'9822000103',email:'kavita@example.in',gstin:'27AAGCD7788H1Z4',pan:'AAGCD7788H',stateCode:'27',address:'MIDC Waluj, Aurangabad, Maharashtra 431136',shipTo:'',creditDays:30}
+  ];
+  const products=[
+    {id:'p1',companyId:co,type:'Product',name:'LT Panel 630A, 4-pole ACB incomer',hsn:'85372000',unit:'Nos',cost:248000,price:312000,gst:18,desc:'Floor-standing LT panel, CRCA 2mm, powder-coated RAL 7035, with 630A ACB incomer and 6 MCCB outgoings.',images:[]},
+    {id:'p2',companyId:co,type:'Product',name:'APFC Panel 300 kVAr',hsn:'85372000',unit:'Nos',cost:186000,price:238000,gst:18,desc:'Automatic power factor correction panel with 8-step relay, heavy-duty capacitors and detuned reactors.',images:[]},
+    {id:'p3',companyId:co,type:'Product',name:'XLPE Cable 3.5C x 300 sq mm (Al)',hsn:'85446090',unit:'Mtr',cost:1180,price:1420,gst:18,desc:'1.1 kV armoured aluminium cable, ISI marked.',images:[]},
+    {id:'p4',companyId:co,type:'Solution',name:'Installation, Testing & Commissioning',hsn:'998719',unit:'Job',cost:35000,price:52000,gst:18,desc:'Site installation, termination, testing and commissioning by certified engineers.',images:[]},
+    {id:'p5',companyId:co,type:'Solution',name:'Annual Maintenance Contract – Substation',hsn:'998719',unit:'Month',cost:9000,price:14500,gst:18,desc:'Quarterly preventive maintenance, breakdown support within 24 hours.',images:[]}
+  ];
+  const fu=(dt,note,by)=>({id:uid('fu'),date:dt,note,by});
+  const leads=[
+    {id:'l1',companyId:co,title:'Substation upgrade – Pithampur feeder',customerId:'cu1',contact:'Er. S.K. Mishra',phone:'9893000101',email:'',source:'Tender / GeM',value:2850000,stage:'Won',owner:'u_s1',nextFollowUp:'',expectedClose:d(-20),interest:['p1','p2'],notes:'Tender ref. WZ/PUR/2026/118',followups:[fu(d(-60),'Pre-bid meeting attended.','u_s1'),fu(d(-35),'Techno-commercial bid submitted.','u_s1'),fu(d(-22),'L1 declared. LoA expected.','u_a1')],files:[],created:d(-70)},
+    {id:'l2',companyId:co,title:'Plant LT distribution revamp',customerId:'cu2',contact:'Mr. Vivek Rao',phone:'9893000102',email:'',source:'Referral',value:1460000,stage:'Negotiation',owner:'u_s1',nextFollowUp:t,expectedClose:d(15),interest:['p1','p3','p4'],notes:'Wants 45-day credit.',followups:[fu(d(-12),'Site survey done, load list received.','u_s1'),fu(d(-5),'Quotation sent; asked for 4% discount.','u_s1')],files:[],created:d(-18)},
+    {id:'l3',companyId:co,title:'APFC for cold-storage unit',customerId:'cu3',contact:'Ms. Kavita Kulkarni',phone:'9822000103',email:'',source:'IndiaMART',value:476000,stage:'Quotation Sent',owner:'u_s1',nextFollowUp:d(-2),expectedClose:d(20),interest:['p2'],notes:'',followups:[fu(d(-9),'Call: PF penalty from DISCOM, needs APFC urgently.','u_s1')],files:[],created:d(-10)},
+    {id:'l4',companyId:co,title:'AMC enquiry – 2 substations',customerId:'',company:'Bhojpur Textiles (Sample)',contact:'Mr. Arun Mehta',phone:'9893000199',email:'',source:'Website',value:348000,stage:'New',owner:'u_s1',nextFollowUp:d(1),expectedClose:d(40),interest:['p5'],notes:'Web form enquiry.',followups:[],files:[],created:d(-1)},
+    {id:'l5',companyId:co,title:'Cable laying – warehouse expansion',customerId:'',company:'Raisen Logistics Park (Sample)',contact:'Mr. Imran Khan',phone:'9893000188',email:'',source:'Phone call',value:620000,stage:'Contacted',owner:'u_s2',nextFollowUp:d(3),expectedClose:d(30),interest:['p3','p4'],notes:'',followups:[fu(d(-3),'Introductory call; drawings to be shared.','u_s2')],files:[],created:d(-4)},
+    {id:'l6',companyId:co,title:'Panel retrofit – boiler house',customerId:'cu2',contact:'Mr. Vivek Rao',phone:'9893000102',email:'',source:'Referral',value:290000,stage:'Lost',owner:'u_s1',nextFollowUp:'',expectedClose:d(-40),interest:['p1'],notes:'Lost on price.',followups:[],files:[],created:d(-80)}
+  ];
+  const pos=[
+    {id:'po1',companyId:co,customerId:'cu1',leadId:'l1',poNo:'WZ/PO/2026/4471',poDate:d(-18),value:2850000,files:[],deliveryDays:60,deliveryDue:d(42),deliveryTerms:'Door delivery at Pithampur 33/11 kV substation. Partial deliveries allowed.',paymentTerms:'90% against delivery, 10% after commissioning.',ldClause:'0.5% per week, max 5%',warranty:'18 months from supply / 12 months from commissioning',status:'In progress',
+      pbgRequired:true,pbg:{amount:285000,pct:10,format:'Bank Guarantee',bank:'State Bank of India, Bhopal Main',number:'0391BG2026000118',issueDate:d(-10),expiryDate:d(12),claimDate:d(42),reminderDays:30,beneficiary:'MP Paschim Kshetra Vidyut Vitaran Co.',status:'Active',files:[]},
+      deliveries:[{id:uid('dl'),date:d(-3),desc:'LT Panel 630A – 1 No.',challanId:'',receivedBy:'Er. R. Gupta (JE)',receivedOn:d(-2),status:'Received',files:[]}]},
+    {id:'po2',companyId:co,customerId:'cu2',leadId:'l6',poNo:'SCW/ENG/PO/0912',poDate:d(-75),value:310000,files:[],deliveryDays:30,deliveryDue:d(-45),deliveryTerms:'Ex-works Bhopal',paymentTerms:'100% within 30 days of invoice',ldClause:'',warranty:'12 months',status:'Delivered',
+      pbgRequired:true,pbg:{amount:15500,pct:5,format:'Third Party FD',bank:'HDFC Bank, Bhopal',number:'FD-50300019871',issueDate:d(-70),expiryDate:d(110),claimDate:d(140),reminderDays:30,beneficiary:'Satpura Cement Works',status:'Active',files:[]},
+      deliveries:[]}
+  ];
+  const it=(p,qty,disc=0)=>{const pr=products.find(x=>x.id===p);return{productId:p,name:pr.name,desc:'',hsn:pr.hsn,qty,unit:pr.unit,rate:pr.price,disc,gst:pr.gst}};
+  const fy=fyOf(t).full;
+  c1.counters={['quotation|'+fy]:2,['invoice|'+fy]:2,['challan|'+fy]:1};
+  const bank=c1.banks[0].id;
+  const docs=[
+    {id:'d1',companyId:co,type:'quotation',number:`QT/${fy}/001`,fy,date:d(-8),customerId:'cu3',leadId:'l3',poId:'',bankId:bank,validTill:d(22),creditDays:'',items:[it('p2',2,3)],terms:c1.quoteTerms,notes:'',buyerOrderNo:'',buyerOrderDate:'',deliveryNote:'',dispatchThrough:'',destination:'',deliveryTerms:'',status:'Sent',refId:'',created:d(-8)},
+    {id:'d2',companyId:co,type:'quotation',number:`QT/${fy}/002`,fy,date:d(-5),customerId:'cu2',leadId:'l2',poId:'',bankId:bank,validTill:d(25),creditDays:'',items:[it('p1',3,0),it('p3',350,0),it('p4',1,0)],terms:c1.quoteTerms,notes:'',buyerOrderNo:'',buyerOrderDate:'',deliveryNote:'',dispatchThrough:'',destination:'',deliveryTerms:'',status:'Sent',refId:'',created:d(-5)},
+    {id:'d3',companyId:co,type:'invoice',number:`INV/${fy}/001`,fy,date:d(-52),customerId:'cu2',leadId:'l6',poId:'po2',bankId:bank,validTill:'',creditDays:30,items:[it('p1',1,0.64)],terms:c1.terms,notes:'',buyerOrderNo:'SCW/ENG/PO/0912',buyerOrderDate:d(-75),deliveryNote:'',dispatchThrough:'By road – MP04 GA 2231',destination:'Bankhedi',deliveryTerms:'Ex-works',status:'',refId:'',created:d(-52)},
+    {id:'d4',companyId:co,type:'invoice',number:`INV/${fy}/002`,fy,date:d(-3),customerId:'cu1',leadId:'l1',poId:'po1',bankId:bank,validTill:'',creditDays:45,items:[it('p1',1,0)],terms:c1.terms,notes:'',buyerOrderNo:'WZ/PO/2026/4471',buyerOrderDate:d(-18),deliveryNote:`DC/${fy}/001`,dispatchThrough:'By road – MP04 HE 7710',destination:'Pithampur',deliveryTerms:'Door delivery',status:'',refId:'',created:d(-3)},
+    {id:'d5',companyId:co,type:'challan',number:`DC/${fy}/001`,fy,date:d(-3),customerId:'cu1',leadId:'l1',poId:'po1',bankId:'',validTill:'',creditDays:'',items:[it('p1',1,0)],terms:'Material sent for supply against PO.',notes:'',buyerOrderNo:'WZ/PO/2026/4471',buyerOrderDate:d(-18),deliveryNote:'',dispatchThrough:'MP04 HE 7710',destination:'Pithampur',deliveryTerms:'',status:'',refId:'d4',created:d(-3)}
+  ];
+  pos[0].deliveries[0].challanId='d5';
+  const payments=[{id:'pm1',companyId:co,invoiceId:'d3',customerId:'cu2',date:d(-20),amount:200000,tds:0,mode:'NEFT',ref:'UTR HDFCN52026101234',files:[],by:'u_a1'}];
+  const ex=(user,dt,head,lead,amount,desc,status,extra={})=>({id:uid('ex'),companyId:co,userId:user,date:dt,head,leadId:lead,amount,desc,mode:'Self paid',status,files:[],isPetrol:false,...extra});
+  const expenses=[
+    ex('u_s1',d(-12),'Fuel / Petrol','l2',486,'Site survey visit – Satpura Cement','Approved',{isPetrol:true,kmStart:24310,kmEnd:24418,km:108,rate:4.5}),
+    ex('u_s1',d(-12),'Food & Lodging','l2',740,'Lunch with client team','Approved'),
+    ex('u_s2',d(-4),'Travel','l1',1850,'Bus fare Bhopal–Indore return for delivery','Pending'),
+    ex('u_s2',d(-3),'Site Expenses','l1',2200,'Unloading labour at substation','Pending'),
+    ex('u_s1',d(-2),'Courier & Logistics','',350,'Tender documents courier','Approved'),
+    ex('u_a1',d(-1),'Tender Fee / EMD','l1',5900,'Tender document fee','Approved')
+  ];
+  const advances=[
+    {id:'ad1',companyId:co,userId:'u_s2',date:d(-6),amount:10000,purpose:'Pithampur delivery & unloading',head:'Site Expenses',leadId:'l1',needBy:d(-4),status:'Approved',approvedBy:'u_a1',settled:false,files:[]},
+    {id:'ad2',companyId:co,userId:'u_s1',date:d(-1),amount:5000,purpose:'Aurangabad client visit',head:'Travel',leadId:'l3',needBy:d(3),status:'Pending',approvedBy:'',settled:false,files:[]}
+  ];
+  const purchases=[
+    {id:'pu1',companyId:co,date:d(-30),vendor:'Siemens Channel Partner – Bhopal (Sample)',vendorGstin:'23AAACS9999R1Z1',billNo:'SCP/2026/771',taxable:162000,gstAmt:29160,total:191160,head:'Material Purchase',leadId:'l1',status:'Paid',paidOn:d(-15),notes:'ACB 630A + MCCBs',files:[]},
+    {id:'pu2',companyId:co,date:d(-6),vendor:'Polycab Distributor – Indore (Sample)',vendorGstin:'23AAGFP1111K1Z3',billNo:'PD-8812',taxable:96000,gstAmt:17280,total:113280,head:'Material Purchase',leadId:'l2',status:'Unpaid',paidOn:'',notes:'300 sq mm Al cable – 80 m',files:[]}
+  ];
+  const employees=[
+    {id:'e1',companyId:co,userId:'u_s1',name:'Neha Verma',designation:'Sales Engineer',doj:'2023-06-12',pan:'BXXPV1234K',uan:'101234567890',bankAc:'XXXXXX4521',ifsc:'SBIN0001308',basic:22000,hra:8800,special:6200,other:0,pf:true,esi:false,pt:208,tds:0,active:true},
+    {id:'e2',companyId:co,userId:'u_s2',name:'Amit Patel',designation:'Site Engineer',doj:'2024-02-01',pan:'CXXPP5678L',uan:'101234567891',bankAc:'XXXXXX7731',ifsc:'HDFC0000215',basic:12500,hra:5000,special:2500,other:0,pf:true,esi:true,pt:125,tds:0,active:true},
+    {id:'e3',companyId:co,userId:'',name:'Ramesh Yadav',designation:'Office Assistant',doj:'2022-09-15',pan:'',uan:'101234567892',bankAc:'XXXXXX1180',ifsc:'SBIN0001308',basic:9000,hra:3600,special:1400,other:0,pf:true,esi:true,pt:0,tds:0,active:true}
+  ];
+  return {v:1,companies:[c1,c2,c3],users,customers,leads,pos,products,docs,payments,expenses,advances,purchases,employees,payruns:[],files:{}};
+}
+
+/* ================= session / access ================= */
+let me=null, ctx=null; // ctx = active company id
+const ui={view:'dashboard',sel:null,tab:{},f:{},draft:null,menu:false};
+const curCo=()=>S.companies.find(c=>c.id===ctx)||null;
+const C=k=>S[k].filter(x=>x.companyId===ctx);
+const byId=(k,id)=>S[k].find(x=>x.id===id);
+const userName=id=>(byId('users',id)||{}).name||'—';
+const custName=id=>(byId('customers',id)||{}).name||'';
+const isSuper=()=>me&&me.role==='super';
+function can(k){
+  if(!me) return false; if(isSuper()) return true;
+  if(k==='dashboard') return true;
+  const co=curCo(); if(co&&co.modules&&MODULES.some(m=>m.k===k)&&!co.modules.includes(k)) return false;
+  if(me.role==='admin') return true;
+  return (me.perms||[]).includes(k);
+}
+function persistSession(){ls.set('karyalay.session',me?{u:me.id,c:ctx}:null)}
+
+/* ================= files ================= */
+const URLS={};
+async function fileURL(id){if(URLS[id])return URLS[id];const r=await IDB.get('files',id);if(!r||!r.blob)return null;URLS[id]=URL.createObjectURL(r.blob);return URLS[id]}
+function hydrate(root=document){root.querySelectorAll('img[data-fid]:not([src])').forEach(async img=>{const u=await fileURL(img.dataset.fid);if(u)img.src=u;else img.remove()})}
+async function storeFile(f){const id=uid('f');await IDB.put('files',id,{name:f.name||'photo.jpg',type:f.type,size:f.size,blob:f});S.files[id]={name:f.name||('photo-'+T()+'.jpg'),type:f.type||'',size:f.size||0,at:T(),by:me&&me.id};save();return id}
+function fileChip(id,rm=true){const m=S.files[id]||{name:'file'};const isImg=(m.type||'').startsWith('image/');return `<span class="chip file"><button type="button" data-act="viewFile" data-id="${id}" title="${esc(m.name)}">${ic(isImg?'camera':'file')}<span>${esc(m.name)}</span></button>${rm?`<button type="button" class="x" data-act="rmFile" data-id="${id}" aria-label="Remove">×</button>`:''}</span>`}
+function filesList(ids){return ids&&ids.length?`<div class="chips" style="display:flex;flex-wrap:wrap;gap:6px">${ids.map(i=>fileChip(i,false)).join('')}</div>`:'<span class="muted small">No documents</span>'}
+function attachW(name,ids,imagesOnly){ids=ids||[];return `<div class="attach" data-name="${name}"><input type="hidden" name="${name}" data-json value="${esc(JSON.stringify(ids))}"><div class="chips">${ids.map(i=>fileChip(i)).join('')}</div><div class="attach-btns"><label class="btn sm">${ic('upload')} Upload ${imagesOnly?'images':'files'}<input type="file" multiple ${imagesOnly?'accept="image/*"':''} data-upload hidden></label><label class="btn sm">${ic('camera')} Take photo<input type="file" accept="image/*" capture="environment" data-upload hidden></label></div></div>`}
+
+/* ================= downloads / excel ================= */
+let DL;
+async function getDL(){if(DL!==undefined)return DL;try{DL=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){DL=null}return DL}
+async function saveFile(filename,data){const dl=window.claude?await getDL():null;if(!dl){try{const b=data instanceof Blob?data:new Blob([data]);const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('Saved '+filename)}catch(e){toast('Could not save the file.')}return}try{await dl.save({filename,data});toast('Saved '+filename)}catch(e){const c=e&&e.code;if(c==='declined')return;toast(c==='rejected_extension'?'This file type can’t be downloaded here.':c==='rate_limited'?'A download prompt is already open.':'Could not save the file.')}}
+async function xport(name,rows,sheets){
+  if(!window.XLSX){toast('The Excel library didn’t load. Check your internet connection.');return}
+  const wb=XLSX.utils.book_new();
+  const add=(nm,rs)=>{if(!rs.length)rs=[{Note:'No records'}];const ws=XLSX.utils.json_to_sheet(rs);const keys=Object.keys(rs[0]);ws['!cols']=keys.map(k=>({wch:Math.min(48,Math.max(k.length,...rs.map(r=>String(r[k]??'').length))+2)}));XLSX.utils.book_append_sheet(wb,ws,nm.slice(0,31))};
+  if(sheets) sheets.forEach(([n,r])=>add(n,r)); else { if(!rows.length){toast('Nothing to export with these filters.');return} add(name,rows) }
+  const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const co=curCo();await saveFile(`${(co?co.name.split(' ')[0]+'_':'')}${name.replace(/\s+/g,'_')}_${T()}.xlsx`,new Blob([buf]));
+}
+
+/* ================= logo → theme ================= */
+function rgb2hsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0;const l=(mx+mn)/2;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return[h,s,l]}
+function hsl2hex(h,s,l){const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return'#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('')}
+function logoColor(blob){return new Promise(res=>{const url=URL.createObjectURL(blob);const img=new Image();img.onload=()=>{try{const cv=document.createElement('canvas'),s=72;cv.width=s;cv.height=s;const x=cv.getContext('2d');x.drawImage(img,0,0,s,s);const d=x.getImageData(0,0,s,s).data;const bk={};
+  for(let i=0;i<d.length;i+=4){if(d[i+3]<140)continue;const[h,sa,l]=rgb2hsl(d[i],d[i+1],d[i+2]);if(sa<.2||l>.9||l<.08)continue;const k=Math.round(h/12);const o=bk[k]||(bk[k]={w:0,h:0,s:0,l:0});const w=sa*(1-Math.abs(l-.5));o.w+=w;o.h+=h*w;o.s+=sa*w;o.l+=l*w}
+  const best=Object.values(bk).sort((a,b)=>b.w-a.w)[0];if(!best){res(null);return}
+  const h=best.h/best.w,sa=Math.max(.45,Math.min(.85,best.s/best.w)),l=Math.max(.27,Math.min(.4,best.l/best.w));res(hsl2hex(h,sa,l))}catch(e){res(null)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);res(null)};img.src=url})}
+function applyTheme(){const c=curCo();document.documentElement.style.setProperty('--brand',(c&&c.brand)||'#0f6b5c')}
+
+/* ================= UI primitives ================= */
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
+const chip=(t,k='')=>`<span class="chip ${k}">${esc(t)}</span>`;
+const head=(t,sub,acts='')=>`<div class="phead"><div><h1>${t}</h1>${sub?`<p>${sub}</p>`:''}</div><div class="pacts">${acts}</div></div>`;
+const btn=(label,act,data={},cls='',icon='')=>`<button type="button" class="btn ${cls}" data-act="${act}" ${Object.entries(data).map(([k,v])=>`data-${k}="${esc(v)}"`).join(' ')}>${icon?ic(icon):''}${label}</button>`;
+const xbtn=(name)=>btn('Export to Excel','export',{x:name},'','xls');
+function table(cols,rows,{empty='Nothing here yet.',click=null,foot=null}={}){
+  if(!rows.length) return `<div class="empty">${empty}</div>`;
+  return `<div class="tbl-wrap"><table class="tbl cards"><thead><tr>${cols.map(c=>`<th class="${c.c||''}">${c.h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>{const cl=click?click(r):null;return `<tr ${cl?`class="click" data-act="open" data-v="${cl[0]}" data-id="${cl[1]}"`:''}>${cols.map(c=>`<td class="${c.c||''}" data-label="${esc(c.h.replace(/<[^>]+>/g,''))}">${c.v(r)}</td>`).join('')}</tr>`}).join('')}</tbody>${foot?`<tfoot><tr>${foot.map((f,i)=>`<td class="${(cols[i]||{}).c||''}" data-label="${esc((cols[i]||{h:''}).h)}">${f}</td>`).join('')}</tr></tfoot>`:''}</table></div>`;
+}
+const gf=(v,k)=>((ui.f[v]||{})[k])??'';
+function filters(v,items){return `<div class="filters">${items.map(it=>{const id=`flt_${v}_${it.k}`;const val=gf(v,it.k);
+  if(it.t==='search')return `<input type="search" id="${id}" data-f="${v}|${it.k}" placeholder="${esc(it.ph||'Search')}" value="${esc(val)}">`;
+  if(it.t==='date')return `<label>${esc(it.l)}<input type="date" id="${id}" data-f="${v}|${it.k}" value="${esc(val)}"></label>`;
+  return `<select id="${id}" data-f="${v}|${it.k}" aria-label="${esc(it.l)}"><option value="">${esc(it.l)}: All</option>${it.o.map(([a,b])=>`<option value="${esc(a)}" ${String(val)===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select>`}).join('')}</div>`}
+const match=(q,...xs)=>!q||xs.join(' ').toLowerCase().includes(String(q).toLowerCase());
+function tabs(v,list){const cur=ui.tab[v]||list[0][0];return `<div class="tabs">${list.map(([k,l])=>`<button type="button" class="tab ${cur===k?'on':''}" data-act="tab" data-v="${v}" data-k="${k}">${l}</button>`).join('')}</div>`}
+const curTab=(v,d)=>ui.tab[v]||d;
+
+/* form builder */
+function field(f,v){
+  if(f.t==='sec') return `<div class="fsec">${esc(f.l)}</div>`;
+  if(f.t==='html') return f.html;
+  const id='f_'+f.k, req=f.req?'required':'', val=v??f.def??'';
+  if(f.t==='check') return `<label class="chk ${f.span?'field span':''}"><input type="checkbox" id="${id}" name="${f.k}" ${val===true||val==='true'?'checked':''}> ${esc(f.l)}</label>`;
+  if(f.t==='files') return `<div class="field span"><span>${esc(f.l)}</span>${attachW(f.k,v,f.images)}${f.hint?`<small>${f.hint}</small>`:''}</div>`;
+  let inp;
+  if(f.t==='select') inp=`<select id="${id}" name="${f.k}" ${req} ${f.chg?`data-fchg="${f.chg}"`:''}>${f.blank===false?'':`<option value="">${esc(f.ph||'— Select —')}</option>`}${f.o.map(([a,b])=>`<option value="${esc(a)}" ${String(val)===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select>`;
+  else if(f.t==='textarea') inp=`<textarea id="${id}" name="${f.k}" ${req} placeholder="${esc(f.ph||'')}">${esc(val)}</textarea>`;
+  else inp=`<input id="${id}" name="${f.k}" type="${f.t||'text'}" ${f.t==='number'?'step="any"':''} value="${esc(val)}" ${req} placeholder="${esc(f.ph||'')}" ${f.ro?'readonly':''} ${f.chg?`data-fchg="${f.chg}"`:''}>`;
+  return `<label class="field ${f.span?'span':''}"><span>${esc(f.l)}${f.req?' *':''}</span>${inp}${f.hint?`<small>${f.hint}</small>`:''}</label>`;
+}
+const form=(spec,o={})=>`<div class="fgrid">${spec.map(f=>field(f,o[f.k])).join('')}</div>`;
+function formObj(fm){const o={};for(const el of fm.elements){if(!el.name||el.disabled)continue;let n=el.name;const arr=n.endsWith('[]');if(arr)n=n.slice(0,-2);let v;
+  if(el.type==='checkbox'){if(el.dataset.multi!==undefined){o[n]=o[n]||[];if(el.checked)o[n].push(el.value);continue}v=el.checked}
+  else if(el.type==='file')continue;
+  else if(el.dataset.json!==undefined){try{v=JSON.parse(el.value||'[]')}catch(e){v=[]}}
+  else if(el.type==='number')v=el.value===''?'':parseFloat(el.value);
+  else v=typeof el.value==='string'?el.value.trim():el.value;
+  if(arr)(o[n]=o[n]||[]).push(v);else o[n]=v}return o}
+
+/* modal */
+let MSUB=null;
+function modal(title,body,{wide=false,submit=null,label='Save',foot=''}={}){
+  const m=$('#modal');MSUB=submit;
+  m.innerHTML=`<div class="mback" data-act="closeModal"></div><div class="mbox ${wide?'wide':''}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button type="button" class="iconbtn" data-act="closeModal" aria-label="Close">${ic('x')}</button></header>
+  ${submit?`<form id="mform" novalidate><div class="mbody">${body}</div><div class="mfoot">${foot}<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn pri">${esc(label)}</button></div></form>`:`<div class="mbody">${body}</div>${foot?`<div class="mfoot">${foot}</div>`:''}`}</div>`;
+  m.hidden=false;hydrate(m);const f=m.querySelector('input:not([type=hidden]):not([type=file]),select,textarea');if(f&&window.innerWidth>700)setTimeout(()=>f.focus(),30);
+}
+function closeModal(){$('#modal').hidden=true;$('#modal').innerHTML='';MSUB=null}
+
+/* ================= business helpers ================= */
+function custState(cu){return cu?(cu.gstin?cu.gstin.slice(0,2):cu.stateCode||''):''}
+function calc(doc){
+  const co=byId('companies',doc.companyId)||curCo(), cu=byId('customers',doc.customerId);
+  const cs=custState(cu), intra=!cs||cs===(co.gstin||'').slice(0,2)||cs===co.stateCode;
+  let taxable=0,tax=0,qty=0;const hs={};
+  const lines=(doc.items||[]).map(it=>{const amt=r2((+it.qty||0)*(+it.rate||0)*(1-(+it.disc||0)/100));const t=r2(amt*(+it.gst||0)/100);taxable+=amt;tax+=t;qty+=(+it.qty||0);const k=(it.hsn||'—')+'|'+(+it.gst||0);const h=hs[k]||(hs[k]={hsn:it.hsn||'—',rate:+it.gst||0,taxable:0,tax:0});h.taxable+=amt;h.tax+=t;return{...it,amt,tax:t}});
+  taxable=r2(taxable);tax=r2(tax);const gross=r2(taxable+tax),total=Math.round(gross);
+  return{lines,taxable,tax,qty,intra,cgst:intra?r2(tax/2):0,sgst:intra?r2(tax-r2(tax/2)):0,igst:intra?0:tax,round:r2(total-gross),total,hsn:Object.values(hs)};
+}
+const docTotal=d=>calc(d).total;
+const dueDate=d=>addDays(d.date,+d.creditDays||0);
+function received(inv){return r2(sum(S.payments.filter(p=>p.invoiceId===inv.id),p=>(+p.amount||0)+(+p.tds||0)))}
+function outstanding(inv){return r2(docTotal(inv)-received(inv))}
+function payStatus(inv){const o=outstanding(inv),tot=docTotal(inv);if(o<=0.5)return['Paid','ok'];const od=dBetween(dueDate(inv),T());if(od>0)return[`Overdue ${od}d`,'bad'];if(od>=-7)return[od===0?'Due today':`Due in ${-od}d`,'warn'];return[o<tot?'Part paid':'Not due','info']}
+function leadExpenses(lid){return C('expenses').filter(e=>e.leadId===lid&&e.status!=='Rejected')}
+function custLeads(cid){return C('leads').filter(l=>l.customerId===cid)}
+function waLink(phone,text){const d=String(phone||'').replace(/\D/g,'');if(d.length<10)return'';const n=d.length===10?'91'+d:d;return `https://wa.me/${n}?text=${encodeURIComponent(text)}`}
+function leadName(l){return l?(l.title+(l.customerId?' · '+custName(l.customerId):l.company?' · '+l.company:'')):''}
+function visibleLeads(){const ls=C('leads');return can('alllead')||me.role!=='user'?ls:ls.filter(l=>l.owner===me.id)}
+const custOpts=()=>C('customers').map(c=>[c.id,c.name]);
+const leadOpts=()=>C('leads').filter(l=>l.stage!=='Lost').map(l=>[l.id,leadName(l)]);
+const userOpts=()=>S.users.filter(u=>u.companyId===ctx&&u.active).map(u=>[u.id,u.name]);
+const headOpts=()=>(curCo().heads||DEF_HEADS).map(h=>[h,h]);
+
+function payRemText(inv){const cu=byId('customers',inv.customerId)||{};const co=curCo();return `Dear ${cu.contact||'Sir/Madam'},\n\nThis is a gentle reminder that invoice ${inv.number} dated ${fd(inv.date)} for ${inr(docTotal(inv))} has an outstanding balance of ${inr(outstanding(inv))}, due on ${fd(dueDate(inv))}.\n\nKindly arrange the payment at the earliest. Please ignore if already paid.\n\nRegards,\n${me.name}\n${co.name}`}
+function fuText(l){const co=curCo();return `Hello ${l.contact||''}, this is ${me.name} from ${co.name}. Following up on "${l.title}". Could we speak today at a time that suits you?`}
+
+/* ================= reminders engine ================= */
+function reminders(){
+  const out=[],t=T();
+  if(can('pos')||can('pbg')) C('pos').forEach(p=>{
+    const g=p.pbg||{};
+    if(p.pbgRequired&&g.status==='Active'&&g.expiryDate){const dl=dBetween(t,g.expiryDate);const rd=+g.reminderDays||30;
+      if(dl<=rd) out.push({sev:dl<=7?'bad':'warn',kind:'PBG',days:dl,title:`PBG ${g.number||''} ${dl<0?'expired':'expires'} ${dl<0?Math.abs(dl)+' days ago':dl===0?'today':'in '+dl+' days'}`,sub:`${g.format} · ${inr(g.amount)} · ${g.bank||''} · PO ${p.poNo} · ${custName(p.customerId)}`,open:['po',p.id]})}
+    if(p.pbgRequired&&g.status==='Active'&&g.claimDate){const dl=dBetween(t,g.claimDate);if(dl>=0&&dl<=15&&dBetween(t,g.expiryDate)<0) out.push({sev:'warn',kind:'PBG',days:dl,title:`PBG claim period ends in ${dl} days`,sub:`PO ${p.poNo} · request release from ${custName(p.customerId)}`,open:['po',p.id]})}
+    if(p.status!=='Delivered'&&p.status!=='Closed'&&p.deliveryDue){const dl=dBetween(t,p.deliveryDue);if(dl<=10) out.push({sev:dl<0?'bad':'warn',kind:'Delivery',days:dl,title:dl<0?`Delivery overdue by ${-dl} days`:`Delivery due ${dl===0?'today':'in '+dl+' days'}`,sub:`PO ${p.poNo} · ${custName(p.customerId)}${p.ldClause?' · LD '+p.ldClause:''}`,open:['po',p.id]})}
+  });
+  if(can('payments')||can('invoice')) C('docs').filter(d=>d.type==='invoice').forEach(inv=>{const o=outstanding(inv);if(o<=0.5)return;const dl=dBetween(t,dueDate(inv));if(dl<=7){const cu=byId('customers',inv.customerId)||{};out.push({sev:dl<0?'bad':'warn',kind:'Payment',days:dl,title:`${inr(o)} ${dl<0?'overdue by '+(-dl)+' days':dl===0?'due today':'due in '+dl+' days'}`,sub:`${inv.number} · ${cu.name||''}`,open:['payments',''],wa:waLink(cu.phone,payRemText(inv)),copy:payRemText(inv),pay:inv.id})}});
+  if(can('leads')) visibleLeads().forEach(l=>{if(!l.nextFollowUp||['Won','Lost'].includes(l.stage))return;const dl=dBetween(t,l.nextFollowUp);if(dl<=1)out.push({sev:dl<0?'bad':dl===0?'warn':'info',kind:'Follow-up',days:dl,title:l.title,sub:`${l.contact||''} ${l.phone?'· '+l.phone:''} · ${dl<0?'missed by '+(-dl)+'d':dl===0?'today':'tomorrow'} · ${userName(l.owner)}`,open:['lead',l.id],wa:waLink(l.phone,fuText(l)),fu:l.id})});
+  if(can('approve')){const pe=C('expenses').filter(e=>e.status==='Pending'),pa=C('advances').filter(a=>a.status==='Pending');
+    if(pe.length)out.push({sev:'info',kind:'Approval',days:0,title:`${pe.length} expense claim${pe.length>1?'s':''} waiting for approval`,sub:inr(sum(pe,'amount'))+' in total',open:['expenses','']});
+    if(pa.length)out.push({sev:'info',kind:'Approval',days:0,title:`${pa.length} advance request${pa.length>1?'s':''} waiting for approval`,sub:inr(sum(pa,'amount'))+' requested',open:['advances','']})}
+  const rank={bad:0,warn:1,info:2};return out.sort((a,b)=>rank[a.sev]-rank[b.sev]||a.days-b.days);
+}
+
+/* ================= shell ================= */
+function render(){
+  const a=document.activeElement,fid=a&&a.id,pos=a&&a.selectionStart;
+  $('#app').innerHTML=me?shell():loginView();applyTheme();hydrate();
+  if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();try{if(pos!=null&&el.setSelectionRange)el.setSelectionRange(pos,pos)}catch(e){}}}
+}
+function go(view,sel=null){ui.view=view;ui.sel=sel;ui.menu=false;render();window.scrollTo(0,0)}
+function shell(){
+  const co=curCo();const rc=co?reminders().filter(r=>r.sev!=='info').length:0;
+  let nav='';
+  if(isSuper()){nav+=`<div class="navg">Group</div>`+navBtn('companies','All companies','building')+navBtn('allusers','All users','users')}
+  if(co){let g='';MODULES.forEach(m=>{if(!can(m.k))return;if(m.g!==g){g=m.g;nav+=`<div class="navg">${g}</div>`}nav+=navBtn(m.k,m.l,m.i,m.k==='dashboard'&&rc?rc:0)})}
+  const logo=co?(co.logo?`<img data-fid="${co.logo}" alt="">`:initials(co.name)):initials('Group');
+  const fy=co?fyOf(T(),co.fyStart||4).full:'';
+  const coSwitch=isSuper()&&co?`<select class="inp" style="margin:0 6px 8px;width:auto;background:transparent;color:inherit;border-color:rgb(255 255 255 / .15)" data-chg="switchCo" aria-label="Switch company">${S.companies.map(c=>`<option value="${c.id}" ${c.id===ctx?'selected':''} style="color:#111">${esc(c.name)}</option>`).join('')}</select>`:'';
+  return `<div class="shell"><aside class="side ${ui.menu?'open':''}">
+    <div class="brandblk"><div class="brandlogo">${logo}</div><div style="min-width:0"><div class="brandname">${esc(co?co.name:'Karyalay Portal')}</div><div class="brandsub">${co?esc(co.city||'')+' · FY '+fy:'Super admin'}</div></div></div>
+    ${coSwitch}${nav}
+    <div class="sidefoot"><div class="avatar">${initials(me.name)}</div><div class="who"><b>${esc(me.name)}</b><span>${me.role==='super'?'Super admin':me.role==='admin'?'Company admin':esc(me.designation||'Employee')}</span></div><button class="iconbtn" data-act="logout" title="Sign out" aria-label="Sign out">${ic('logout')}</button></div>
+  </aside><div class="scrim ${ui.menu?'open':''}" data-act="menu"></div>
+  <div style="min-width:0"><header class="topbar"><button class="iconbtn menubtn" data-act="menu" aria-label="Menu">${ic('menu')}</button>
+    <div class="crumb">${esc(viewTitle())}${co?` <small>· ${esc(co.name)}</small>`:''}</div><div class="sp"></div>
+    ${co?`<span class="fyTag">FY ${fy}</span><button class="iconbtn bell" data-act="nav" data-v="dashboard" aria-label="Reminders">${ic('bell')}${rc?`<b>${rc}</b>`:''}</button>`:''}
+  </header><main class="main">${viewHTML()}</main></div></div>`;
+}
+const navBtn=(k,l,i,badge)=>`<button class="nav ${ui.view===k||(VIEW_PARENT[ui.view]===k)||(ui.view==='docedit'&&ui.draft&&ui.draft.type===k)?'on':''}" data-act="nav" data-v="${k}">${ic(i)}<span>${esc(l)}</span>${badge?`<span class="badge">${badge}</span>`:''}</button>`;
+const VIEW_PARENT={lead:'leads',customer:'customers',po:'pos'};
+function viewTitle(){const m=MODULES.find(m=>m.k===ui.view);if(m)return m.l;return{lead:'Lead',customer:'Customer',po:'Purchase Order',docedit:ui.draft?DOCT[ui.draft.type].label:'Document',companies:'All companies',allusers:'All users'}[ui.view]||''}
+function viewHTML(){
+  const v=ui.view;
+  if(v==='companies'||v==='allusers'){if(!isSuper())return noAccess();return v==='companies'?vCompanies():vAllUsers()}
+  if(!curCo())return isSuper()?vCompanies():noAccess();
+  const base=VIEW_PARENT[v]||(v==='docedit'?ui.draft&&ui.draft.type:v);
+  if(!can(base))return noAccess();
+  const fn={dashboard:vDash,leads:vLeads,lead:vLead,customers:vCustomers,customer:vCustomer,pos:vPos,po:vPo,pbg:vPbg,quotation:vDocs,pi:vDocs,invoice:vDocs,challan:vDocs,docedit:vDocEdit,payments:vPayments,expenses:vExpenses,advances:vAdvances,purchases:vPurchases,payroll:vPayroll,products:vProducts,reports:vReports,settings:vSettings,users:vUsers}[v];
+  return fn?fn():noAccess();
+}
+const noAccess=()=>`<div class="empty">You don’t have access to this section. Ask your company admin to enable it for your account.</div>`;
+
+/* ================= login ================= */
+function loginView(){
+  return `<div class="login"><div class="art"><div><div class="brandsub" style="color:var(--side-muted)">Karyalay Portal</div><h1 style="margin-top:14px">One office for all.</h1><p>Leads, purchase orders, bank guarantees, invoices, collections, expenses and payroll, with reminders that come to you before deadlines slip.</p></div>
+  <div class="ledger"><span>PBG</span><b>0391BG2026000118</b><span>expires in 12d</span><span>INV</span><b>Satpura Cement</b><span>overdue</span><span>Lead</span><b>LT revamp</b><span>follow up today</span></div></div>
+  <div class="frm"><form id="loginForm"><div><h2 style="font-size:1.4rem">Sign in</h2><p class="muted" style="margin-top:4px">Use your work email and password.</p></div>
+  <label class="field"><span>Email</span><input id="lg_email" name="email" type="email" autocomplete="username" required></label>
+  <label class="field"><span>Password</span><input id="lg_pw" name="password" type="password" autocomplete="current-password" required></label>
+  <p id="lg_err" class="small" style="color:var(--bad)" hidden></p>
+  <button class="btn pri" type="submit" style="justify-content:center;padding:10px">Sign in</button>
+  <div class="demo"><span class="small muted">Example accounts in this prototype (tap to fill):</span>
+  ${[['super@portal.in','super123','Super admin · all companies'],['admin@narmada.in','admin123','Company admin · Narmada'],['sales@narmada.in','user123','Employee · limited access']].map(([e,p,l])=>`<button type="button" data-act="demoFill" data-e="${e}" data-p="${p}"><span>${l}</span><span class="mono muted">${e}</span></button>`).join('')}</div>
+  <button type="button" class="btn ghost sm" data-act="resetDemo" style="align-self:flex-start">Reset example data</button>
+  </form></div></div>`;
+}
+
+/* ================= dashboard ================= */
+function vDash(){
+  const rem=reminders();const t=T();
+  const open=visibleLeads().filter(l=>!['Won','Lost'].includes(l.stage));
+  const invs=C('docs').filter(d=>d.type==='invoice');
+  const outs=invs.map(d=>({d,o:outstanding(d)})).filter(x=>x.o>0.5);
+  const overdue=outs.filter(x=>dBetween(dueDate(x.d),t)>0);
+  const pbgs=C('pos').filter(p=>p.pbgRequired&&p.pbg.status==='Active');
+  const mtd=invs.filter(d=>d.date.slice(0,7)===t.slice(0,7));
+  const stats=[];
+  if(can('leads'))stats.push(`<div class="stat"><span>Open pipeline</span><b>${inr0(sum(open,'value'))}</b><small>${open.length} active leads</small></div>`);
+  if(can('payments')||can('invoice')){stats.push(`<div class="stat"><span>Receivables</span><b>${inr0(sum(outs,'o'))}</b><small>${outs.length} invoices open</small></div>`);stats.push(`<div class="stat ${overdue.length?'bad':''}"><span>Overdue</span><b>${inr0(sum(overdue,'o'))}</b><small>${overdue.length} invoices past due</small></div>`);stats.push(`<div class="stat"><span>Invoiced this month</span><b>${inr0(sum(mtd,docTotal))}</b><small>${mtd.length} invoices</small></div>`)}
+  if(can('pbg'))stats.push(`<div class="stat"><span>Active PBGs</span><b>${inr0(sum(pbgs,p=>p.pbg.amount))}</b><small>${pbgs.length} guarantees</small></div>`);
+  if(!can('payments')&&can('expenses')){const mine=C('expenses').filter(e=>e.userId===me.id);stats.push(`<div class="stat"><span>My claims pending</span><b>${inr0(sum(mine.filter(e=>e.status==='Pending'),'amount'))}</b><small>${mine.filter(e=>e.status==='Pending').length} claims</small></div>`)}
+  const remHTML=rem.length?`<div class="rems">${rem.map(r=>`<div class="rem ${r.sev}"><div class="bar"></div><div style="min-width:0"><div>${chip(r.kind,r.sev==='bad'?'bad':r.sev==='warn'?'warn':'info')} <span class="t">${esc(r.title)}</span></div><div class="s">${esc(r.sub)}</div></div><div class="a">
+    ${r.wa?`<a class="btn sm" href="${r.wa}" target="_blank" rel="noopener">${ic('msg')}WhatsApp</a>`:''}${r.copy?btn('Copy text','copyRem',{t:r.copy},'sm','copy'):''}${r.pay?btn('Record payment','addPayment',{inv:r.pay},'sm','rupee'):''}${r.fu?btn('Log follow-up','addFollow',{id:r.fu},'sm','check'):''}${btn('Open','open',{v:r.open[0],id:r.open[1]},'sm')}</div></div>`).join('')}</div>`:`<div class="empty">No reminders right now. PBG expiries, payment dues, deliveries and follow-ups will appear here.</div>`;
+  let pipe='';
+  if(can('leads')){const mx=Math.max(1,...STAGES.map(s=>sum(visibleLeads().filter(l=>l.stage===s),'value')));pipe=`<div class="card"><div class="ch"><h2>Pipeline by stage</h2>${btn('Open board','nav',{v:'leads'},'sm ghost')}</div><div class="bars">${STAGES.map(s=>{const ls=visibleLeads().filter(l=>l.stage===s);const v=sum(ls,'value');return `<div class="barrow"><span>${s} <span class="muted">(${ls.length})</span></span><div class="track"><div class="fill" style="width:${v/mx*100}%;${s==='Lost'?'background:var(--muted)':''}"></div></div><span class="v">${inr0(v)}</span></div>`}).join('')}</div></div>`}
+  let recent='';
+  if(can('invoice')){const rs=C('docs').filter(d=>d.type==='invoice').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);recent=`<div class="card"><div class="ch"><h2>Latest invoices</h2>${btn('All invoices','nav',{v:'invoice'},'sm ghost')}</div>${table([{h:'No.',v:d=>`<span class="mono">${esc(d.number)}</span>`},{h:'Customer',v:d=>esc(custName(d.customerId))},{h:'Amount',c:'r',v:d=>inr(docTotal(d))},{h:'Status',v:d=>{const[s,k]=payStatus(d);return chip(s,k)}}],rs,{empty:'No invoices yet.'})}</div>`}
+  const quick=[can('leads')&&btn('New lead','addLead',{},'pri','plus'),can('expenses')&&btn('Add expense','addExpense',{},'','wallet'),can('invoice')&&btn('New invoice','newDoc',{t:'invoice'},'','doc')].filter(Boolean).join('');
+  return head(`Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, ${esc(me.name.split(' ')[0])}`,`${fd(t)} · ${rem.filter(r=>r.sev!=='info').length} items need attention`,quick)
+   +(stats.length?`<div class="stats">${stats.join('')}</div>`:'')
+   +`<div class="card"><div class="ch"><h2>Reminders</h2><span class="muted small">PBG, payments, deliveries, follow-ups, approvals</span></div>${remHTML}</div>`
+   +`<div class="grid2">${pipe}${recent}</div>`;
+}
+
+/* ================= leads ================= */
+function vLeads(){
+  const mode=curTab('leads','board');const q=gf('leads','q'),own=gf('leads','owner'),src=gf('leads','src');
+  const rows=visibleLeads().filter(l=>match(q,l.title,custName(l.customerId),l.company,l.contact,l.phone)&&(!own||l.owner===own)&&(!src||l.source===src));
+  let body;
+  if(mode==='board'){body=`<div class="board">${STAGES.map(st=>{const ls=rows.filter(l=>l.stage===st);return `<section class="col"><header>${st} <span>${ls.length}</span><b>${inr0(sum(ls,'value'))}</b></header>${ls.map(l=>{const dl=l.nextFollowUp?dBetween(T(),l.nextFollowUp):null;return `<article class="lcard" data-act="open" data-v="lead" data-id="${l.id}"><div class="t">${esc(l.title)}</div><div class="muted small">${esc(custName(l.customerId)||l.company||'')}</div><div class="row"><span class="mono">${inr0(l.value)}</span>${dl!=null&&!['Won','Lost'].includes(l.stage)?chip(dl<0?`Missed ${-dl}d`:dl===0?'Today':fd(l.nextFollowUp),dl<0?'bad':dl===0?'warn':''):''}</div><div class="row"><span class="small muted">${esc(userName(l.owner))}</span><select data-chg="stage" data-id="${l.id}" aria-label="Stage">${STAGES.map(s=>`<option ${s===l.stage?'selected':''}>${s}</option>`).join('')}</select></div></article>`}).join('')}</section>`}).join('')}</div>`}
+  else body=table([{h:'Lead',v:l=>`<b>${esc(l.title)}</b><div class="muted small">${esc(custName(l.customerId)||l.company||'')}</div>`},{h:'Source',v:l=>esc(l.source)},{h:'Stage',v:l=>chip(l.stage,l.stage==='Won'?'ok':l.stage==='Lost'?'':'acc')},{h:'Owner',v:l=>esc(userName(l.owner))},{h:'Next follow-up',v:l=>l.nextFollowUp?fd(l.nextFollowUp):'—'},{h:'Expenses',c:'r',v:l=>inr0(sum(leadExpenses(l.id),'amount'))},{h:'Value',c:'r',v:l=>inr0(l.value)}],rows,{click:l=>['lead',l.id],empty:'No leads match these filters.'});
+  return head('Leads & CRM','Capture enquiries, track every follow-up and turn them into quotations.',`${xbtn('leads')}${btn('New lead','addLead',{},'pri','plus')}`)
+   +`<div class="ch">${tabs('leads',[['board','Board'],['list','List']])}${filters('leads',[{k:'q',t:'search',ph:'Search lead, customer, phone'},{k:'owner',l:'Owner',o:userOpts()},{k:'src',l:'Source',o:SOURCES.map(s=>[s,s])}])}</div>`+body;
+}
+function leadForm(l={}){
+  return form([
+    {t:'sec',l:'Enquiry'},{k:'title',l:'Lead title',req:true,ph:'e.g. APFC panel for cold storage',span:true},
+    {k:'customerId',l:'Existing customer',t:'select',o:custOpts(),ph:'— New / not yet a customer —'},{k:'company',l:'Company name (if new)'},
+    {k:'contact',l:'Contact person'},{k:'phone',l:'Mobile',t:'tel'},{k:'email',l:'Email',t:'email'},
+    {k:'source',l:'Lead source',t:'select',o:SOURCES.map(s=>[s,s]),def:'Phone call'},
+    {k:'value',l:'Expected value (₹)',t:'number'},{k:'stage',l:'Stage',t:'select',o:STAGES.map(s=>[s,s]),blank:false,def:'New'},
+    {k:'owner',l:'Assigned to',t:'select',o:userOpts(),blank:false,def:me.id},{k:'nextFollowUp',l:'Next follow-up',t:'date',def:addDays(T(),1)},{k:'expectedClose',l:'Expected closing',t:'date'},
+    {t:'html',html:`<div class="field span"><span>Products / solutions of interest <small>(used to auto-build the quotation)</small></span><div class="permgrid">${C('products').map(p=>`<label class="chk"><input type="checkbox" name="interest" value="${p.id}" data-multi ${(l.interest||[]).includes(p.id)?'checked':''}>${esc(p.name)}</label>`).join('')||'<span class="muted small">Add products in Products & Solutions first.</span>'}</div></div>`},
+    {k:'notes',l:'Notes',t:'textarea',span:true},{k:'files',l:'Enquiry documents (drawings, BOQ, tender)',t:'files'}
+  ],l);
+}
+function saveLead(o,id){
+  if(!o.title){toast('Enter a lead title.');return false}
+  o.value=+o.value||0;o.interest=o.interest||[];
+  if(id){Object.assign(byId('leads',id),o)}else{S.leads.push({id:uid('l'),companyId:ctx,followups:[],created:T(),...o})}
+  save();render();toast(id?'Lead updated':'Lead added');
+}
+function vLead(){
+  const l=byId('leads',ui.sel);if(!l)return noAccess();
+  const cu=byId('customers',l.customerId);const ex=leadExpenses(l.id);const docs=C('docs').filter(d=>d.leadId===l.id);const pos=C('pos').filter(p=>p.leadId===l.id);
+  const wa=waLink(l.phone,fuText(l));
+  return `<div>${btn('All leads','nav',{v:'leads'},'ghost sm','back')}</div>`+head(esc(l.title),`${esc(cu?cu.name:l.company||'')} · created ${fd(l.created)}`,
+    `<select class="inp" style="width:auto" data-chg="stage" data-id="${l.id}" aria-label="Stage">${STAGES.map(s=>`<option ${s===l.stage?'selected':''}>${s}</option>`).join('')}</select>${btn('Edit','editLead',{id:l.id},'','edit')}${can('quotation')?btn('Generate quotation','quoteFromLead',{id:l.id},'pri','doc'):''}`)
+   +`<div class="grid3"><div class="stat"><span>Expected value</span><b>${inr0(l.value)}</b></div><div class="stat"><span>Expenses on this lead</span><b>${inr0(sum(ex,'amount'))}</b><small>${ex.length} entries</small></div><div class="stat"><span>Next follow-up</span><b style="font-size:1.05rem">${l.nextFollowUp?fd(l.nextFollowUp):'—'}</b><small>Owner: ${esc(userName(l.owner))}</small></div></div>`
+   +`<div class="grid2"><div class="card"><h2>Details</h2><dl class="kv"><dt>Contact</dt><dd>${esc(l.contact||'—')}</dd><dt>Mobile</dt><dd>${l.phone?`<span class="mono">${esc(l.phone)}</span> ${wa?`<a class="btn sm" href="${wa}" target="_blank" rel="noopener">${ic('msg')}WhatsApp</a>`:''}`:'—'}</dd><dt>Email</dt><dd>${esc(l.email||'—')}</dd><dt>Source</dt><dd>${esc(l.source)}</dd><dt>Expected close</dt><dd>${fd(l.expectedClose)}</dd><dt>Interested in</dt><dd>${(l.interest||[]).map(i=>esc((byId('products',i)||{}).name||'')).filter(Boolean).join(', ')||'—'}</dd><dt>Notes</dt><dd>${esc(l.notes||'—')}</dd><dt>Documents</dt><dd>${filesList(l.files)}</dd></dl></div>
+   <div class="card"><div class="ch"><h2>Follow-ups</h2>${btn('Log follow-up','addFollow',{id:l.id},'sm pri','plus')}</div>${(l.followups||[]).length?`<div class="tl">${l.followups.slice().reverse().map(f=>`<div class="tli"><div class="dot"></div><div><div>${esc(f.note)}</div><div class="m">${fd(f.date)} · ${esc(userName(f.by))}${f.mode?' · '+esc(f.mode):''}</div></div></div>`).join('')}</div>`:'<div class="empty">No follow-ups logged yet.</div>'}</div></div>`
+   +`<div class="card"><div class="ch"><h2>Quotations, PIs & invoices</h2></div>${table([{h:'Type',v:d=>esc(DOCT[d.type].label)},{h:'No.',v:d=>`<span class="mono">${esc(d.number)}</span>`},{h:'Date',v:d=>fd(d.date)},{h:'Amount',c:'r',v:d=>inr(docTotal(d))},{h:'',c:'r',v:d=>`<div class="acts">${btn('View','viewDoc',{id:d.id},'sm','eye')}</div>`}],docs,{empty:'Nothing issued against this lead yet.'})}</div>`
+   +(pos.length?`<div class="card"><h2>Purchase orders</h2>${table([{h:'PO No.',v:p=>esc(p.poNo)},{h:'Date',v:p=>fd(p.poDate)},{h:'Value',c:'r',v:p=>inr0(p.value)},{h:'Status',v:p=>chip(p.status,'acc')}],pos,{click:p=>['po',p.id]})}</div>`:'')
+   +`<div class="card"><div class="ch"><h2>Expenses against this lead</h2><div class="pacts">${btn('Add expense','addExpense',{lead:l.id},'sm','plus')}</div></div>${expTable(ex,true)}</div>`;
+}
+
+/* ================= customers ================= */
+function custForm(c={}){return form([{k:'name',l:'Customer / company name',req:true,span:true},{k:'contact',l:'Contact person'},{k:'phone',l:'Mobile',t:'tel'},{k:'email',l:'Email',t:'email'},{k:'gstin',l:'GSTIN',ph:'15-character GSTIN'},{k:'pan',l:'PAN'},{k:'stateCode',l:'State',t:'select',o:STATES.map(([a,b])=>[a,b+' ('+a+')']),def:'23'},{k:'creditDays',l:'Credit period (days)',t:'number',def:30},{k:'address',l:'Billing address',t:'textarea',span:true},{k:'shipTo',l:'Shipping address (if different)',t:'textarea',span:true}],c)}
+function saveCust(o,id){if(!o.name){toast('Enter the customer name.');return false}o.gstin=(o.gstin||'').toUpperCase();if(o.gstin&&o.gstin.length>=2)o.stateCode=o.gstin.slice(0,2);if(id)Object.assign(byId('customers',id),o);else S.customers.push({id:uid('cu'),companyId:ctx,...o});save();render();toast('Customer saved')}
+function custStats(c){const inv=C('docs').filter(d=>d.type==='invoice'&&d.customerId===c.id);const billed=sum(inv,docTotal),rec=sum(inv,received);const lids=custLeads(c.id).map(l=>l.id);const ex=C('expenses').filter(e=>e.status!=='Rejected'&&(lids.includes(e.leadId)||e.customerId===c.id));return{inv,billed,rec,out:billed-rec,ex}}
+function vCustomers(){const q=gf('customers','q');const rows=C('customers').filter(c=>match(q,c.name,c.contact,c.gstin,c.phone));
+  return head('Customers','Every customer with billing, collections and the expense spent to win and serve them.',`${xbtn('customers')}${btn('New customer','addCust',{},'pri','plus')}`)+filters('customers',[{k:'q',t:'search',ph:'Search name, GSTIN, phone'}])
+   +table([{h:'Customer',v:c=>`<b>${esc(c.name)}</b><div class="muted small">${esc(c.contact||'')} ${c.phone?'· '+esc(c.phone):''}</div>`},{h:'GSTIN',v:c=>`<span class="mono">${esc(c.gstin||'—')}</span>`},{h:'State',v:c=>esc(stateName(c.stateCode))},{h:'Billed',c:'r',v:c=>inr0(custStats(c).billed)},{h:'Outstanding',c:'r',v:c=>inr0(custStats(c).out)},{h:'Expenses',c:'r',v:c=>inr0(sum(custStats(c).ex,'amount'))}],rows,{click:c=>['customer',c.id],empty:'No customers yet.'})}
+function vCustomer(){const c=byId('customers',ui.sel);if(!c)return noAccess();const st=custStats(c);const ls=custLeads(c.id);
+  return `<div>${btn('All customers','nav',{v:'customers'},'ghost sm','back')}</div>`+head(esc(c.name),`${esc(c.contact||'')} ${c.phone?'· '+esc(c.phone):''}`,`${btn('Edit','editCust',{id:c.id},'','edit')}${btn('Add expense','addExpense',{cust:c.id},'','wallet')}${can('invoice')?btn('New invoice','newDoc',{t:'invoice',cust:c.id},'pri','doc'):''}`)
+   +`<div class="stats"><div class="stat"><span>Billed</span><b>${inr0(st.billed)}</b></div><div class="stat"><span>Received</span><b>${inr0(st.rec)}</b></div><div class="stat ${st.out>0?'bad':''}"><span>Outstanding</span><b>${inr0(st.out)}</b></div><div class="stat"><span>Total expenses</span><b>${inr0(sum(st.ex,'amount'))}</b><small>across ${ls.length} leads</small></div></div>`
+   +`<div class="grid2"><div class="card"><h2>Details</h2><dl class="kv"><dt>GSTIN</dt><dd class="mono">${esc(c.gstin||'—')}</dd><dt>PAN</dt><dd class="mono">${esc(c.pan||'—')}</dd><dt>State</dt><dd>${esc(stateName(c.stateCode))} (${esc(c.stateCode)})</dd><dt>Credit</dt><dd>${esc(c.creditDays||0)} days</dd><dt>Email</dt><dd>${esc(c.email||'—')}</dd><dt>Address</dt><dd>${esc(c.address||'—')}</dd></dl></div>
+   <div class="card"><h2>Leads</h2>${table([{h:'Lead',v:l=>esc(l.title)},{h:'Stage',v:l=>chip(l.stage,'acc')},{h:'Value',c:'r',v:l=>inr0(l.value)}],ls,{click:l=>['lead',l.id],empty:'No leads yet.'})}</div></div>`
+   +`<div class="card"><h2>Invoices</h2>${table([{h:'No.',v:d=>`<span class="mono">${esc(d.number)}</span>`},{h:'Date',v:d=>fd(d.date)},{h:'Total',c:'r',v:d=>inr(docTotal(d))},{h:'Outstanding',c:'r',v:d=>inr(outstanding(d))},{h:'Status',v:d=>{const[s,k]=payStatus(d);return chip(s,k)}},{h:'',c:'r',v:d=>btn('View','viewDoc',{id:d.id},'sm','eye')}],st.inv,{empty:'No invoices yet.'})}</div>`
+   +`<div class="card"><h2>Expenses for this customer</h2>${expTable(st.ex,true)}</div>`}
+
+/* ================= purchase orders & PBG ================= */
+function poForm(p={}){const g=p.pbg||{};return form([
+  {t:'sec',l:'Purchase order'},{k:'customerId',l:'Customer',t:'select',o:custOpts(),req:true},{k:'leadId',l:'Against lead',t:'select',o:leadOpts()},{k:'poNo',l:'PO number',req:true},{k:'poDate',l:'PO date',t:'date',def:T(),req:true},{k:'value',l:'PO value (₹, incl. GST)',t:'number'},{k:'status',l:'Status',t:'select',o:['Received','In progress','Partly delivered','Delivered','Closed'].map(s=>[s,s]),blank:false,def:'Received'},
+  {k:'files',l:'PO copy',t:'files'},
+  {t:'sec',l:'Delivery & conditions'},{k:'deliveryDays',l:'Delivery timeline (days from PO)',t:'number',chg:'poDue'},{k:'deliveryDue',l:'Delivery due date',t:'date'},{k:'deliveryTerms',l:'Delivery terms / place',t:'textarea',span:true},{k:'paymentTerms',l:'Payment terms',t:'textarea'},{k:'ldClause',l:'LD / penalty clause'},{k:'warranty',l:'Warranty / guarantee period'},
+  {t:'sec',l:'Performance Bank Guarantee (PBG)'},{k:'pbgRequired',l:'PBG required for this PO',t:'check',span:true},
+  {k:'pbg_pct',l:'PBG % of PO value',t:'number',chg:'pbgAmt',def:g.pct},{k:'pbg_amount',l:'PBG amount (₹)',t:'number',def:g.amount},{k:'pbg_format',l:'PBG format',t:'select',o:PBG_FORMATS.map(s=>[s,s]),def:g.format||'Bank Guarantee'},{k:'pbg_bank',l:'Issuing bank & branch',def:g.bank},{k:'pbg_number',l:'BG / DD / FD number',def:g.number},{k:'pbg_issueDate',l:'PBG date',t:'date',def:g.issueDate},{k:'pbg_expiryDate',l:'Valid till (expiry)',t:'date',def:g.expiryDate},{k:'pbg_claimDate',l:'Claim period ends',t:'date',def:g.claimDate},{k:'pbg_reminderDays',l:'Remind me (days before expiry)',t:'number',def:g.reminderDays??30},{k:'pbg_beneficiary',l:'Beneficiary',def:g.beneficiary},{k:'pbg_status',l:'PBG status',t:'select',o:['Active','Extended','Released','Claimed / Invoked'].map(s=>[s,s]),blank:false,def:g.status||'Active'},
+  {k:'pbg_files',l:'PBG copy',t:'files'}
+ ],{...p,pbg_files:g.files||[]})}
+function savePo(o,id){if(!o.customerId||!o.poNo){toast('Choose a customer and enter the PO number.');return false}
+  const pbg={};Object.keys(o).filter(k=>k.startsWith('pbg_')).forEach(k=>{pbg[k.slice(4)]=o[k];delete o[k]});pbg.amount=+pbg.amount||0;
+  o.value=+o.value||0;if(!o.deliveryDue&&o.deliveryDays)o.deliveryDue=addDays(o.poDate,+o.deliveryDays);
+  if(id){const p=byId('pos',id);Object.assign(p,o);p.pbg={...p.pbg,...pbg}}else S.pos.push({id:uid('po'),companyId:ctx,deliveries:[],...o,pbg});
+  if(o.leadId){const l=byId('leads',o.leadId);if(l&&l.stage!=='Won')l.stage='Won'}
+  save();render();toast('Purchase order saved')}
+function vPos(){const q=gf('pos','q'),st=gf('pos','st');const rows=C('pos').filter(p=>match(q,p.poNo,custName(p.customerId))&&(!st||p.status===st)).sort((a,b)=>b.poDate.localeCompare(a.poDate));
+  return head('Purchase Orders','Upload customer POs, track delivery commitments and the bank guarantee tied to each one.',`${xbtn('pos')}${btn('Record PO','addPo',{},'pri','plus')}`)+filters('pos',[{k:'q',t:'search',ph:'Search PO no. or customer'},{k:'st',l:'Status',o:['Received','In progress','Partly delivered','Delivered','Closed'].map(s=>[s,s])}])
+   +table([{h:'PO',v:p=>`<b class="mono">${esc(p.poNo)}</b><div class="muted small">${fd(p.poDate)}</div>`},{h:'Customer',v:p=>esc(custName(p.customerId))},{h:'Value',c:'r',v:p=>inr0(p.value)},{h:'Delivery due',v:p=>{const dl=p.deliveryDue?dBetween(T(),p.deliveryDue):null;return p.deliveryDue?`${fd(p.deliveryDue)} ${['Delivered','Closed'].includes(p.status)?'':chip(dl<0?`${-dl}d late`:`${dl}d left`,dl<0?'bad':dl<=10?'warn':'')}`:'—'}},{h:'PBG',v:p=>p.pbgRequired?`${chip(p.pbg.status,p.pbg.status==='Active'?'acc':'')} <span class="small muted">till ${fd(p.pbg.expiryDate)}</span>`:'<span class="muted">Not required</span>'},{h:'Status',v:p=>chip(p.status,p.status==='Delivered'||p.status==='Closed'?'ok':'info')}],rows,{click:p=>['po',p.id],empty:'No purchase orders yet.'})}
+function vPo(){const p=byId('pos',ui.sel);if(!p)return noAccess();const g=p.pbg||{};const dl=g.expiryDate?dBetween(T(),g.expiryDate):null;const lead=byId('leads',p.leadId);
+  const invs=C('docs').filter(d=>d.poId===p.id);
+  return `<div>${btn('All purchase orders','nav',{v:'pos'},'ghost sm','back')}</div>`+head(`PO ${esc(p.poNo)}`,`${esc(custName(p.customerId))} · ${fd(p.poDate)}${lead?' · '+esc(lead.title):''}`,`${btn('Edit','editPo',{id:p.id},'','edit')}${can('challan')?btn('Create challan','newDoc',{t:'challan',po:p.id},'','truck'):''}${can('invoice')?btn('Create invoice','newDoc',{t:'invoice',po:p.id},'pri','doc'):''}`)
+   +`<div class="stats"><div class="stat"><span>PO value</span><b>${inr0(p.value)}</b></div><div class="stat"><span>Invoiced</span><b>${inr0(sum(invs.filter(d=>d.type==='invoice'),docTotal))}</b></div><div class="stat ${p.deliveryDue&&dBetween(T(),p.deliveryDue)<0&&!['Delivered','Closed'].includes(p.status)?'bad':''}"><span>Delivery due</span><b style="font-size:1.05rem">${fd(p.deliveryDue)}</b><small>${esc(p.status)}</small></div>${p.pbgRequired?`<div class="stat ${dl!=null&&dl<=7&&g.status==='Active'?'bad':''}"><span>PBG expiry</span><b style="font-size:1.05rem">${fd(g.expiryDate)}</b><small>${g.status==='Active'?(dl<0?`expired ${-dl}d ago`:`${dl} days left`):esc(g.status)}</small></div>`:''}</div>`
+   +`<div class="grid2"><div class="card"><h2>Order & conditions</h2><dl class="kv"><dt>Delivery timeline</dt><dd>${esc(p.deliveryDays||'—')} days</dd><dt>Delivery terms</dt><dd>${esc(p.deliveryTerms||'—')}</dd><dt>Payment terms</dt><dd>${esc(p.paymentTerms||'—')}</dd><dt>LD clause</dt><dd>${esc(p.ldClause||'—')}</dd><dt>Warranty</dt><dd>${esc(p.warranty||'—')}</dd><dt>PO copy</dt><dd>${filesList(p.files)}</dd></dl></div>
+   <div class="card"><div class="ch"><h2>Performance Bank Guarantee</h2>${p.pbgRequired?`<div class="pacts">${['Extended','Released'].map(s=>btn('Mark '+s.toLowerCase(),'pbgStatus',{id:p.id,s},'sm')).join('')}</div>`:''}</div>${p.pbgRequired?`<dl class="kv"><dt>Format</dt><dd>${esc(g.format)}</dd><dt>Amount</dt><dd class="mono">${inr(g.amount)} ${g.pct?`(${g.pct}%)`:''}</dd><dt>Issuing bank</dt><dd>${esc(g.bank||'—')}</dd><dt>Number</dt><dd class="mono">${esc(g.number||'—')}</dd><dt>PBG date</dt><dd>${fd(g.issueDate)}</dd><dt>Valid till</dt><dd>${fd(g.expiryDate)}</dd><dt>Claim period ends</dt><dd>${fd(g.claimDate)}</dd><dt>Reminder</dt><dd>${esc(g.reminderDays)} days before expiry</dd><dt>Beneficiary</dt><dd>${esc(g.beneficiary||'—')}</dd><dt>Status</dt><dd>${chip(g.status,g.status==='Active'?'acc':'')}</dd><dt>PBG copy</dt><dd>${filesList(g.files)}</dd></dl>`:'<div class="empty">No PBG required for this PO.</div>'}</div></div>`
+   +`<div class="card"><div class="ch"><h2>Deliveries & receiving</h2>${btn('Record delivery','addDelivery',{id:p.id},'sm pri','plus')}</div>${table([{h:'Dispatched',v:d=>fd(d.date)},{h:'Material',v:d=>esc(d.desc)},{h:'Challan',v:d=>{const c=byId('docs',d.challanId);return c?`<span class="mono">${esc(c.number)}</span>`:'—'}},{h:'Received by',v:d=>esc(d.receivedBy||'—')},{h:'Received on',v:d=>fd(d.receivedOn)},{h:'Status',v:d=>chip(d.status,d.status==='Received'?'ok':'warn')},{h:'Proof',v:d=>filesList(d.files)},{h:'',c:'r',v:d=>btn('Edit','editDelivery',{id:p.id,d:d.id},'sm','edit')}],p.deliveries||[],{empty:'No deliveries recorded yet.'})}</div>`
+   +`<div class="card"><h2>Documents against this PO</h2>${table([{h:'Type',v:d=>esc(DOCT[d.type].label)},{h:'No.',v:d=>`<span class="mono">${esc(d.number)}</span>`},{h:'Date',v:d=>fd(d.date)},{h:'Amount',c:'r',v:d=>d.type==='challan'?'—':inr(docTotal(d))},{h:'',c:'r',v:d=>btn('View','viewDoc',{id:d.id},'sm','eye')}],invs,{empty:'No documents yet.'})}</div>`}
+function deliveryForm(p,d={}){return form([{k:'date',l:'Dispatch date',t:'date',def:T(),req:true},{k:'desc',l:'Material / items',req:true,span:true},{k:'challanId',l:'Delivery challan',t:'select',o:C('docs').filter(x=>x.type==='challan'&&(!x.poId||x.poId===p.id)).map(x=>[x.id,x.number])},{k:'status',l:'Status',t:'select',o:['Dispatched','In transit','Received','Rejected / Returned'].map(s=>[s,s]),blank:false,def:'Dispatched'},{k:'receivedBy',l:'Received by (name & designation)'},{k:'receivedOn',l:'Received on',t:'date'},{k:'files',l:'Receiving proof (signed challan, LR, photos)',t:'files'}],d)}
+function vPbg(){const st=gf('pbg','st'),fm=gf('pbg','fm');const rows=C('pos').filter(p=>p.pbgRequired&&(!st||p.pbg.status===st)&&(!fm||p.pbg.format===fm)).sort((a,b)=>(a.pbg.expiryDate||'').localeCompare(b.pbg.expiryDate||''));
+  const act=rows.filter(p=>p.pbg.status==='Active');
+  return head('PBG Register','All performance guarantees across purchase orders, soonest expiry first.',xbtn('pbg'))
+   +`<div class="stats"><div class="stat"><span>Active guarantees</span><b>${inr0(sum(act,p=>p.pbg.amount))}</b><small>${act.length} PBGs</small></div><div class="stat ${act.some(p=>dBetween(T(),p.pbg.expiryDate)<=30)?'bad':''}"><span>Expiring in 30 days</span><b>${act.filter(p=>dBetween(T(),p.pbg.expiryDate)<=30).length}</b></div></div>`
+   +filters('pbg',[{k:'st',l:'Status',o:['Active','Extended','Released','Claimed / Invoked'].map(s=>[s,s])},{k:'fm',l:'Format',o:PBG_FORMATS.map(s=>[s,s])}])
+   +table([{h:'PO',v:p=>`<b class="mono">${esc(p.poNo)}</b><div class="small muted">${esc(custName(p.customerId))}</div>`},{h:'Format',v:p=>esc(p.pbg.format)},{h:'Bank',v:p=>esc(p.pbg.bank||'—')},{h:'Number',v:p=>`<span class="mono">${esc(p.pbg.number||'—')}</span>`},{h:'Amount',c:'r',v:p=>inr0(p.pbg.amount)},{h:'Issued',v:p=>fd(p.pbg.issueDate)},{h:'Expiry',v:p=>{const d=dBetween(T(),p.pbg.expiryDate);return `${fd(p.pbg.expiryDate)} ${p.pbg.status==='Active'?chip(d<0?'Expired':`${d}d`,d<=7?'bad':d<=(+p.pbg.reminderDays||30)?'warn':''):''}`}},{h:'Status',v:p=>chip(p.pbg.status,p.pbg.status==='Active'?'acc':'')}],rows,{click:p=>['po',p.id],empty:'No PBGs recorded. Add one while recording a purchase order.'})}
+
+/* ================= documents ================= */
+function blankItem(){return{productId:'',name:'',desc:'',hsn:'',qty:1,unit:'Nos',rate:0,disc:0,gst:18}}
+function newDraft(type,pre={}){const c=curCo();return{id:null,type,companyId:ctx,date:T(),customerId:'',leadId:'',poId:'',buyerOrderNo:'',buyerOrderDate:'',deliveryNote:'',dispatchThrough:'',destination:'',deliveryTerms:'',bankId:(c.banks[0]||{}).id||'',validTill:type==='quotation'?addDays(T(),30):'',creditDays:type==='invoice'||type==='pi'?30:'',terms:type==='quotation'?c.quoteTerms||'':type==='challan'?'Material sent for supply / delivery against order.':c.terms||'',notes:'',shipTo:'',items:[blankItem()],status:type==='quotation'?'Draft':'',refId:'',...pre}}
+function openDraft(d){ui.draft=JSON.parse(JSON.stringify(d));go('docedit')}
+function vDocs(){const t=ui.view,cfg=DOCT[t];const q=gf(t,'q'),cu=gf(t,'cu'),from=gf(t,'from'),to=gf(t,'to');
+  const rows=C('docs').filter(d=>d.type===t&&match(q,d.number,custName(d.customerId))&&(!cu||d.customerId===cu)&&(!from||d.date>=from)&&(!to||d.date<=to)).sort((a,b)=>b.date.localeCompare(a.date)||b.number.localeCompare(a.number));
+  const nx=peekNo(curCo(),t,T());
+  const cols=[{h:'Number',v:d=>`<b class="mono">${esc(d.number)}</b>`},{h:'Date',v:d=>fd(d.date)},{h:'Customer',v:d=>esc(custName(d.customerId))}];
+  if(t!=='challan'){cols.push({h:'Taxable',c:'r',v:d=>inr(calc(d).taxable)},{h:'Total',c:'r',v:d=>inr(docTotal(d))})}
+  if(t==='invoice')cols.push({h:'Payment',v:d=>{const[s,k]=payStatus(d);return chip(s,k)}});
+  if(t==='quotation')cols.push({h:'Status',v:d=>chip(d.status||'Draft',d.status==='Accepted'?'ok':d.status==='Rejected'?'bad':'info')},{h:'Valid till',v:d=>fd(d.validTill)});
+  cols.push({h:'',c:'r',v:d=>`<div class="acts">${btn('View','viewDoc',{id:d.id},'sm','eye')}${btn('Edit','editDoc',{id:d.id},'sm','edit')}${cfg.next&&can(cfg.next)?btn('→ '+DOCT[cfg.next].label,'convertDoc',{id:d.id,to:cfg.next},'sm','convert'):''}</div>`});
+  const foot=t!=='challan'?['Total','','',inr(sum(rows,d=>calc(d).taxable)),inr(sum(rows,docTotal))].concat(t==='invoice'?['','']:t==='quotation'?['','','']:['']):null;
+  return head(cfg.label+'s',`Next number: <span class="mono">${esc(nx.no)}</span> · numbering restarts automatically each financial year`,`${xbtn(t)}${btn('New '+cfg.label.toLowerCase(),'newDoc',{t},'pri','plus')}`)
+   +filters(t,[{k:'q',t:'search',ph:'Search number or customer'},{k:'cu',l:'Customer',o:custOpts()},{k:'from',t:'date',l:'From'},{k:'to',t:'date',l:'To'}])+table(cols,rows,{empty:`No ${cfg.label.toLowerCase()}s yet.`,foot})}
+function vDocEdit(){
+  const d=ui.draft;if(!d)return noAccess();const co=curCo(),cfg=DOCT[d.type];const no=d.number||peekNo(co,d.type,d.date).no;const prods=C('products');
+  const leads=C('leads').filter(l=>!d.customerId||l.customerId===d.customerId||l.id===d.leadId);const pos=C('pos').filter(p=>!d.customerId||p.customerId===d.customerId);
+  const sel=(k,opts,ph)=>`<select class="inp" id="dd_${k}" data-d="${k}"><option value="">${ph}</option>${opts.map(([a,b])=>`<option value="${esc(a)}" ${String(d[k])===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select>`;
+  const inp=(k,type='text',ph='')=>`<input class="inp" id="dd_${k}" data-d="${k}" type="${type}" value="${esc(d[k]??'')}" placeholder="${esc(ph)}" ${type==='number'?'step="any"':''}>`;
+  const F=(l,h,span)=>`<label class="field ${span?'span':''}"><span>${l}</span>${h}</label>`;
+  const items=d.items.map((it,i)=>`<div class="item"><span class="sl">${i+1}</span>
+    <label class="pname">Product / solution<select data-li="${i}" data-k="productId" id="li_${i}_p"><option value="">— Free text item —</option>${prods.map(p=>`<option value="${p.id}" ${p.id===it.productId?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label>
+    <label>HSN/SAC<input id="li_${i}_hsn" data-li="${i}" data-k="hsn" value="${esc(it.hsn)}"></label>
+    <label>Qty<input id="li_${i}_qty" data-li="${i}" data-k="qty" type="number" step="any" value="${esc(it.qty)}"></label>
+    <label>Unit<select id="li_${i}_unit" data-li="${i}" data-k="unit">${UNITS.concat(UNITS.includes(it.unit)?[]:[it.unit]).map(u=>`<option ${u===it.unit?'selected':''}>${esc(u)}</option>`).join('')}</select></label>
+    <label>Rate (₹)<input id="li_${i}_rate" data-li="${i}" data-k="rate" type="number" step="any" value="${esc(it.rate)}"></label>
+    <label>Disc %<input id="li_${i}_disc" data-li="${i}" data-k="disc" type="number" step="any" value="${esc(it.disc)}"></label>
+    <label>GST %<select id="li_${i}_gst" data-li="${i}" data-k="gst">${[0,0.1,0.25,3,5,12,18,28].map(g=>`<option value="${g}" ${+it.gst===g?'selected':''}>${g}</option>`).join('')}</select></label>
+    <span class="amt" id="amt_${i}">${money(r2((+it.qty||0)*(+it.rate||0)*(1-(+it.disc||0)/100)))}</span>
+    <button type="button" class="iconbtn" data-act="rmItem" data-i="${i}" aria-label="Remove item">${ic('x')}</button>
+    <label class="desc">Item name & description<input id="li_${i}_name" data-li="${i}" data-k="name" value="${esc(it.name)}" placeholder="Item name"></label>
+    <label class="desc" style="margin-top:-2px"><input id="li_${i}_desc" data-li="${i}" data-k="desc" value="${esc(it.desc)}" placeholder="Specification / additional description (optional)"></label></div>`).join('');
+  return `<div>${btn('Back to '+cfg.label.toLowerCase()+'s','nav',{v:d.type},'ghost sm','back')}</div>`+head(`${d.id?'Edit':'New'} ${cfg.label}`,`Number ${d.number?'':'on save'}: <span class="mono">${esc(no)}</span> · FY ${fyOf(d.date,co.fyStart).full}${d.refId?` · from ${esc((byId('docs',d.refId)||{}).number||'')}`:''}`)
+   +`<div class="card"><h2>Party & reference</h2><div class="fgrid">
+     ${F('Customer *',`<select class="inp" id="dd_customerId" data-d="customerId" data-rerender="1"><option value="">— Select customer —</option>${custOpts().map(([a,b])=>`<option value="${a}" ${a===d.customerId?'selected':''}>${esc(b)}</option>`).join('')}</select>`)}
+     ${F('Date',inp('date','date'))}
+     ${F('Lead',sel('leadId',leads.map(l=>[l.id,l.title]),'— None —'))}
+     ${F('Customer PO',sel('poId',pos.map(p=>[p.id,p.poNo]),'— None —'))}
+     ${F("Buyer's order no.",inp('buyerOrderNo'))}${F("Buyer's order date",inp('buyerOrderDate','date'))}
+     ${d.type==='quotation'?F('Valid till',inp('validTill','date')):''}
+     ${d.type==='invoice'||d.type==='pi'?F('Credit period (days)',inp('creditDays','number')):''}
+     ${d.type==='invoice'?F('Delivery note / challan no.',inp('deliveryNote')):''}
+     ${d.type!=='quotation'?F('Dispatched through / vehicle',inp('dispatchThrough'))+F('Destination',inp('destination')):''}
+     ${F('Terms of delivery',inp('deliveryTerms'))}
+     ${d.type!=='challan'?F('Bank shown on document *',`<select class="inp" id="dd_bankId" data-d="bankId">${co.banks.map(b=>`<option value="${b.id}" ${b.id===d.bankId?'selected':''}>${esc(b.bank)} · ${esc(String(b.ac).slice(-4).padStart(8,'•'))}</option>`).join('')}</select>`):''}
+     ${d.type==='quotation'?F('Status',`<select class="inp" id="dd_status" data-d="status">${['Draft','Sent','Accepted','Rejected','Revised'].map(s=>`<option ${s===d.status?'selected':''}>${s}</option>`).join('')}</select>`):''}
+     ${F('Ship to (if different from billing address)',`<textarea class="inp" id="dd_shipTo" data-d="shipTo" rows="2">${esc(d.shipTo||'')}</textarea>`,true)}
+   </div></div>`
+   +`<div class="card"><div class="ch"><h2>Items</h2><span class="small muted">${d.customerId?(calc(d).intra?'Intra-state supply: CGST + SGST':'Inter-state supply: IGST'):'Choose a customer to set GST type'}</span></div><div class="items">${items}</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">${btn('Add item','addItem',{},'sm','plus')}</div></div>`
+   +`<div class="grid2"><div class="card"><h2>Terms & notes</h2><div class="fgrid"><label class="field span"><span>${d.type==='invoice'?'Declaration / terms':'Terms & conditions'}</span><textarea class="inp" id="dd_terms" data-d="terms" rows="5">${esc(d.terms)}</textarea></label><label class="field span"><span>Internal notes (not printed)</span><textarea class="inp" id="dd_notes" data-d="notes" rows="2">${esc(d.notes)}</textarea></label></div></div>
+     <div class="card"><h2>Totals</h2><div id="doc_totals">${totalsHTML(d)}</div></div></div>`
+   +`<div class="actionbar">${btn('Cancel','nav',{v:d.type},'ghost')}${btn('Preview','previewDraft',{},'','eye')}${btn(d.id?'Save changes':'Save '+cfg.label.toLowerCase(),'saveDraft',{},'pri','check')}</div>`;
+}
+function totalsHTML(d){const c=calc(d);if(d.type==='challan')return `<div class="totals"><span>Total quantity</span><span class="num">${c.qty}</span></div>`;
+  return `<div class="totals"><span>Taxable value</span><span class="num">${inr(c.taxable)}</span>${c.intra?`<span>CGST</span><span class="num">${inr(c.cgst)}</span><span>SGST</span><span class="num">${inr(c.sgst)}</span>`:`<span>IGST</span><span class="num">${inr(c.igst)}</span>`}<span>Round off</span><span class="num">${c.round>=0?'':'−'}${inr(Math.abs(c.round))}</span><span class="g">Grand total</span><span class="g num">${inr(c.total)}</span></div><p class="small muted" style="margin-top:8px;text-align:right">${esc(words(c.total))}</p>`}
+function saveDraft(){const d=ui.draft,co=curCo();
+  if(!d.customerId){toast('Choose a customer before saving.');return}
+  d.items=d.items.filter(it=>it.name||it.productId);if(!d.items.length){d.items=[blankItem()];toast('Add at least one item.');render();return}
+  if(d.type!=='challan'&&!d.bankId){toast('Select the bank to show on the document.');return}
+  if(!d.id){const n=takeNo(co,d.type,d.date);d.number=n.no;d.fy=n.fy;d.id=uid('d');d.created=T();S.docs.push(d)}else{const i=S.docs.findIndex(x=>x.id===d.id);S.docs[i]=d}
+  if(d.leadId&&d.type==='quotation'){const l=byId('leads',d.leadId);if(l&&STAGES.indexOf(l.stage)<3)l.stage='Quotation Sent'}
+  if(d.type==='challan'&&d.refId){const inv=byId('docs',d.refId);if(inv&&inv.type==='invoice'&&!inv.deliveryNote)inv.deliveryNote=d.number}
+  save();const id=d.id,t=d.type;ui.draft=null;go(t);toast(DOCT[t].label+' '+byId('docs',id).number+' saved');viewDoc(id)}
+function convert(id,to){const s=byId('docs',id);const d=newDraft(to,{customerId:s.customerId,leadId:s.leadId,poId:s.poId,buyerOrderNo:s.buyerOrderNo,buyerOrderDate:s.buyerOrderDate,bankId:s.bankId,shipTo:s.shipTo,dispatchThrough:s.dispatchThrough,destination:s.destination,deliveryTerms:s.deliveryTerms,items:JSON.parse(JSON.stringify(s.items)),refId:s.id});
+  const cu=byId('customers',s.customerId);if(cu&&(to==='invoice'||to==='pi'))d.creditDays=cu.creditDays||30;if(s.type==='quotation'){s.status='Accepted';save()}openDraft(d)}
+
+/* paper (Tally-style) */
+const PAPER_CSS=`.paper{background:#fff;color:#111;width:800px;margin:0 auto;font:11px/1.35 Arial,Helvetica,sans-serif;padding:18px}
+.paper .ttl{text-align:center;font-weight:700;font-size:14px;letter-spacing:.06em;margin-bottom:4px;color:var(--pb,#111)}
+.paper .sub{text-align:center;font-size:9.5px;margin-bottom:6px;font-style:italic}
+.paper table{width:100%;border-collapse:collapse}
+.paper td,.paper th{border:1px solid #333;padding:3px 5px;vertical-align:top}
+.paper th{font-weight:700;text-align:center;background:#f4f4f4}
+.paper .lab{font-size:9.5px;color:#444}
+.paper .b{font-weight:700}
+.paper .r{text-align:right;white-space:nowrap}.paper .c{text-align:center}
+.paper .seller{display:flex;gap:10px;align-items:flex-start}
+.paper .seller img{max-width:70px;max-height:60px;object-fit:contain}
+.paper .cname{font-size:13px;font-weight:700;color:var(--pb,#111)}
+.paper .items td{border-top:0;border-bottom:0}
+.paper .items tr.last td{border-bottom:1px solid #333;height:100%}
+.paper .items tr.tot td{border-top:1px solid #333;border-bottom:1px solid #333;font-weight:700}
+.paper .noborder td{border:0;padding:1px 0}
+.paper .sign{text-align:right;height:92px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end}
+.paper .sign img{max-height:46px;max-width:150px;object-fit:contain}
+.paper .foot{text-align:center;font-size:9.5px;margin-top:6px}`;
+function paperHTML(d){
+  const co=byId('companies',d.companyId),cu=byId('customers',d.customerId)||{},cfg=DOCT[d.type],c=calc(d),bank=co.banks.find(b=>b.id===d.bankId)||co.banks[0]||{};
+  const no=d.number||peekNo(co,d.type,d.date).no;const ch=d.type==='challan';const cs=custState(cu);
+  const party=(lab,addr)=>`<div class="lab">${lab}</div><div class="b">${esc(cu.name||'')}</div><div>${esc(addr||'').replace(/\n/g,'<br>')}</div>${cu.gstin?`<div>GSTIN/UIN : <b>${esc(cu.gstin)}</b></div>`:''}${cs?`<div>State Name : ${esc(stateName(cs))}, Code : ${esc(cs)}</div>`:''}${cu.contact?`<div>Contact : ${esc(cu.contact)} ${cu.phone?'· '+esc(cu.phone):''}</div>`:''}`;
+  const meta=[[ch?'Challan No.':cfg.label+' No.',no],['Dated',fdt(d.date)],[d.type==='invoice'?'Delivery Note':d.type==='quotation'?'Valid Till':'Reference',d.type==='invoice'?d.deliveryNote:d.type==='quotation'?fdt(d.validTill):((byId('docs',d.refId)||{}).number||'')],['Mode/Terms of Payment',d.creditDays?`${d.creditDays} days credit`:''],["Buyer's Order No.",d.buyerOrderNo],['Dated',fdt(d.buyerOrderDate)],['Dispatched through',d.dispatchThrough],['Destination',d.destination]];
+  const cell=([l,v])=>`<td style="width:25%"><div class="lab">${l}</div><div class="b">${esc(v||'')}</div></td>`;
+  const rows=c.lines.map((it,i)=>`<tr><td class="c">${i+1}</td><td><b>${esc(it.name)}</b>${it.desc?`<div style="font-style:italic">${esc(it.desc)}</div>`:''}</td><td class="c">${esc(it.hsn)}</td><td class="r b">${esc(it.qty)} ${esc(it.unit)}</td>${ch?'':`<td class="r">${money(it.rate)}</td><td class="c">${esc(it.unit)}</td><td class="r">${+it.disc?esc(it.disc)+' %':''}</td><td class="r b">${money(it.amt)}</td>`}</tr>`).join('');
+  const taxRows=ch?'':(c.intra?[['CGST',c.cgst],['SGST',c.sgst]]:[['IGST',c.igst]]).map(([l,v])=>`<tr><td></td><td class="r b"><i>${l}</i></td><td></td><td></td><td></td><td></td><td></td><td class="r b">${money(v)}</td></tr>`).join('')+(c.round?`<tr><td></td><td class="r"><i>Round Off</i></td><td></td><td></td><td></td><td></td><td></td><td class="r">${c.round<0?'(-)':''}${money(Math.abs(c.round))}</td></tr>`:'');
+  const hsnT=ch?'':`<table style="margin-top:-1px"><tr><th rowspan="2">HSN/SAC</th><th rowspan="2">Taxable Value</th>${c.intra?'<th colspan="2">Central Tax</th><th colspan="2">State Tax</th>':'<th colspan="2">Integrated Tax</th>'}<th rowspan="2">Total Tax Amount</th></tr><tr>${c.intra?'<th>Rate</th><th>Amount</th><th>Rate</th><th>Amount</th>':'<th>Rate</th><th>Amount</th>'}</tr>
+    ${c.hsn.map(h=>`<tr><td>${esc(h.hsn)}</td><td class="r">${money(h.taxable)}</td>${c.intra?`<td class="r">${h.rate/2}%</td><td class="r">${money(h.tax/2)}</td><td class="r">${h.rate/2}%</td><td class="r">${money(h.tax/2)}</td>`:`<td class="r">${h.rate}%</td><td class="r">${money(h.tax)}</td>`}<td class="r">${money(h.tax)}</td></tr>`).join('')}
+    <tr class="b"><td class="r">Total</td><td class="r">${money(c.taxable)}</td>${c.intra?`<td></td><td class="r">${money(c.cgst)}</td><td></td><td class="r">${money(c.sgst)}</td>`:`<td></td><td class="r">${money(c.igst)}</td>`}<td class="r">${money(c.tax)}</td></tr></table>
+    <table style="margin-top:-1px"><tr><td style="border-top:0">Tax Amount (in words) : <b>${esc(words(c.tax))}</b></td></tr></table>`;
+  return `<div class="paper" style="--pb:${co.brand||'#111'}"><div class="ttl">${cfg.title}</div>${d.type==='invoice'?'<div class="sub">(Original for Recipient)</div>':''}
+  <table><tr><td rowspan="4" style="width:50%"><div class="seller">${co.logo?`<img data-fid="${co.logo}" alt="">`:''}<div><div class="cname">${esc(co.legalName||co.name)}</div><div>${esc(co.address||'').replace(/\n/g,'<br>')}</div><div>GSTIN/UIN : <b>${esc(co.gstin)}</b></div><div>State Name : ${esc(stateName(co.stateCode))}, Code : ${esc(co.stateCode)}</div>${co.email?`<div>E-Mail : ${esc(co.email)}</div>`:''}${co.phone?`<div>Phone : ${esc(co.phone)}</div>`:''}</div></div></td>${cell(meta[0])}${cell(meta[1])}</tr><tr>${cell(meta[2])}${cell(meta[3])}</tr><tr>${cell(meta[4])}${cell(meta[5])}</tr><tr>${cell(meta[6])}${cell(meta[7])}</tr>
+  <tr><td rowspan="2">${party('Consignee (Ship to)',d.shipTo||cu.shipTo||cu.address)}</td><td colspan="2" rowspan="2"><div class="lab">Terms of Delivery</div><div>${esc(d.deliveryTerms||'')}</div></td></tr><tr></tr>
+  <tr><td>${party('Buyer (Bill to)',cu.address)}</td><td colspan="2"><div class="lab">Place of Supply</div><div class="b">${esc(stateName(cs)||stateName(co.stateCode))}</div></td></tr></table>
+  <table class="items" style="margin-top:-1px"><tr><th style="width:28px">Sl No.</th><th>Description of Goods / Services</th><th style="width:70px">HSN/SAC</th><th style="width:80px">Quantity</th>${ch?'':'<th style="width:80px">Rate</th><th style="width:36px">per</th><th style="width:44px">Disc. %</th><th style="width:100px">Amount</th>'}</tr>
+  ${rows}${taxRows}<tr class="last"><td style="height:${Math.max(20,140-c.lines.length*24)}px"></td><td></td><td></td><td></td>${ch?'':'<td></td><td></td><td></td><td></td>'}</tr>
+  <tr class="tot"><td></td><td class="r">Total</td><td></td><td class="r">${c.qty}</td>${ch?'':`<td></td><td></td><td></td><td class="r">₹ ${money(c.total)}</td>`}</tr></table>
+  ${ch?'':`<table style="margin-top:-1px"><tr><td style="border-top:0"><div class="lab">Amount Chargeable (in words)</div><div class="b">${esc(words(c.total))}</div></td><td class="r" style="border-top:0;width:60px"><i>E. & O.E</i></td></tr></table>${hsnT}`}
+  <table style="margin-top:-1px"><tr><td style="width:55%;border-top:0">${co.pan?`<div>Company's PAN : <b>${esc(co.pan)}</b></div>`:''}<div class="lab" style="margin-top:4px;text-decoration:underline">${d.type==='invoice'?'Declaration':'Terms & Conditions'}</div><div>${esc(d.terms||'').replace(/\n/g,'<br>')}</div></td>
+  <td style="border-top:0">${ch?'':`<div class="lab">Company's Bank Details</div><table class="noborder"><tr><td>A/c Holder's Name</td><td>: <b>${esc(bank.holder||co.name)}</b></td></tr><tr><td>Bank Name</td><td>: <b>${esc(bank.bank||'')}</b></td></tr><tr><td>A/c No.</td><td>: <b>${esc(bank.ac||'')}</b></td></tr><tr><td>Branch & IFS Code</td><td>: <b>${esc(bank.branch||'')} & ${esc(bank.ifsc||'')}</b></td></tr>${bank.upi?`<tr><td>UPI</td><td>: <b>${esc(bank.upi)}</b></td></tr>`:''}</table>`}
+  <div class="sign" style="border-top:${ch?'0':'1px solid #333'};margin-top:6px;padding-top:4px"><b>for ${esc(co.legalName||co.name)}</b>${co.signature?`<img data-fid="${co.signature}" alt="">`:'<span></span>'}<span>Authorised Signatory</span></div></td></tr>
+  ${ch?`<tr><td colspan="2"><div class="lab">Receiver's Signature & Seal</div><div style="height:40px"></div></td></tr>`:''}</table>
+  <div class="foot">SUBJECT TO ${esc((co.city||'').toUpperCase())} JURISDICTION<br>This is a Computer Generated ${esc(cfg.label)}</div></div>`;
+}
+function viewDoc(id,draft){const d=draft||byId('docs',id);const cfg=DOCT[d.type];
+  const foot=draft?`${btn('Back to editing','closeModal',{},'')}${btn('Save','saveDraftModal',{},'pri','check')}`:`${btn('Download (HTML)','dlDoc',{id:d.id},'','download')}${btn('Edit','editDoc',{id:d.id},'','edit')}${btn('Duplicate','dupDoc',{id:d.id},'','copy')}${cfg.next&&can(cfg.next)?btn('Convert to '+DOCT[cfg.next].label,'convertDoc',{id:d.id,to:cfg.next},'pri','convert'):''}${d.type==='invoice'&&can('payments')&&outstanding(d)>0.5?btn('Record payment','addPayment',{inv:d.id},'','rupee'):''}`;
+  modal(`${cfg.label} ${d.number||'(preview)'}`,`<div class="paperwrap">${paperHTML(d)}</div><p class="small muted">Downloaded documents open in any browser; use the browser’s Print → Save as PDF to make a PDF.</p>`,{wide:true,foot})}
+async function dlDoc(id){const d=byId('docs',id);const wrap=document.createElement('div');wrap.innerHTML=paperHTML(d);
+  for(const img of wrap.querySelectorAll('img[data-fid]')){const r=await IDB.get('files',img.dataset.fid);if(r&&r.blob){img.src=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(r.blob)})}else img.remove()}
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(d.number)}</title><style>body{margin:0;background:#fff}${PAPER_CSS}@media print{.paper{padding:0}}</style></head><body>${wrap.innerHTML}</body></html>`;
+  await saveFile(`${d.number.replace(/[\/\\]/g,'-')}.html`,html)}
+
+/* ================= payments ================= */
+function vPayments(){const tab=curTab('payments','status');const q=gf('payments','q'),st=gf('payments','st');
+  const invs=C('docs').filter(d=>d.type==='invoice');const open=invs.filter(d=>outstanding(d)>0.5);
+  const rowsS=invs.filter(d=>match(q,d.number,custName(d.customerId))&&(!st||payStatus(d)[1]===st||(st==='open'&&outstanding(d)>0.5))).sort((a,b)=>outstanding(b)-outstanding(a)||dueDate(a).localeCompare(dueDate(b)));
+  const aging=[[0,'Not due'],[30,'1–30 days'],[60,'31–60 days'],[90,'61–90 days'],[1e9,'90+ days']];const bucket=d=>{const od=dBetween(dueDate(d),T());if(od<=0)return 0;return od<=30?1:od<=60?2:od<=90?3:4};
+  const ag=aging.map((a,i)=>sum(open.filter(d=>bucket(d)===i),outstanding));
+  let body;
+  if(tab==='status')body=filters('payments',[{k:'q',t:'search',ph:'Search invoice or customer'},{k:'st',l:'Status',o:[['open','Outstanding'],['bad','Overdue'],['warn','Due this week'],['ok','Paid']]}])+table([{h:'Invoice',v:d=>`<b class="mono">${esc(d.number)}</b><div class="small muted">${fd(d.date)}</div>`},{h:'Customer',v:d=>esc(custName(d.customerId))},{h:'Total',c:'r',v:d=>inr(docTotal(d))},{h:'Received',c:'r',v:d=>inr(received(d))},{h:'Outstanding',c:'r',v:d=>`<b>${inr(outstanding(d))}</b>`},{h:'Due',v:d=>fd(dueDate(d))},{h:'Status',v:d=>{const[s,k]=payStatus(d);return chip(s,k)}},{h:'',c:'r',v:d=>{if(outstanding(d)<=0.5)return '';const cu=byId('customers',d.customerId)||{};const wa=waLink(cu.phone,payRemText(d));return `<div class="acts">${btn('Record','addPayment',{inv:d.id},'sm pri','rupee')}${wa?`<a class="btn sm" href="${wa}" target="_blank" rel="noopener">${ic('msg')}Remind</a>`:''}${btn('Copy','copyRem',{t:payRemText(d)},'sm','copy')}</div>`}}],rowsS,{empty:'No invoices match.'});
+  else{const rows=C('payments').sort((a,b)=>b.date.localeCompare(a.date));body=table([{h:'Date',v:p=>fd(p.date)},{h:'Invoice',v:p=>`<span class="mono">${esc((byId('docs',p.invoiceId)||{}).number||'')}</span>`},{h:'Customer',v:p=>esc(custName(p.customerId))},{h:'Mode',v:p=>esc(p.mode)},{h:'Reference',v:p=>`<span class="mono small">${esc(p.ref||'')}</span>`},{h:'TDS',c:'r',v:p=>inr(p.tds)},{h:'Amount',c:'r',v:p=>inr(p.amount)},{h:'Proof',v:p=>filesList(p.files)}],rows,{empty:'No payments recorded yet.',foot:['Total','','','','',inr(sum(rows,'tds')),inr(sum(rows,'amount')),'']})}
+  return head('Payment Collection','Who owes what, how late it is, and a one-tap reminder to send.',`${xbtn('payments')}${btn('Record payment','addPayment',{},'pri','plus')}`)
+   +`<div class="stats"><div class="stat"><span>Outstanding</span><b>${inr0(sum(open,outstanding))}</b><small>${open.length} invoices</small></div>${aging.map((a,i)=>`<div class="stat ${i>=2&&ag[i]>0?'bad':''}"><span>${a[1]}</span><b>${inr0(ag[i])}</b></div>`).join('')}</div>`
+   +tabs('payments',[['status','Collection status'],['receipts','Receipts']])+body}
+function paymentForm(invId){const open=C('docs').filter(d=>d.type==='invoice'&&(outstanding(d)>0.5||d.id===invId));const inv=byId('docs',invId);
+  return form([{k:'invoiceId',l:'Invoice',t:'select',o:open.map(d=>[d.id,`${d.number} · ${custName(d.customerId)} · due ${inr(outstanding(d))}`]),req:true,chg:'payInv'},{k:'date',l:'Received on',t:'date',def:T(),req:true},{k:'amount',l:'Amount received (₹)',t:'number',req:true,def:inv?outstanding(inv):''},{k:'tds',l:'TDS deducted (₹)',t:'number',def:0},{k:'mode',l:'Mode',t:'select',o:PAY_MODES.map(m=>[m,m]),blank:false},{k:'ref',l:'UTR / cheque / reference no.'},{k:'files',l:'Payment proof',t:'files'}],{invoiceId:invId||''})}
+
+/* ================= expenses ================= */
+function expTable(rows,compact){const ap=can('approve');
+  const cols=[{h:'Date',v:e=>fd(e.date)},{h:'Employee',v:e=>esc(userName(e.userId))},{h:'Head',v:e=>esc(e.head)+(e.isPetrol?`<div class="small muted">${esc(e.km)} km @ ₹${esc(e.rate)}</div>`:'')}];
+  if(!compact)cols.push({h:'Lead',v:e=>{const l=byId('leads',e.leadId);return l?`<a href="#" data-act="open" data-v="lead" data-id="${l.id}">${esc(l.title)}</a>`:'<span class="muted">General</span>'}});
+  cols.push({h:'Description',v:e=>esc(e.desc)},{h:'Bills',v:e=>filesList(e.files)},{h:'Status',v:e=>chip(e.status,e.status==='Approved'||e.status==='Reimbursed'?'ok':e.status==='Rejected'?'bad':'warn')},{h:'Amount',c:'r',v:e=>inr(e.amount)},{h:'',c:'r',v:e=>`<div class="acts">${ap&&e.status==='Pending'?btn('Approve','expStatus',{id:e.id,s:'Approved'},'sm ok','check')+btn('Reject','expStatus',{id:e.id,s:'Rejected'},'sm danger','x'):''}${ap&&e.status==='Approved'?btn('Mark reimbursed','expStatus',{id:e.id,s:'Reimbursed'},'sm'):''}${(e.userId===me.id&&e.status==='Pending')||ap?btn('Edit','editExpense',{id:e.id},'sm','edit'):''}</div>`});
+  const foot=cols.map((c,i)=>i===0?'Total':c.h==='Amount'?inr(sum(rows,'amount')):'');
+  return table(cols,rows.slice().sort((a,b)=>b.date.localeCompare(a.date)),{empty:'No expenses recorded.',foot})}
+function expScope(){return can('allexp')||me.role!=='user'?C('expenses'):C('expenses').filter(e=>e.userId===me.id)}
+function vExpenses(){const v='expenses';const hd=gf(v,'head'),us=gf(v,'user'),ld=gf(v,'lead'),st=gf(v,'st'),from=gf(v,'from'),to=gf(v,'to'),q=gf(v,'q');
+  const all=expScope();const rows=all.filter(e=>(!hd||e.head===hd)&&(!us||e.userId===us)&&(!ld||(ld==='general'?!e.leadId:e.leadId===ld))&&(!st||e.status===st)&&(!from||e.date>=from)&&(!to||e.date<=to)&&match(q,e.desc,e.head));
+  const byHead={};rows.filter(e=>e.status!=='Rejected').forEach(e=>byHead[e.head]=(byHead[e.head]||0)+(+e.amount||0));
+  const seeAll=can('allexp')||me.role!=='user';
+  return head('Expenses',seeAll?'Everyone’s claims with bills, by head and by lead. Approve and reimburse from here.':'Your expense claims with bills and photos.',`${xbtn('expenses')}${btn('Add expense','addExpense',{},'pri','plus')}`)
+   +`<div class="stats"><div class="stat"><span>Total (filtered)</span><b>${inr0(sum(rows.filter(e=>e.status!=='Rejected'),'amount'))}</b><small>${rows.length} entries</small></div><div class="stat"><span>Pending approval</span><b>${inr0(sum(rows.filter(e=>e.status==='Pending'),'amount'))}</b></div><div class="stat"><span>Approved, to reimburse</span><b>${inr0(sum(rows.filter(e=>e.status==='Approved'),'amount'))}</b></div></div>`
+   +(Object.keys(byHead).length?`<div class="card"><h2>By expense head</h2><div class="bars">${Object.entries(byHead).sort((a,b)=>b[1]-a[1]).map(([h,v],_,arr)=>`<div class="barrow" style="grid-template-columns:150px minmax(0,1fr) 90px"><span>${esc(h)}</span><div class="track"><div class="fill" style="width:${v/arr[0][1]*100}%"></div></div><span class="v">${inr0(v)}</span></div>`).join('')}</div></div>`:'')
+   +filters(v,[{k:'q',t:'search',ph:'Search description'},{k:'head',l:'Head',o:headOpts()},...(seeAll?[{k:'user',l:'Employee',o:userOpts()}]:[]),{k:'lead',l:'Lead',o:[['general','General (no lead)'],...leadOpts()]},{k:'st',l:'Status',o:['Pending','Approved','Rejected','Reimbursed'].map(s=>[s,s])},{k:'from',t:'date',l:'From'},{k:'to',t:'date',l:'To'}])
+   +expTable(rows)}
+function expenseForm(e={}){const co=curCo();return form([
+  {k:'isPetrol',l:'This is a petrol / vehicle running claim (calculate from km)',t:'check',span:true},
+  {k:'date',l:'Date',t:'date',def:T(),req:true},{k:'head',l:'Expense head',t:'select',o:headOpts(),req:true,def:e.isPetrol?'Fuel / Petrol':''},{k:'leadId',l:'Against lead (optional)',t:'select',o:leadOpts(),ph:'— General / office —'},{k:'customerId',l:'Customer (optional)',t:'select',o:custOpts(),ph:'— None —'},
+  {k:'kmStart',l:'Odometer start (km)',t:'number',chg:'km'},{k:'kmEnd',l:'Odometer end (km)',t:'number',chg:'km'},{k:'km',l:'Distance (km)',t:'number',chg:'km'},{k:'rate',l:'Rate per km (₹)',t:'number',def:co.petrolRate||4.5,chg:'km'},
+  {k:'amount',l:'Amount (₹)',t:'number',req:true},{k:'mode',l:'Paid by',t:'select',o:['Self paid','Company card','From advance','Company UPI'].map(s=>[s,s]),blank:false},
+  {k:'desc',l:'Description / purpose',span:true,req:true},{k:'files',l:'Bills, receipts or photos (meter photo for petrol)',t:'files',hint:'Upload as many as you need, or take a photo directly from your phone camera.'}],e)}
+function saveExpense(o,id){if(!o.head||!o.desc||!(+o.amount>0)){toast('Fill in head, description and amount.');return false}
+  o.amount=r2(o.amount);if(o.isPetrol){o.km=+o.km||((+o.kmEnd||0)-(+o.kmStart||0));}
+  if(id)Object.assign(byId('expenses',id),o);else S.expenses.push({id:uid('ex'),companyId:ctx,userId:me.id,status:can('approve')?'Approved':'Pending',...o});save();render();toast('Expense saved')}
+
+/* ================= advances ================= */
+function vAdvances(){const ap=can('approve');const st=gf('advances','st');const all=ap||can('allexp')?C('advances'):C('advances').filter(a=>a.userId===me.id);const rows=all.filter(a=>!st||a.status===st).sort((a,b)=>b.date.localeCompare(a.date));
+  const spent=a=>sum(C('expenses').filter(e=>e.userId===a.userId&&e.mode==='From advance'&&e.date>=a.date&&e.status!=='Rejected'&&(!a.leadId||e.leadId===a.leadId)),'amount');
+  return head('Advance Requests','Request cash before a site visit or tour, tagged to an expense head or lead.',`${xbtn('advances')}${btn('Request advance','addAdvance',{},'pri','plus')}`)
+   +filters('advances',[{k:'st',l:'Status',o:['Pending','Approved','Rejected','Settled'].map(s=>[s,s])}])
+   +table([{h:'Requested',v:a=>fd(a.date)},{h:'Employee',v:a=>esc(userName(a.userId))},{h:'Purpose',v:a=>`${esc(a.purpose)}<div class="small muted">${esc(a.head)}${a.leadId?' · '+esc((byId('leads',a.leadId)||{}).title||''):''}</div>`},{h:'Needed by',v:a=>fd(a.needBy)},{h:'Amount',c:'r',v:a=>inr(a.amount)},{h:'Spent from advance',c:'r',v:a=>a.status==='Approved'||a.status==='Settled'?inr(spent(a)):'—'},{h:'Status',v:a=>chip(a.status,a.status==='Approved'?'ok':a.status==='Rejected'?'bad':a.status==='Settled'?'':'warn')},{h:'',c:'r',v:a=>`<div class="acts">${ap&&a.status==='Pending'?btn('Approve','advStatus',{id:a.id,s:'Approved'},'sm ok','check')+btn('Reject','advStatus',{id:a.id,s:'Rejected'},'sm danger','x'):''}${ap&&a.status==='Approved'?btn('Settle','advStatus',{id:a.id,s:'Settled'},'sm'):''}</div>`}],rows,{empty:'No advance requests.'})}
+
+/* ================= purchases ================= */
+function purchaseForm(p={}){return form([{k:'date',l:'Bill date',t:'date',def:T(),req:true},{k:'vendor',l:'Vendor / supplier',req:true},{k:'vendorGstin',l:'Vendor GSTIN'},{k:'billNo',l:'Bill / invoice no.',req:true},{k:'taxable',l:'Taxable value (₹)',t:'number',chg:'purTot'},{k:'gstAmt',l:'GST amount (₹)',t:'number',chg:'purTot'},{k:'total',l:'Bill total (₹)',t:'number',req:true},{k:'head',l:'Head',t:'select',o:headOpts(),def:'Material Purchase'},{k:'leadId',l:'Against lead / project',t:'select',o:leadOpts(),ph:'— General stock —'},{k:'status',l:'Payment status',t:'select',o:['Unpaid','Part paid','Paid'].map(s=>[s,s]),blank:false},{k:'paidOn',l:'Paid on',t:'date'},{k:'notes',l:'Items / notes',t:'textarea',span:true},{k:'files',l:'Bill copy, GRN, e-way bill, photos',t:'files'}],p)}
+function vPurchases(){const q=gf('purchases','q'),st=gf('purchases','st'),from=gf('purchases','from'),to=gf('purchases','to');const rows=C('purchases').filter(p=>match(q,p.vendor,p.billNo,p.notes)&&(!st||p.status===st)&&(!from||p.date>=from)&&(!to||p.date<=to)).sort((a,b)=>b.date.localeCompare(a.date));
+  return head('Purchases','Supplier bills with documents, linked to the project they were bought for.',`${xbtn('purchases')}${btn('Add purchase','addPurchase',{},'pri','plus')}`)
+   +`<div class="stats"><div class="stat"><span>Purchases (filtered)</span><b>${inr0(sum(rows,'total'))}</b><small>${rows.length} bills</small></div><div class="stat"><span>Input GST</span><b>${inr0(sum(rows,'gstAmt'))}</b></div><div class="stat ${rows.some(p=>p.status!=='Paid')?'bad':''}"><span>Unpaid to vendors</span><b>${inr0(sum(rows.filter(p=>p.status!=='Paid'),'total'))}</b></div></div>`
+   +filters('purchases',[{k:'q',t:'search',ph:'Search vendor or bill no.'},{k:'st',l:'Status',o:['Unpaid','Part paid','Paid'].map(s=>[s,s])},{k:'from',t:'date',l:'From'},{k:'to',t:'date',l:'To'}])
+   +table([{h:'Date',v:p=>fd(p.date)},{h:'Vendor',v:p=>`<b>${esc(p.vendor)}</b><div class="small muted mono">${esc(p.vendorGstin||'')}</div>`},{h:'Bill no.',v:p=>`<span class="mono">${esc(p.billNo)}</span>`},{h:'Project',v:p=>esc((byId('leads',p.leadId)||{}).title||'General')},{h:'GST',c:'r',v:p=>inr(p.gstAmt)},{h:'Total',c:'r',v:p=>inr(p.total)},{h:'Status',v:p=>chip(p.status,p.status==='Paid'?'ok':'warn')},{h:'Docs',v:p=>filesList(p.files)},{h:'',c:'r',v:p=>btn('Edit','editPurchase',{id:p.id},'sm','edit')}],rows,{empty:'No purchases recorded.'})}
+
+/* ================= payroll ================= */
+function payCalc(e,days,lop){const f=days?Math.max(0,days-(+lop||0))/days:1;const rd=n=>Math.round((+n||0)*f);const basic=rd(e.basic),hra=rd(e.hra),spl=rd(e.special),oth=rd(e.other);const gross=basic+hra+spl+oth;const fullGross=(+e.basic||0)+(+e.hra||0)+(+e.special||0)+(+e.other||0);
+  const pf=e.pf?Math.round(Math.min(basic,15000)*.12):0;const esi=e.esi&&fullGross<=21000?Math.ceil(gross*.0075):0;const pt=gross>0?(+e.pt||0):0;const tds=+e.tds||0;const ded=pf+esi+pt+tds;
+  return{basic,hra,spl,oth,gross,pf,esi,pt,tds,ded,net:gross-ded,erPf:e.pf?Math.round(Math.min(basic,15000)*.12):0,erEsi:e.esi&&fullGross<=21000?Math.ceil(gross*.0325):0}}
+function vPayroll(){const tab=curTab('payroll','run');const emps=C('employees').filter(e=>e.active!==false);
+  if(tab==='emps')return head('Payroll','Salary structures, monthly runs and payslips.',`${xbtn('employees')}${btn('Add employee','addEmp',{},'pri','plus')}`)+tabs('payroll',[['run','Salary run'],['emps','Employees'],['history','Past runs']])
+   +table([{h:'Employee',v:e=>`<b>${esc(e.name)}</b><div class="small muted">${esc(e.designation||'')}</div>`},{h:'Joined',v:e=>fd(e.doj)},{h:'UAN',v:e=>`<span class="mono">${esc(e.uan||'—')}</span>`},{h:'Gross / month',c:'r',v:e=>inr0(payCalc(e,30,0).gross)},{h:'PF',v:e=>e.pf?chip('PF','acc'):''},{h:'ESI',v:e=>e.esi?chip('ESI','acc'):''},{h:'Net / month',c:'r',v:e=>inr0(payCalc(e,30,0).net)},{h:'',c:'r',v:e=>btn('Edit','editEmp',{id:e.id},'sm','edit')}],C('employees'),{empty:'No employees yet.'});
+  if(tab==='history'){const runs=C('payruns').sort((a,b)=>b.month.localeCompare(a.month));return head('Payroll','Salary structures, monthly runs and payslips.')+tabs('payroll',[['run','Salary run'],['emps','Employees'],['history','Past runs']])
+   +table([{h:'Month',v:r=>esc(new Date(r.month+'-01T00:00:00').toLocaleDateString('en-IN',{month:'long',year:'numeric'}))},{h:'Employees',v:r=>r.lines.length},{h:'Gross',c:'r',v:r=>inr0(sum(r.lines,'gross'))},{h:'Net pay',c:'r',v:r=>inr0(sum(r.lines,'net'))},{h:'Processed',v:r=>fd(r.at)},{h:'',c:'r',v:r=>`<div class="acts">${btn('Open','openRun',{m:r.month},'sm','eye')}${btn('Export','exportRun',{id:r.id},'sm','xls')}</div>`}],runs,{empty:'No salary runs processed yet.'})}
+  const month=ui.payMonth||T().slice(0,7);const [y,m]=month.split('-').map(Number);const days=new Date(y,m,0).getDate();
+  const existing=C('payruns').find(r=>r.month===month);ui.lop=ui.lop||{};
+  const lines=emps.map(e=>{const lop=existing?((existing.lines.find(l=>l.empId===e.id)||{}).lop||0):(ui.lop[month+e.id]||0);return{e,lop,...payCalc(e,days,lop)}});
+  return head('Payroll','Salary structures, monthly runs and payslips.',`${btn('Export run','exportRunLive',{},'','xls')}${existing?chip('Processed '+fd(existing.at),'ok'):btn('Process salary','processRun',{},'pri','check')}`)+tabs('payroll',[['run','Salary run'],['emps','Employees'],['history','Past runs']])
+   +`<div class="filters"><label>Salary month <input type="month" id="pay_month" data-chg="payMonth" value="${month}"></label><span class="small muted">${days} days · PF 12% of basic (capped at ₹15,000) · ESI 0.75% where gross ≤ ₹21,000 · professional tax as set per employee</span></div>`
+   +table([{h:'Employee',v:l=>`<b>${esc(l.e.name)}</b><div class="small muted">${esc(l.e.designation||'')}</div>`},{h:'LOP days',v:l=>existing?esc(l.lop):`<input class="inp" style="width:70px" type="number" min="0" max="${days}" step="0.5" id="lop_${l.e.id}" data-lop="${month}|${l.e.id}" value="${esc(l.lop)}">`},{h:'Gross',c:'r',v:l=>inr(l.gross)},{h:'PF',c:'r',v:l=>inr(l.pf)},{h:'ESI',c:'r',v:l=>inr(l.esi)},{h:'PT',c:'r',v:l=>inr(l.pt)},{h:'TDS',c:'r',v:l=>inr(l.tds)},{h:'Net pay',c:'r',v:l=>`<b>${inr(l.net)}</b>`},{h:'',c:'r',v:l=>btn('Payslip','payslip',{e:l.e.id,m:month},'sm','eye')}],lines,{empty:'Add employees to run payroll.',foot:['Total','',inr(sum(lines,'gross')),inr(sum(lines,'pf')),inr(sum(lines,'esi')),inr(sum(lines,'pt')),inr(sum(lines,'tds')),inr(sum(lines,'net')),'']})}
+function empForm(e={}){return form([{k:'name',l:'Full name',req:true},{k:'designation',l:'Designation'},{k:'doj',l:'Date of joining',t:'date'},{k:'userId',l:'Portal login (optional)',t:'select',o:userOpts(),ph:'— No login —'},{k:'pan',l:'PAN'},{k:'uan',l:'UAN (PF)'},{k:'bankAc',l:'Bank account no.'},{k:'ifsc',l:'IFSC'},{t:'sec',l:'Monthly salary structure'},{k:'basic',l:'Basic (₹)',t:'number',req:true},{k:'hra',l:'HRA (₹)',t:'number'},{k:'special',l:'Special allowance (₹)',t:'number'},{k:'other',l:'Other allowance (₹)',t:'number'},{k:'pt',l:'Professional tax (₹/month)',t:'number',def:208},{k:'tds',l:'TDS (₹/month)',t:'number',def:0},{k:'pf',l:'PF applicable',t:'check'},{k:'esi',l:'ESI applicable',t:'check'},{k:'active',l:'Active employee',t:'check',def:true}],e)}
+function payslipHTML(e,month){const run=C('payruns').find(r=>r.month===month);const[y,m]=month.split('-').map(Number);const days=new Date(y,m,0).getDate();const lop=run?((run.lines.find(l=>l.empId===e.id)||{}).lop||0):((ui.lop||{})[month+e.id]||0);const p=payCalc(e,days,lop);const co=curCo();
+  const row=(a,b,c,d)=>`<tr><td>${a}</td><td class="r">${b}</td><td>${c}</td><td class="r">${d}</td></tr>`;
+  return `<div class="paper" style="--pb:${co.brand};width:700px"><div class="seller" style="justify-content:center;text-align:center;flex-direction:column;align-items:center">${co.logo?`<img data-fid="${co.logo}" alt="">`:''}<div class="cname">${esc(co.legalName||co.name)}</div><div>${esc(co.address)}</div></div><div class="ttl" style="margin-top:8px">PAYSLIP FOR ${new Date(month+'-01T00:00:00').toLocaleDateString('en-IN',{month:'long',year:'numeric'}).toUpperCase()}</div>
+  <table><tr><td>Employee</td><td class="b">${esc(e.name)}</td><td>Designation</td><td class="b">${esc(e.designation||'')}</td></tr><tr><td>Date of joining</td><td>${fdt(e.doj)}</td><td>PAN</td><td>${esc(e.pan||'')}</td></tr><tr><td>UAN</td><td>${esc(e.uan||'')}</td><td>Bank A/c</td><td>${esc(e.bankAc||'')} ${esc(e.ifsc||'')}</td></tr><tr><td>Days in month</td><td>${days}</td><td>Paid days / LOP</td><td>${days-lop} / ${lop}</td></tr></table>
+  <table style="margin-top:8px"><tr><th>Earnings</th><th>Amount</th><th>Deductions</th><th>Amount</th></tr>${row('Basic',money(p.basic),'Provident Fund',money(p.pf))}${row('HRA',money(p.hra),'ESI',money(p.esi))}${row('Special allowance',money(p.spl),'Professional tax',money(p.pt))}${row('Other allowance',money(p.oth),'TDS',money(p.tds))}<tr class="b"><td>Gross earnings</td><td class="r">${money(p.gross)}</td><td>Total deductions</td><td class="r">${money(p.ded)}</td></tr><tr class="b"><td colspan="3">Net pay</td><td class="r">₹ ${money(p.net)}</td></tr></table>
+  <p style="margin-top:6px">Net pay in words: <b>${esc(words(p.net))}</b></p><div class="foot">This is a computer-generated payslip and does not require a signature.</div></div>`}
+
+/* ================= products ================= */
+function productForm(p={}){return form([{k:'type',l:'Type',t:'select',o:[['Product','Product'],['Solution','Solution / Service']],blank:false},{k:'name',l:'Name',req:true},{k:'hsn',l:'HSN / SAC code',req:true},{k:'unit',l:'Unit',t:'select',o:UNITS.map(u=>[u,u]),blank:false},{k:'cost',l:'Cost price (₹)',t:'number'},{k:'price',l:'Selling price (₹)',t:'number',req:true},{k:'gst',l:'GST %',t:'select',o:[0,0.1,0.25,3,5,12,18,28].map(g=>[g,g+'%']),blank:false,def:18},{k:'desc',l:'Description (appears on quotation)',t:'textarea',span:true},{k:'images',l:'Images & datasheets',t:'files'}],p)}
+function vProducts(){const q=gf('products','q'),ty=gf('products','ty');const rows=C('products').filter(p=>match(q,p.name,p.hsn,p.desc)&&(!ty||p.type===ty));
+  return head('Products & Solutions','Your catalogue. Everything here fills quotations, PIs, invoices and challans automatically.',`${xbtn('products')}${btn('Add product','addProduct',{},'pri','plus')}`)+filters('products',[{k:'q',t:'search',ph:'Search name or HSN'},{k:'ty',l:'Type',o:[['Product','Products'],['Solution','Solutions']]}])
+   +(rows.length?`<div class="pgrid">${rows.map(p=>{const img=(p.images||[]).find(i=>(S.files[i]||{}).type?.startsWith('image/'));const mg=p.price&&p.cost?Math.round((p.price-p.cost)/p.price*100):null;return `<article class="pcard"><div class="img">${img?`<img data-fid="${img}" alt="">`:ic('box')}</div><div class="b"><div class="row" style="margin:0">${chip(p.type,'acc')}<span class="mono small muted">HSN ${esc(p.hsn)}</span></div><h3>${esc(p.name)}</h3><p class="small muted">${esc((p.desc||'').slice(0,110))}${(p.desc||'').length>110?'…':''}</p><div class="row"><div><b class="mono">${inr0(p.price)}</b><span class="small muted"> /${esc(p.unit)} · GST ${esc(p.gst)}%${mg!=null?` · ${mg}% margin`:''}</span></div>${btn('Edit','editProduct',{id:p.id},'sm','edit')}</div></div></article>`}).join('')}</div>`:`<div class="empty">No products yet. Add your first product or solution.</div>`)}
+
+/* ================= reports ================= */
+const REPORTS=[['leads','Leads & pipeline','Every lead with stage, owner, value and expense spent.','leads'],['customers','Customers','Billing, collections and outstanding per customer.','customers'],['pos','Purchase orders','POs with delivery status and PBG details.','pos'],['pbg','PBG register','All guarantees with bank, amount and expiry.','pbg'],['quotation','Quotation register','All quotations with values.','quotation'],['invoice','Sales register (GST)','Invoices with taxable value, CGST, SGST and IGST.','invoice'],['hsnsum','HSN summary','HSN-wise taxable value and tax for GST returns.','invoice'],['payments','Collections & ageing','Outstanding per invoice with days overdue.','payments'],['expenses','Expense register','All claims with head, lead and status.','expenses'],['leadexp','Lead-wise expenses','Total spent against each lead and customer.','expenses'],['advances','Advances','Advance requests and status.','advances'],['purchases','Purchase register','Supplier bills with GST.','purchases'],['products','Product list','Catalogue with HSN, cost and price.','products'],['employees','Employees','Salary structures.','payroll']];
+function vReports(){return head('Reports','Download any register as an Excel file.')+`<div class="grid3">${REPORTS.filter(r=>can(r[3])).map(([k,t,d])=>`<div class="card" style="display:flex;flex-direction:column;gap:10px"><h3>${t}</h3><p class="small muted">${d}</p><div style="margin-top:auto">${btn('Export to Excel','export',{x:k},'sm','xls')}</div></div>`).join('')}</div>`}
+function exportRows(k){const D=d=>fd(d);
+  const inv=()=>C('docs').filter(d=>d.type==='invoice');
+  switch(k){
+  case 'leads':return C('leads').map(l=>({Lead:l.title,Customer:custName(l.customerId)||l.company||'',Contact:l.contact,Mobile:l.phone,Source:l.source,Stage:l.stage,Owner:userName(l.owner),'Value (₹)':+l.value||0,'Next follow-up':D(l.nextFollowUp),'Expected close':D(l.expectedClose),'Expenses (₹)':sum(leadExpenses(l.id),'amount'),'Follow-ups':(l.followups||[]).length,Created:D(l.created)}));
+  case 'customers':return C('customers').map(c=>{const s=custStats(c);return{Customer:c.name,Contact:c.contact,Mobile:c.phone,Email:c.email,GSTIN:c.gstin,PAN:c.pan,State:stateName(c.stateCode),'Credit days':c.creditDays,'Billed (₹)':s.billed,'Received (₹)':s.rec,'Outstanding (₹)':s.out,'Expenses (₹)':sum(s.ex,'amount')}});
+  case 'pos':return C('pos').map(p=>({'PO no.':p.poNo,'PO date':D(p.poDate),Customer:custName(p.customerId),'Value (₹)':p.value,Status:p.status,'Delivery days':p.deliveryDays,'Delivery due':D(p.deliveryDue),'Payment terms':p.paymentTerms,'LD clause':p.ldClause,'PBG required':p.pbgRequired?'Yes':'No','PBG amount':p.pbgRequired?p.pbg.amount:'','PBG format':p.pbgRequired?p.pbg.format:'','PBG expiry':p.pbgRequired?D(p.pbg.expiryDate):'',Deliveries:(p.deliveries||[]).length}));
+  case 'pbg':return C('pos').filter(p=>p.pbgRequired).map(p=>({'PO no.':p.poNo,Customer:custName(p.customerId),Format:p.pbg.format,'Issuing bank':p.pbg.bank,Number:p.pbg.number,'Amount (₹)':p.pbg.amount,'PBG date':D(p.pbg.issueDate),'Valid till':D(p.pbg.expiryDate),'Claim period ends':D(p.pbg.claimDate),'Days to expiry':p.pbg.expiryDate?dBetween(T(),p.pbg.expiryDate):'',Beneficiary:p.pbg.beneficiary,Status:p.pbg.status}));
+  case 'quotation':case 'pi':case 'challan':case 'invoice':return C('docs').filter(d=>d.type===k).sort((a,b)=>a.date.localeCompare(b.date)).map(d=>{const c=calc(d),cu=byId('customers',d.customerId)||{};const r={Number:d.number,Date:D(d.date),Customer:cu.name,GSTIN:cu.gstin||'','Place of supply':stateName(custState(cu))};if(k==='challan')return{...r,'Total qty':c.qty,PO:d.buyerOrderNo};Object.assign(r,{'Taxable (₹)':c.taxable,'CGST (₹)':c.cgst,'SGST (₹)':c.sgst,'IGST (₹)':c.igst,'Round off':c.round,'Total (₹)':c.total});if(k==='invoice')Object.assign(r,{'Received (₹)':received(d),'Outstanding (₹)':outstanding(d),'Due date':D(dueDate(d)),Status:payStatus(d)[0]});if(k==='quotation')Object.assign(r,{Status:d.status,'Valid till':D(d.validTill)});return r});
+  case 'hsnsum':{const m={};inv().forEach(d=>calc(d).hsn.forEach(h=>{const key=h.hsn+'|'+h.rate;const o=m[key]||(m[key]={'HSN/SAC':h.hsn,'GST %':h.rate,'Taxable (₹)':0,'Tax (₹)':0});o['Taxable (₹)']=r2(o['Taxable (₹)']+h.taxable);o['Tax (₹)']=r2(o['Tax (₹)']+h.tax)}));return Object.values(m)}
+  case 'payments':return inv().map(d=>({Invoice:d.number,Date:D(d.date),Customer:custName(d.customerId),'Total (₹)':docTotal(d),'Received (₹)':received(d),'Outstanding (₹)':outstanding(d),'Due date':D(dueDate(d)),'Days overdue':Math.max(0,dBetween(dueDate(d),T())),Status:payStatus(d)[0]}));
+  case 'expenses':return expScope().map(e=>({Date:D(e.date),Employee:userName(e.userId),Head:e.head,Lead:(byId('leads',e.leadId)||{}).title||'General',Customer:custName(e.customerId)||custName((byId('leads',e.leadId)||{}).customerId),Description:e.desc,'Petrol km':e.isPetrol?e.km:'','Rate/km':e.isPetrol?e.rate:'','Amount (₹)':e.amount,'Paid by':e.mode,Status:e.status,Bills:(e.files||[]).length}));
+  case 'leadexp':return C('leads').map(l=>{const ex=leadExpenses(l.id);const o={Lead:l.title,Customer:custName(l.customerId)||l.company||'',Stage:l.stage,'Lead value (₹)':+l.value||0,'Total expenses (₹)':sum(ex,'amount')};(curCo().heads||[]).forEach(h=>{const v=sum(ex.filter(e=>e.head===h),'amount');if(v)o[h]=v});return o}).filter(r=>r['Total expenses (₹)']>0);
+  case 'advances':return C('advances').map(a=>({Date:D(a.date),Employee:userName(a.userId),Purpose:a.purpose,Head:a.head,Lead:(byId('leads',a.leadId)||{}).title||'','Needed by':D(a.needBy),'Amount (₹)':a.amount,Status:a.status,'Approved by':userName(a.approvedBy)}));
+  case 'purchases':return C('purchases').map(p=>({Date:D(p.date),Vendor:p.vendor,GSTIN:p.vendorGstin,'Bill no.':p.billNo,'Taxable (₹)':p.taxable,'GST (₹)':p.gstAmt,'Total (₹)':p.total,Head:p.head,Project:(byId('leads',p.leadId)||{}).title||'General',Status:p.status,'Paid on':D(p.paidOn),Notes:p.notes}));
+  case 'products':return C('products').map(p=>({Type:p.type,Name:p.name,'HSN/SAC':p.hsn,Unit:p.unit,'Cost (₹)':p.cost,'Price (₹)':p.price,'GST %':p.gst,Description:p.desc}));
+  case 'employees':return C('employees').map(e=>{const p=payCalc(e,30,0);return{Name:e.name,Designation:e.designation,'Date of joining':D(e.doj),PAN:e.pan,UAN:e.uan,'Bank A/c':e.bankAc,IFSC:e.ifsc,Basic:e.basic,HRA:e.hra,Special:e.special,Other:e.other,Gross:p.gross,PF:p.pf,ESI:p.esi,PT:p.pt,TDS:p.tds,'Net pay':p.net}});
+  }return[]}
+function runRows(run){return run.lines.map(l=>{const e=byId('employees',l.empId)||{};return{Employee:e.name,Designation:e.designation,UAN:e.uan,'Bank A/c':e.bankAc,IFSC:e.ifsc,'LOP days':l.lop,Basic:l.basic,HRA:l.hra,Special:l.spl,Other:l.oth,Gross:l.gross,'PF (employee)':l.pf,'ESI (employee)':l.esi,PT:l.pt,TDS:l.tds,'Total deductions':l.ded,'Net pay':l.net,'PF (employer)':l.erPf,'ESI (employer)':l.erEsi}})}
+
+/* ================= settings ================= */
+function bankRow(b={}){return `<div class="bankrow"><input type="hidden" name="bank_id[]" value="${esc(b.id||uid('bk'))}"><label class="field"><span>Bank name</span><input name="bank_bank[]" value="${esc(b.bank||'')}"></label><label class="field"><span>Account holder</span><input name="bank_holder[]" value="${esc(b.holder||'')}"></label><label class="field"><span>Account no.</span><input name="bank_ac[]" value="${esc(b.ac||'')}"></label><label class="field"><span>IFSC</span><input name="bank_ifsc[]" value="${esc(b.ifsc||'')}"></label><label class="field"><span>Branch</span><input name="bank_branch[]" value="${esc(b.branch||'')}"></label><label class="field"><span>UPI ID</span><input name="bank_upi[]" value="${esc(b.upi||'')}"></label><button type="button" class="btn sm danger" data-act="rmBank">Remove</button></div>`}
+function companyForm(c={}){return form([
+  {t:'sec',l:'Company identity'},{k:'name',l:'Display name',req:true},{k:'legalName',l:'Legal name (on documents)'},{k:'gstin',l:'GSTIN',req:true},{k:'pan',l:'PAN'},{k:'cin',l:'CIN / Udyam no.'},{k:'stateCode',l:'State',t:'select',o:STATES.map(([a,b])=>[a,b+' ('+a+')']),def:'23'},{k:'city',l:'City (jurisdiction)'},{k:'email',l:'Email',t:'email'},{k:'phone',l:'Phone'},{k:'website',l:'Website'},{k:'address',l:'Registered address',t:'textarea',span:true},
+  {t:'sec',l:'Logo, theme & signature'},
+  {t:'html',html:`<div class="field span"><span>Company logo <small>(portal and documents pick up its colour automatically)</small></span><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div class="brandlogo" style="border:1px solid var(--line);width:56px;height:56px" id="logoPrev">${c.logo?`<img data-fid="${c.logo}" alt="">`:ic('building')}</div><input type="hidden" name="logo" value="${esc(c.logo||'')}"><input type="hidden" name="brand" value="${esc(c.brand||'#0f6b5c')}"><label class="btn sm">${ic('upload')} Upload logo<input type="file" accept="image/*" data-single="logo" hidden></label><span class="small muted">Theme colour <span class="swatch" id="brandSw" style="background:${esc(c.brand||'#0f6b5c')}"></span> <input type="color" id="brandPick" data-brand value="${esc(c.brand||'#0f6b5c')}" aria-label="Theme colour" style="width:34px;height:24px;border:0;background:none;vertical-align:middle"></span></div></div>`},
+  {t:'html',html:`<div class="field span"><span>Authorised signature</span><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div style="width:150px;height:56px;border:1px dashed var(--line);border-radius:6px;display:grid;place-items:center;background:#fff;overflow:hidden" id="signPrev">${c.signature?`<img data-fid="${c.signature}" alt="" style="max-height:52px;max-width:146px">`:'<span class="small muted">No signature</span>'}</div><input type="hidden" name="signature" value="${esc(c.signature||'')}"><label class="btn sm">${ic('upload')} Upload<input type="file" accept="image/*" data-single="signature" hidden></label><label class="btn sm">${ic('camera')} Photo<input type="file" accept="image/*" capture="environment" data-single="signature" hidden></label></div></div>`},
+  {t:'sec',l:'Bank accounts (choose one per document)'},{t:'html',html:`<div class="banks" id="banks">${(c.banks&&c.banks.length?c.banks:[{}]).map(bankRow).join('')}</div><div>${btn('Add bank account','addBank',{},'sm','plus')}</div>`},
+  {t:'sec',l:'Default terms'},{k:'terms',l:'Invoice declaration / terms',t:'textarea',span:true},{k:'quoteTerms',l:'Quotation terms',t:'textarea',span:true}
+ ],c)}
+function readCompany(o){const banks=(o.bank_id||[]).map((id,i)=>({id,bank:o.bank_bank[i],holder:o.bank_holder[i],ac:o.bank_ac[i],ifsc:(o.bank_ifsc[i]||'').toUpperCase(),branch:o.bank_branch[i],upi:o.bank_upi[i]})).filter(b=>b.bank||b.ac);
+  ['bank_id','bank_bank','bank_holder','bank_ac','bank_ifsc','bank_branch','bank_upi'].forEach(k=>delete o[k]);o.banks=banks;o.gstin=(o.gstin||'').toUpperCase();if(o.gstin.length>=2)o.stateCode=o.gstin.slice(0,2);o.logo=o.logo||null;o.signature=o.signature||null;if(!o.legalName)o.legalName=o.name;return o}
+function vSettings(){const c=curCo();const tab=curTab('settings','profile');const fy=fyOf(T(),c.fyStart||4);
+  let body;
+  if(tab==='profile')body=`<form id="coForm" class="card">${companyForm(c)}<div style="margin-top:14px;display:flex;justify-content:flex-end"><button type="submit" class="btn pri">${ic('check')}Save company details</button></div></form>`;
+  else if(tab==='numbering')body=`<form id="numForm" class="card"><div class="note" style="margin-bottom:14px">Current financial year is <b class="mono">${fy.full}</b>. On 1 ${new Date(2000,(c.fyStart||4)-1,1).toLocaleString('en-IN',{month:'long'})} the year changes on its own and every series starts again from its starting number, with the new year in the prefix. Tokens: <span class="mono">{PREFIX}</span> <span class="mono">{FY}</span> (${fy.full}) <span class="mono">{FYS}</span> (${fy.short}) <span class="mono">{SEQ}</span>.</div>
+   <div class="fgrid"><label class="field"><span>Financial year starts in</span><select name="fyStart">${Array.from({length:12},(_,i)=>`<option value="${i+1}" ${(c.fyStart||4)===i+1?'selected':''}>${new Date(2000,i,1).toLocaleString('en-IN',{month:'long'})}</option>`).join('')}</select></label></div>
+   ${Object.keys(DOCT).map(t=>{const n=c.numbering[t];const nx=peekNo(c,t,T());return `<div class="fsec" style="margin:14px 0 8px">${DOCT[t].label}</div><div class="fgrid"><label class="field"><span>Prefix</span><input name="${t}_prefix" value="${esc(n.prefix)}"></label><label class="field"><span>Format</span><input name="${t}_format" value="${esc(n.format)}"></label><label class="field"><span>Digits</span><input type="number" name="${t}_pad" value="${esc(n.pad)}" min="1" max="6"></label><label class="field"><span>Start each FY from</span><input type="number" name="${t}_start" value="${esc(n.start)}" min="1"></label><div class="field"><span>Next number</span><b class="mono" style="padding:8px 0">${esc(nx.no)}</b></div></div>`}).join('')}
+   <div style="margin-top:14px;display:flex;justify-content:flex-end"><button type="submit" class="btn pri">${ic('check')}Save numbering</button></div></form>`;
+  else body=`<form id="headsForm" class="card"><div class="fgrid"><label class="field span"><span>Expense heads (one per line)</span><textarea name="heads" rows="12">${esc((c.heads||[]).join('\n'))}</textarea></label><label class="field"><span>Petrol reimbursement rate (₹ per km)</span><input type="number" step="any" name="petrolRate" value="${esc(c.petrolRate)}"></label></div><div style="margin-top:14px;display:flex;justify-content:flex-end"><button type="submit" class="btn pri">${ic('check')}Save</button></div></form>`;
+  return head('Company Settings','Details that appear on every document, document numbering and expense heads.')+tabs('settings',[['profile','Company profile'],['numbering','Numbering & FY'],['heads','Expense heads']])+body}
+
+/* ================= users ================= */
+function permBoxes(sel,co){const mods=GRANTABLE.filter(m=>!co||!co.modules||co.modules.includes(m.k));return `<div class="permgrid">${mods.map(m=>`<label class="chk"><input type="checkbox" name="perms" value="${m.k}" data-multi ${sel.includes(m.k)?'checked':''}>${esc(m.l)}</label>`).join('')}${EXTRA_PERMS.map(([k,l])=>`<label class="chk"><input type="checkbox" name="perms" value="${k}" data-multi ${sel.includes(k)?'checked':''}><b>${esc(l)}</b></label>`).join('')}</div>`}
+function userForm(u={},coId){const co=byId('companies',coId||u.companyId);return form([{k:'name',l:'Full name',req:true},{k:'email',l:'Login email',t:'email',req:true},{k:'password',l:u.id?'New password (leave blank to keep)':'Password',t:'text',req:!u.id},{k:'phone',l:'Mobile',t:'tel'},{k:'designation',l:'Designation'},{k:'role',l:'Role',t:'select',o:[['user','Employee (only the features ticked below)'],['admin','Company admin (all features of this company)']],blank:false,def:'user'},{k:'active',l:'Account active',t:'check',def:true},{t:'sec',l:'Feature access'},{t:'html',html:permBoxes(u.perms||['leads','expenses','advances'],co)}],{...u,password:''})}
+function saveUser(o,id,coId){if(!o.name||!o.email){toast('Enter name and email.');return false}o.email=o.email.toLowerCase();if(S.users.some(u=>u.email===o.email&&u.id!==id)){toast('That email already has an account.');return false}
+  if(!id&&!o.password){toast('Set a password.');return false}if(!o.password)delete o.password;o.perms=o.perms||[];
+  if(id){Object.assign(byId('users',id),o)}else S.users.push({id:uid('u'),companyId:coId||ctx,...o});save();render();toast('User saved')}
+function vUsers(){const us=S.users.filter(u=>u.companyId===ctx);
+  return head('Users & Access','Create logins for employees and choose exactly which features each person can use.',btn('Add user','addUser',{},'pri','plus'))
+   +table([{h:'User',v:u=>`<b>${esc(u.name)}</b><div class="small muted">${esc(u.email)}</div>`},{h:'Role',v:u=>chip(u.role==='admin'?'Company admin':'Employee',u.role==='admin'?'acc':'')},{h:'Access',v:u=>u.role==='admin'?'<span class="small muted">All features</span>':`<span class="small">${(u.perms||[]).map(p=>(MODULES.find(m=>m.k===p)||{l:(EXTRA_PERMS.find(e=>e[0]===p)||[,p])[1]}).l).join(', ')||'—'}</span>`},{h:'Status',v:u=>chip(u.active?'Active':'Disabled',u.active?'ok':'bad')},{h:'',c:'r',v:u=>btn('Edit','editUser',{id:u.id},'sm','edit')}],us)}
+
+/* ================= super admin ================= */
+function vCompanies(){return head('All companies','Create company accounts, set which features each company gets, and step into any company.',btn('Create company','addCompany',{},'pri','plus'))
+  +`<div class="grid3">${S.companies.map(c=>{const us=S.users.filter(u=>u.companyId===c.id);const adm=us.filter(u=>u.role==='admin');const t=T();const ctx0=ctx;ctx=c.id;const out=sum(C('docs').filter(d=>d.type==='invoice'),outstanding);const rem=reminders().filter(r=>r.sev==='bad').length;ctx=ctx0;
+    return `<div class="card" style="display:flex;flex-direction:column;gap:12px"><div class="cocard"><div class="brandlogo">${c.logo?`<img data-fid="${c.logo}" alt="">`:`<span style="color:${esc(c.brand)}">${initials(c.name)}</span>`}</div><div style="min-width:0"><h3>${esc(c.name)}</h3><div class="small muted mono">${esc(c.gstin)}</div><div class="small muted">${esc(c.city||'')} <span class="swatch" style="background:${esc(c.brand)}"></span></div></div></div>
+    <dl class="kv"><dt>Admins</dt><dd>${adm.map(a=>esc(a.name)).join(', ')||'—'}</dd><dt>Users</dt><dd>${us.length}</dd><dt>Features</dt><dd>${(c.modules||[]).length} of ${GRANTABLE.length}</dd><dt>Receivables</dt><dd class="mono">${inr0(out)}</dd><dt>Urgent items</dt><dd>${rem?chip(rem+' urgent','bad'):chip('None','ok')}</dd></dl>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:auto">${btn('Open company','enterCo',{id:c.id},'pri sm')}${btn('Features','coModules',{id:c.id},'sm','gear')}${btn('Add admin / user','addUserFor',{co:c.id},'sm','plus')}</div></div>`}).join('')}</div>`
+  +`<div class="card"><h2>Example data</h2><p class="small muted" style="margin-bottom:10px">The three companies shown are samples so you can try every screen. Reset restores them; it also clears anything you added in this browser.</p>${btn('Reset example data','resetDemo',{},'danger sm')}</div>`}
+function vAllUsers(){const q=gf('allusers','q'),co=gf('allusers','co');const rows=S.users.filter(u=>u.role!=='super'&&match(q,u.name,u.email)&&(!co||u.companyId===co));
+  return head('All users','Every login across all companies. Reset passwords, disable accounts or change access.')+filters('allusers',[{k:'q',t:'search',ph:'Search name or email'},{k:'co',l:'Company',o:S.companies.map(c=>[c.id,c.name])}])
+   +table([{h:'User',v:u=>`<b>${esc(u.name)}</b><div class="small muted">${esc(u.email)}</div>`},{h:'Company',v:u=>esc((byId('companies',u.companyId)||{}).name||'')},{h:'Role',v:u=>chip(u.role==='admin'?'Company admin':'Employee',u.role==='admin'?'acc':'')},{h:'Status',v:u=>chip(u.active?'Active':'Disabled',u.active?'ok':'bad')},{h:'',c:'r',v:u=>`<div class="acts">${btn('Edit','editUser',{id:u.id},'sm','edit')}${btn(u.active?'Disable':'Enable','toggleUser',{id:u.id},'sm '+(u.active?'danger':'ok'))}</div>`}],rows)}
+
+/* ================= actions ================= */
+function openNewCompany(){modal('Create company account',companyForm({banks:[{}]})+form([{t:'sec',l:'Company admin login'},{k:'adm_name',l:'Admin name',req:true},{k:'adm_email',l:'Admin email',t:'email',req:true},{k:'adm_password',l:'Admin password',req:true},{t:'sec',l:'Features this company can use'},{t:'html',html:`<div class="permgrid">${GRANTABLE.map(m=>`<label class="chk"><input type="checkbox" name="modules" value="${m.k}" data-multi checked>${esc(m.l)}</label>`).join('')}</div>`}]),{wide:true,label:'Create company',submit:o=>{
+  if(!o.name||!o.gstin||!o.adm_name||!o.adm_email||!o.adm_password){toast('Fill company name, GSTIN and the admin login.');return false}
+  const em=o.adm_email.toLowerCase();if(S.users.some(u=>u.email===em)){toast('That admin email already has an account.');return false}
+  const adm={name:o.adm_name,email:em,password:o.adm_password};const mods=o.modules||[];['adm_name','adm_email','adm_password','modules'].forEach(k=>delete o[k]);
+  const c={id:uid('co'),...readCompany(o),numbering:DEF_NUMBERING(),counters:{},fyStart:4,heads:DEF_HEADS.slice(),petrolRate:4.5,modules:mods,created:T()};
+  S.companies.push(c);S.users.push({id:uid('u'),companyId:c.id,role:'admin',perms:mods.concat(['approve','allexp','alllead']),active:true,...adm});save();render();toast(c.name+' created')}})}
+const ACT={
+  nav:d=>{if(d.v==='docedit')return;ui.draft=null;go(d.v)},
+  open:d=>{closeModal();if(['lead','customer','po'].includes(d.v))go(d.v,d.id);else go(d.v)},
+  menu:()=>{ui.menu=!ui.menu;render()},
+  tab:d=>{ui.tab[d.v]=d.k;render()},
+  logout:()=>{me=null;ctx=null;persistSession();ui.view='dashboard';render()},
+  closeModal:()=>closeModal(),
+  demoFill:d=>{$('#lg_email').value=d.e;$('#lg_pw').value=d.p},
+  resetDemo:async()=>{modal('Reset example data?','<p>This replaces everything stored in this browser with the original example companies, users and records. Anything you added will be removed.</p>',{foot:`${btn('Cancel','closeModal')}${btn('Reset data','resetConfirm',{},'pri danger')}`})},
+  resetConfirm:async()=>{await IDB.clear();S=seed();await IDB.put('kv','state',S);me=null;ctx=null;persistSession();closeModal();render();toast('Example data restored')},
+  enterCo:d=>{ctx=d.id;persistSession();go('dashboard')},
+  addCompany:()=>openNewCompany(),
+  coModules:d=>{const c=byId('companies',d.id);modal('Features for '+c.name,`<p class="small muted">Untick a feature to switch it off for everyone in this company.</p><div class="permgrid">${GRANTABLE.map(m=>`<label class="chk"><input type="checkbox" name="modules" value="${m.k}" data-multi ${(c.modules||[]).includes(m.k)?'checked':''}>${esc(m.l)}</label>`).join('')}</div>`,{submit:o=>{c.modules=o.modules||[];save();render();toast('Features updated')}})},
+  addUserFor:d=>modal('Add user to '+byId('companies',d.co).name,userForm({},d.co),{wide:true,submit:o=>saveUser(o,null,d.co)}),
+  toggleUser:d=>{const u=byId('users',d.id);u.active=!u.active;save();render()},
+  addUser:()=>modal('Add user',userForm({},ctx),{wide:true,submit:o=>saveUser(o,null,ctx)}),
+  editUser:d=>{const u=byId('users',d.id);modal('Edit '+u.name,userForm(u),{wide:true,submit:o=>saveUser(o,u.id,u.companyId)})},
+  addLead:()=>modal('New lead',leadForm({}),{wide:true,submit:o=>saveLead(o)}),
+  editLead:d=>modal('Edit lead',leadForm(byId('leads',d.id)),{wide:true,submit:o=>saveLead(o,d.id)}),
+  addFollow:d=>{const l=byId('leads',d.id);modal('Log follow-up · '+l.title,form([{k:'date',l:'Date',t:'date',def:T()},{k:'mode',l:'Mode',t:'select',o:['Call','WhatsApp','Email','Meeting','Site visit'].map(s=>[s,s]),blank:false},{k:'note',l:'What happened?',t:'textarea',span:true,req:true},{k:'next',l:'Next follow-up date',t:'date',def:addDays(T(),3)},{k:'stage',l:'Update stage',t:'select',o:STAGES.map(s=>[s,s]),blank:false,def:l.stage}]),{submit:o=>{if(!o.note){toast('Write a short note.');return false}l.followups=l.followups||[];l.followups.push({id:uid('fu'),date:o.date,note:o.note,mode:o.mode,by:me.id});l.nextFollowUp=o.next;l.stage=o.stage;save();render();toast('Follow-up logged')}})},
+  quoteFromLead:d=>{const l=byId('leads',d.id);if(!l.customerId){modal('Create customer first','<p>This lead isn’t linked to a customer yet. Add the customer (with GSTIN and address) so the quotation can be addressed correctly.</p>',{foot:btn('Add customer from lead','custFromLead',{id:l.id},'pri','plus')});return}
+    const items=(l.interest||[]).map(pid=>{const p=byId('products',pid);return p?{productId:p.id,name:p.name,desc:p.desc||'',hsn:p.hsn,qty:1,unit:p.unit,rate:p.price,disc:0,gst:p.gst}:null}).filter(Boolean);openDraft(newDraft('quotation',{customerId:l.customerId,leadId:l.id,items:items.length?items:[blankItem()]}))},
+  custFromLead:d=>{const l=byId('leads',d.id);modal('New customer',custForm({name:l.company||'',contact:l.contact,phone:l.phone,email:l.email}),{wide:true,submit:o=>{if(saveCust(o)===false)return false;l.customerId=S.customers[S.customers.length-1].id;save();render()}})},
+  addCust:()=>modal('New customer',custForm({}),{wide:true,submit:o=>saveCust(o)}),
+  editCust:d=>modal('Edit customer',custForm(byId('customers',d.id)),{wide:true,submit:o=>saveCust(o,d.id)}),
+  addPo:()=>modal('Record purchase order',poForm({}),{wide:true,submit:o=>savePo(o)}),
+  editPo:d=>modal('Edit purchase order',poForm(byId('pos',d.id)),{wide:true,submit:o=>savePo(o,d.id)}),
+  pbgStatus:d=>{const p=byId('pos',d.id);p.pbg.status=d.s;save();render();toast('PBG marked '+d.s.toLowerCase())},
+  addDelivery:d=>{const p=byId('pos',d.id);modal('Record delivery · PO '+p.poNo,deliveryForm(p),{submit:o=>{p.deliveries=p.deliveries||[];p.deliveries.push({id:uid('dl'),...o});if(p.status==='Received')p.status='Partly delivered';save();render();toast('Delivery recorded')}})},
+  editDelivery:d=>{const p=byId('pos',d.id);const dl=p.deliveries.find(x=>x.id===d.d);modal('Edit delivery',deliveryForm(p,dl),{submit:o=>{Object.assign(dl,o);save();render()}})},
+  newDoc:d=>{const pre={};if(d.cust){pre.customerId=d.cust;const cu=byId('customers',d.cust);if(cu&&cu.creditDays&&(d.t==='invoice'||d.t==='pi'))pre.creditDays=cu.creditDays}if(d.po){const p=byId('pos',d.po);Object.assign(pre,{poId:p.id,customerId:p.customerId,leadId:p.leadId,buyerOrderNo:p.poNo,buyerOrderDate:p.poDate,deliveryTerms:(p.deliveryTerms||'').split('\n')[0].slice(0,80)});const q=C('docs').filter(x=>x.leadId===p.leadId&&['quotation','pi'].includes(x.type)).sort((a,b)=>b.date.localeCompare(a.date))[0];if(q)pre.items=JSON.parse(JSON.stringify(q.items));const cu=byId('customers',p.customerId);if(cu&&d.t==='invoice')pre.creditDays=cu.creditDays||30}openDraft(newDraft(d.t,pre))},
+  editDoc:d=>{closeModal();openDraft(byId('docs',d.id))},
+  dupDoc:d=>{closeModal();const s=byId('docs',d.id);openDraft({...JSON.parse(JSON.stringify(s)),id:null,number:'',date:T(),refId:'',status:s.type==='quotation'?'Draft':''})},
+  convertDoc:d=>{closeModal();convert(d.id,d.to)},
+  viewDoc:d=>viewDoc(d.id),
+  dlDoc:d=>dlDoc(d.id),
+  addItem:()=>{ui.draft.items.push(blankItem());render()},
+  rmItem:d=>{ui.draft.items.splice(+d.i,1);if(!ui.draft.items.length)ui.draft.items.push(blankItem());render()},
+  previewDraft:()=>viewDoc(null,ui.draft),
+  saveDraft:()=>saveDraft(),
+  saveDraftModal:()=>{closeModal();saveDraft()},
+  addPayment:d=>modal('Record payment received',paymentForm(d.inv),{submit:o=>{const inv=byId('docs',o.invoiceId);if(!inv||!(+o.amount>0)){toast('Choose an invoice and enter the amount.');return false}S.payments.push({id:uid('pm'),companyId:ctx,customerId:inv.customerId,by:me.id,...o,amount:r2(o.amount),tds:r2(o.tds)});save();render();toast('Payment recorded')}}),
+  copyRem:async(d)=>{try{await navigator.clipboard.writeText(d.t);toast('Reminder text copied')}catch(e){modal('Reminder text',`<textarea class="inp" rows="10" id="remtxt" readonly>${esc(d.t)}</textarea><p class="small muted">Select the text and copy it.</p>`);setTimeout(()=>{const t=$('#remtxt');if(t){t.focus();t.select()}},50)}},
+  addExpense:d=>{const pre={};if(d.lead){pre.leadId=d.lead;const l=byId('leads',d.lead);if(l)pre.customerId=l.customerId}if(d.cust)pre.customerId=d.cust;modal('Add expense',expenseForm(pre),{wide:true,submit:o=>saveExpense(o)})},
+  editExpense:d=>modal('Edit expense',expenseForm(byId('expenses',d.id)),{wide:true,submit:o=>saveExpense(o,d.id)}),
+  expStatus:d=>{const e=byId('expenses',d.id);e.status=d.s;e.approvedBy=me.id;save();render();toast('Expense '+d.s.toLowerCase())},
+  addAdvance:()=>modal('Request advance',form([{k:'amount',l:'Amount (₹)',t:'number',req:true},{k:'needBy',l:'Needed by',t:'date',def:addDays(T(),1)},{k:'head',l:'Expense head',t:'select',o:headOpts(),req:true},{k:'leadId',l:'Against lead (optional)',t:'select',o:leadOpts(),ph:'— General —'},{k:'purpose',l:'Purpose',span:true,req:true},{k:'files',l:'Supporting documents',t:'files'}]),{submit:o=>{if(!(+o.amount>0)||!o.purpose||!o.head){toast('Fill amount, head and purpose.');return false}S.advances.push({id:uid('ad'),companyId:ctx,userId:me.id,date:T(),status:'Pending',approvedBy:'',...o,amount:r2(o.amount)});save();render();toast('Advance requested')}}),
+  advStatus:d=>{const a=byId('advances',d.id);a.status=d.s;if(d.s==='Approved')a.approvedBy=me.id;save();render()},
+  addPurchase:()=>modal('Add purchase',purchaseForm({}),{wide:true,submit:o=>savePur(o)}),
+  editPurchase:d=>modal('Edit purchase',purchaseForm(byId('purchases',d.id)),{wide:true,submit:o=>savePur(o,d.id)}),
+  addProduct:()=>modal('Add product or solution',productForm({}),{wide:true,submit:o=>saveProd(o)}),
+  editProduct:d=>modal('Edit product',productForm(byId('products',d.id)),{wide:true,submit:o=>saveProd(o,d.id)}),
+  addEmp:()=>modal('Add employee',empForm({active:true,pf:true}),{wide:true,submit:o=>saveEmp(o)}),
+  editEmp:d=>modal('Edit employee',empForm(byId('employees',d.id)),{wide:true,submit:o=>saveEmp(o,d.id)}),
+  processRun:()=>{const month=ui.payMonth||T().slice(0,7);const[y,m]=month.split('-').map(Number);const days=new Date(y,m,0).getDate();const lines=C('employees').filter(e=>e.active!==false).map(e=>{const lop=(ui.lop||{})[month+e.id]||0;return{empId:e.id,lop,...payCalc(e,days,lop)}});if(!lines.length){toast('Add employees first.');return}S.payruns.push({id:uid('pr'),companyId:ctx,month,days,lines,at:T(),by:me.id});save();render();toast('Salary processed for '+month)},
+  openRun:d=>{ui.payMonth=d.m;ui.tab.payroll='run';render()},
+  exportRun:d=>{const r=byId('payruns',d.id);xport('Salary_'+r.month,runRows(r))},
+  exportRunLive:()=>{const month=ui.payMonth||T().slice(0,7);const run=C('payruns').find(r=>r.month===month);if(run)return xport('Salary_'+month,runRows(run));const[y,m]=month.split('-').map(Number);const days=new Date(y,m,0).getDate();xport('Salary_'+month+'_draft',runRows({lines:C('employees').filter(e=>e.active!==false).map(e=>{const lop=(ui.lop||{})[month+e.id]||0;return{empId:e.id,lop,...payCalc(e,days,lop)}})}))},
+  payslip:d=>{const e=byId('employees',d.e);modal('Payslip · '+e.name,`<div class="paperwrap">${payslipHTML(e,d.m)}</div>`,{wide:true,foot:btn('Download (HTML)','dlSlip',{e:d.e,m:d.m},'pri','download')})},
+  dlSlip:async d=>{const e=byId('employees',d.e);const w=document.createElement('div');w.innerHTML=payslipHTML(e,d.m);for(const img of w.querySelectorAll('img[data-fid]')){const r=await IDB.get('files',img.dataset.fid);if(r&&r.blob)img.src=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(r.blob)});else img.remove()}await saveFile(`Payslip_${e.name.replace(/\s+/g,'_')}_${d.m}.html`,`<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0}${PAPER_CSS}</style></head><body>${w.innerHTML}</body></html>`)},
+  export:d=>{const k=d.x;const names={leads:'Leads',customers:'Customers',pos:'Purchase_Orders',pbg:'PBG_Register',quotation:'Quotations',pi:'Proforma_Invoices',invoice:'Sales_Register',challan:'Delivery_Challans',hsnsum:'HSN_Summary',payments:'Collections',expenses:'Expenses',leadexp:'Lead_wise_Expenses',advances:'Advances',purchases:'Purchases',products:'Products',employees:'Employees'};xport(names[k]||k,exportRows(k))},
+  viewFile:async d=>{const r=await IDB.get('files',d.id);const m=S.files[d.id]||{};const v=$('#viewer');if(!r){toast('This file isn’t stored in this browser.');return}const u=await fileURL(d.id);const isImg=(r.type||'').startsWith('image/');
+    v.innerHTML=`<div class="mback" data-act="closeViewer"></div><div class="mbox wide"><header><h2 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.name||r.name)}</h2><button class="iconbtn" data-act="closeViewer" aria-label="Close">${ic('x')}</button></header><div class="mbody">${isImg?`<img class="viewimg" src="${u}" alt="">`:`<div class="empty">${ic('file')}<p style="margin-top:8px">${esc(m.name)} · ${fmtSize(r.size||0)}</p><p class="small">Preview isn’t available for this file type. Download it to open.</p></div>`}<p class="small muted">${fmtSize(r.size||0)} · uploaded ${fd(m.at)}${m.by?' by '+esc(userName(m.by)):''}</p></div><div class="mfoot">${btn('Download','dlFile',{id:d.id},'pri','download')}</div></div>`;v.hidden=false},
+  closeViewer:()=>{$('#viewer').hidden=true;$('#viewer').innerHTML=''},
+  dlFile:async d=>{const r=await IDB.get('files',d.id);if(r)saveFile((S.files[d.id]||{}).name||r.name,r.blob)},
+  rmFile:(d,el)=>{const w=el.closest('.attach');const h=w.querySelector('input[data-json]');const ids=JSON.parse(h.value||'[]').filter(x=>x!==d.id);h.value=JSON.stringify(ids);el.closest('.chip').remove()},
+  addBank:()=>{$('#banks').insertAdjacentHTML('beforeend',bankRow({}))},
+  rmBank:(d,el)=>{el.closest('.bankrow').remove()}
+};
+function savePur(o,id){if(!o.vendor||!o.billNo||!(+o.total>0)){toast('Fill vendor, bill no. and total.');return false}['taxable','gstAmt','total'].forEach(k=>o[k]=r2(o[k]));if(id)Object.assign(byId('purchases',id),o);else S.purchases.push({id:uid('pu'),companyId:ctx,...o});save();render();toast('Purchase saved')}
+function saveProd(o,id){if(!o.name||!o.hsn||o.price===''){toast('Fill name, HSN and selling price.');return false}o.price=+o.price||0;o.cost=+o.cost||0;o.gst=+o.gst;if(id)Object.assign(byId('products',id),o);else S.products.push({id:uid('p'),companyId:ctx,...o});save();render();toast('Product saved')}
+function saveEmp(o,id){if(!o.name||o.basic===''){toast('Enter the name and basic salary.');return false}['basic','hra','special','other','pt','tds'].forEach(k=>o[k]=+o[k]||0);if(id)Object.assign(byId('employees',id),o);else S.employees.push({id:uid('e'),companyId:ctx,...o});save();render();toast('Employee saved')}
+
+const CHG={
+  stage:el=>{const l=byId('leads',el.dataset.id);l.stage=el.value;save();render();toast('Moved to '+el.value)},
+  switchCo:el=>{ctx=el.value;persistSession();ui.draft=null;go(ui.view==='docedit'||['lead','customer','po'].includes(ui.view)?'dashboard':ui.view)},
+  payMonth:el=>{ui.payMonth=el.value||T().slice(0,7);render()}
+};
+const FCHG={
+  poDue:fm=>{const pd=fm.elements.poDate.value,dd=+fm.elements.deliveryDays.value;if(pd&&dd)fm.elements.deliveryDue.value=addDays(pd,dd)},
+  pbgAmt:fm=>{const v=+fm.elements.value.value,p=+fm.elements.pbg_pct.value;if(v&&p)fm.elements.pbg_amount.value=r2(v*p/100)},
+  km:(fm,el)=>{const E=fm.elements;if(el.name!=='km'&&E.kmStart.value&&E.kmEnd.value)E.km.value=Math.max(0,+E.kmEnd.value-+E.kmStart.value);if(+E.km.value&&+E.rate.value){E.amount.value=r2(+E.km.value*+E.rate.value);E.isPetrol.checked=true;if(!E.head.value)E.head.value='Fuel / Petrol'}},
+  purTot:fm=>{const E=fm.elements;E.total.value=r2((+E.taxable.value||0)+(+E.gstAmt.value||0))},
+  payInv:fm=>{const inv=byId('docs',fm.elements.invoiceId.value);if(inv)fm.elements.amount.value=outstanding(inv)}
+};
+
+/* ================= global listeners ================= */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  if(t.tagName==='ARTICLE'||t.tagName==='TR'){if(e.target.closest('select,input,textarea,a,button'))return}
+  if(t.tagName==='A'&&t.dataset.act)e.preventDefault();
+  const f=ACT[t.dataset.act];if(f)f(t.dataset,t,e);
+});
+document.addEventListener('input',e=>{
+  const el=e.target;
+  if(el.dataset.f){const[v,k]=el.dataset.f.split('|');(ui.f[v]=ui.f[v]||{})[k]=el.value;clearTimeout(ui.ft);ui.ft=setTimeout(render,el.type==='search'?180:0);return}
+  if(el.dataset.d&&ui.draft){if(el.tagName==='SELECT')return;ui.draft[el.dataset.d]=el.value;if(el.dataset.d==='date')null;return}
+  if(el.dataset.li!==undefined&&ui.draft&&el.tagName!=='SELECT'){const it=ui.draft.items[+el.dataset.li];it[el.dataset.k]=el.type==='number'?el.value:el.value;const a=document.getElementById('amt_'+el.dataset.li);if(a)a.textContent=money(r2((+it.qty||0)*(+it.rate||0)*(1-(+it.disc||0)/100)));const tt=$('#doc_totals');if(tt)tt.innerHTML=totalsHTML(ui.draft);return}
+  if(el.dataset.lop){const[m,id]=el.dataset.lop.split('|');ui.lop[m+id]=+el.value||0;clearTimeout(ui.lt);ui.lt=setTimeout(render,400);return}
+  if(el.dataset.fchg){const fm=el.closest('form');if(fm&&FCHG[el.dataset.fchg])FCHG[el.dataset.fchg](fm,el)}
+  if(el.dataset.brand!==undefined){const fm=el.closest('form');fm.elements.brand.value=el.value;$('#brandSw').style.background=el.value}
+});
+document.addEventListener('change',async e=>{
+  const el=e.target;
+  if(el.dataset.chg&&CHG[el.dataset.chg]){CHG[el.dataset.chg](el);return}
+  if(el.dataset.d&&ui.draft&&el.tagName==='SELECT'){ui.draft[el.dataset.d]=el.value;if(el.dataset.d==='customerId'){const cu=byId('customers',el.value);if(cu&&(ui.draft.type==='invoice'||ui.draft.type==='pi')&&cu.creditDays)ui.draft.creditDays=cu.creditDays;render()}else if(el.dataset.d==='leadId'||el.dataset.d==='poId'){if(el.dataset.d==='poId'){const p=byId('pos',el.value);if(p){ui.draft.buyerOrderNo=p.poNo;ui.draft.buyerOrderDate=p.poDate}}render()}return}
+  if(el.dataset.d==='date'&&ui.draft){ui.draft.date=el.value||T();render();return}
+  if(el.dataset.li!==undefined&&ui.draft&&el.tagName==='SELECT'){const it=ui.draft.items[+el.dataset.li];if(el.dataset.k==='productId'){const p=byId('products',el.value);it.productId=el.value;if(p)Object.assign(it,{name:p.name,desc:p.desc||'',hsn:p.hsn,unit:p.unit,rate:p.price,gst:p.gst});render()}else{it[el.dataset.k]=el.dataset.k==='gst'?+el.value:el.value;const tt=$('#doc_totals');if(tt)tt.innerHTML=totalsHTML(ui.draft)}return}
+  if(el.dataset.fchg&&el.tagName==='SELECT'){const fm=el.closest('form');if(fm&&FCHG[el.dataset.fchg])FCHG[el.dataset.fchg](fm,el);return}
+  if(el.matches('[data-upload]')){const w=el.closest('.attach');const h=w.querySelector('input[data-json]');const ids=JSON.parse(h.value||'[]');const files=[...el.files];if(!files.length)return;toast(`Saving ${files.length} file${files.length>1?'s':''}…`);for(const f of files){const id=await storeFile(f);ids.push(id);w.querySelector('.chips').insertAdjacentHTML('beforeend',fileChip(id))}h.value=JSON.stringify(ids);el.value='';toast('Attached '+files.length+' file'+(files.length>1?'s':''));return}
+  if(el.dataset.single){const f=el.files[0];if(!f)return;const fm=el.closest('form');const id=await storeFile(f);fm.elements[el.dataset.single].value=id;const u=await fileURL(id);
+    if(el.dataset.single==='logo'){$('#logoPrev').innerHTML=`<img src="${u}" alt="">`;const col=await logoColor(f);if(col){fm.elements.brand.value=col;$('#brandSw').style.background=col;$('#brandPick').value=col;toast('Theme colour picked from the logo')}}
+    else $('#signPrev').innerHTML=`<img src="${u}" alt="" style="max-height:52px;max-width:146px">`;el.value='';return}
+});
+document.addEventListener('submit',e=>{
+  const fm=e.target;e.preventDefault();
+  if(fm.id==='loginForm'){const o=formObj(fm);const u=S.users.find(x=>x.email===String(o.email).toLowerCase()&&x.password===o.password);const er=$('#lg_err');if(!u){er.textContent='Email or password is incorrect.';er.hidden=false;return}if(!u.active){er.textContent='This account is disabled. Contact your admin.';er.hidden=false;return}me=u;ctx=u.companyId||null;ui.view=u.role==='super'?'companies':'dashboard';persistSession();render();return}
+  if(fm.id==='mform'){const o=formObj(fm);const r=MSUB?MSUB(o,fm):undefined;if(r!==false)closeModal();return}
+  if(fm.id==='coForm'){const o=readCompany(formObj(fm));if(!o.name||!o.gstin){toast('Company name and GSTIN are required.');return}Object.assign(curCo(),o);save();render();toast('Company details saved');return}
+  if(fm.id==='numForm'){const o=formObj(fm);const c=curCo();c.fyStart=+o.fyStart||4;Object.keys(DOCT).forEach(t=>{c.numbering[t]={prefix:o[t+'_prefix'],format:o[t+'_format']||'{PREFIX}/{FY}/{SEQ}',pad:+o[t+'_pad']||3,start:+o[t+'_start']||1}});save();render();toast('Numbering saved');return}
+  if(fm.id==='headsForm'){const o=formObj(fm);const c=curCo();c.heads=String(o.heads||'').split('\n').map(s=>s.trim()).filter(Boolean);c.petrolRate=+o.petrolRate||0;save();render();toast('Expense settings saved');return}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#viewer').hidden)ACT.closeViewer();else if(!$('#modal').hidden)closeModal()}});
+
+/* ================= boot ================= */
+(async function boot(){
+  const st=document.createElement('style');st.textContent=PAPER_CSS;document.head.appendChild(st);
+  await IDB.open();
+  S=await IDB.get('kv','state');
+  if(!S||!S.companies){S=seed();save()}
+  const sess=ls.get('karyalay.session');
+  if(sess){me=S.users.find(u=>u.id===sess.u&&u.active)||null;ctx=me?(me.role==='super'?(sess.c||null):me.companyId):null;if(me&&me.role==='super'&&!ctx)ui.view='companies'}
+  render();
+})();
+</script>
+
+</body>
+</html>

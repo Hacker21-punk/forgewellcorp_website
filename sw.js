@@ -7,32 +7,55 @@
 */
 "use strict";
 
-const CACHE = "forgewell-v6";
-const ASSET_CACHE = "forgewell-assets-v6";
+const CACHE = "forgewell-v7";
+const ASSET_CACHE = "forgewell-assets-v7";
 const PRECACHE = [
   "./",
   "index.html",
+  "contact.html",
+  "trueprogress.html",
+  "dashboard.html",
+  "survey.html",
+  "video.html",
+  "login.html",
+  "reset-password.html",
   "styles.css",
   "script.js",
+  "theme.js",
   "site.webmanifest",
   "robots.txt",
   "sitemap.xml",
   "assets/media/logo-2.svg",
   "assets/media/logo-full.svg",
+  "assets/index.css",
+  "assets/theme.js",
+  "assets/dataProtection.js",
+  "assets/recycleBin.js",
+  "assets/exceljs.min.js",
+  "assets/xlsx.full.min.js",
+  "assets/trueprogress_logo.png",
   "404.html",
   "trueprogress/index.html",
+  "trueprogress/dashboard.html",
   "trueprogress/survey.html",
   "trueprogress/video.html",
   "trueprogress/login.html",
   "trueprogress/reset-password.html",
   "trueprogress/assets/index.css",
+  "trueprogress/assets/theme.js",
+  "trueprogress/assets/dataProtection.js",
+  "trueprogress/assets/recycleBin.js",
+  "trueprogress/assets/exceljs.min.js",
   "trueprogress/assets/login.css",
   "trueprogress/assets/reset-password.css",
   "trueprogress/assets/trueprogress_logo.png",
   "trueprogress/assets/xlsx.full.min.js",
   "trueprogress/backup%20details%20of%20trueprogress/users.json",
   "trueprogress/backup%20details%20of%20trueprogress/videos.json",
-  "trueprogress/backup%20details%20of%20trueprogress/surveys.json"
+  "trueprogress/backup%20details%20of%20trueprogress/surveys.json",
+  "backup%20details%20of%20trueprogress/users.json",
+  "backup%20details%20of%20trueprogress/videos.json",
+  "backup%20details%20of%20trueprogress/surveys.json"
 ];
 
 self.addEventListener("install", (event) => {

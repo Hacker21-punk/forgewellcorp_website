@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Trueprogress by Forgewell Corporation</title>
+  <meta name="description" content="Trueprogress - Survey Videos" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#14124c" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/index.css" />
+  <script>
+    (function() {
+      try {
+        localStorage.setItem('tp_theme', 'light');
+        document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) {}
+    })();
+  </script>
+  <script src="assets/theme.js"></script>
+  <script src="assets/dataProtection.js"></script>
+  <script src="assets/recycleBin.js"></script>
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <main class="dashboard-content">
+      <div class="dashboard-container">
+        <!-- Top Header Row -->
+        <header class="header-row">
+          <a href="https://www.forgewellcorp.com/" class="logo-link" title="Forgewell Corporation">
+            <span class="logo-wrapper">
+              <span class="logo-sizer">
+                <img
+                  class="logo-img"
+                  alt="Trueprogress"
+                  src="/trueprogress/assets/trueprogress_logo.png"
+                  onerror="this.onerror=null;this.src='assets/trueprogress_logo.png';"
+                />
+              </span>
+            </span>
+          </a>
+
+          <!-- Header Right Actions: Profile Menu -->
+          <div class="header-right-actions">
+            <!-- Profile Menu Container -->
+            <div class="profile-menu-container">
+              <div class="profile-btn-wrapper" id="profileMenuBtn">
+                <span class="profile-name" id="profileName">AV</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              <!-- Profile Dropdown Card -->
+              <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-dropdown-name" id="dropdownName">Admin User</div>
+                <div class="profile-dropdown-role" id="dropdownRole">User</div>
+                <div class="profile-dropdown-detail">
+                  <span class="detail-label">Phone</span>
+                  <span class="detail-value" id="dropdownPhone">N/A</span>
+                </div>
+                <div class="profile-dropdown-detail">
+                  <span class="detail-label">Email</span>
+                  <span class="detail-value" id="dropdownEmail">N/A</span>
+                </div>
+
+                <button class="profile-dropdown-logout-btn" id="logoutBtn">
+                  Logout
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <ul class="breadcrumb-list">
+            <li class="breadcrumb-item" style="cursor: pointer;">
+              <a id="breadcrumbDashboardLink" href="/dashboard" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit;">
+                <svg aria-hidden="true" style="width: 1rem; height: 1rem; margin-right: 0.5rem;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                </svg>
+                Home
+              </a>
+            </li>
+            <li class="breadcrumb-item">
+              <svg aria-hidden="true" style="width: 1.25rem; height: 1.25rem; color: #9ca3af; margin: 0 0.25rem;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              <span id="breadcrumbSurveyName" style="color: #374151;">Survey</span>
+            </li>
+          </ul>
+          <div id="breadcrumbAdminActions" style="display: none; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button class="btn-breadcrumb-action" id="recycleBinBtn" type="button" onclick="openRecycleBinModal()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              Recycle Bin
+            </button>
+          </div>
+        </nav>
+
+        <!-- Action row above table -->
+        <div class="table-action-row" id="tableActionControls" style="display: none;">
+          <!-- Toggled dynamically -->
+        </div>
+
+        <!-- Table Card -->
+        <div class="table-card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" /></th>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Survey Date</th>
+                </tr>
+              </thead>
+              <tbody id="videoTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Watch Footer -->
+        <div class="watch-footer-row">
+          <button class="btn-watch disabled" id="watchBtn" onclick="watchSelectedVideos()" disabled>Watch</button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p class="footer-text">© 2023 Forgewell Corporation</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Recycle Bin -->
+  <div class="modal-overlay" id="recycleBinModal">
+    <div class="modal-container" style="max-width: 840px; width: 92%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <h3 class="modal-title">Recycle Bin</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeRecycleBinModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
+          Deleted items across TrueProgress (surveys, users, videos, landmarks) are preserved here. You can restore them anytime or delete them permanently.
+        </p>
+        <div class="bin-filter-bar">
+          <!-- Dynamically populated filter buttons -->
+        </div>
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="users-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align: left; width: 110px;">Type</th>
+                <th style="text-align: left;">Item &amp; Details</th>
+                <th style="text-align: left; width: 160px;">Deleted Date</th>
+                <th style="text-align: right; width: 190px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="recycleBinTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div id="recycleBinEmptyMsg" style="text-align: center; padding: 2rem; color: var(--text-tertiary); display: none;">
+          Recycle Bin is empty
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-recycle-restore-all" id="restoreAllBinBtn" onclick="handleRestoreAllBin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            Restore All
+          </button>
+          <button type="button" class="btn-action-delete" id="emptyRecycleBinBtn" style="border-radius: var(--radius-sm); font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="handleEmptyRecycleBin()">Empty Recycle Bin</button>
+        </div>
+        <button type="button" class="btn-modal-cancel" onclick="closeRecycleBinModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add / Edit Video -->
+  <div class="modal-overlay" id="videoDetailModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="videoModalTitle">Add a video</h3>
+        <button class="modal-close-btn" onclick="closeVideoModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="videoForm" onsubmit="return handleSaveVideo(event)">
+        <input type="hidden" id="editVideoId" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Video Name</label>
+            <input type="text" id="videoNameInput" class="form-input" placeholder="Enter video name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Video URL</label>
+            <input type="url" id="videoUrlInput" class="form-input" placeholder="https://forgewell.s3.ap-south-1.amazonaws.com/..." required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Survey Date</label>
+            <input type="date" id="videoDateInput" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div class="form-radio-group">
+              <label class="form-radio-label">
+                <input type="radio" name="videoStatus" value="active" checked class="form-radio-input" /> ACTIVE
+              </label>
+              <label class="form-radio-label">
+                <input type="radio" name="videoStatus" value="inactive" class="form-radio-input" /> INACTIVE
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeVideoModal()">Cancel</button>
+          <button type="submit" class="btn-modal-submit" id="saveVideoBtn">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let surveyId = null;
+    let surveyName = '';
+    let currentUser = null;
+    let surveyVideos = [];
+
+    // Safe storage guardians
+    function safeGet(key, fallback = []) {
+      if (window.TPStorage && window.TPStorage.get) {
+        const val = window.TPStorage.get(key, fallback);
+        return val !== null && val !== undefined ? val : fallback;
+      }
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function safeSet(key, value) {
+      if (window.TPStorage && window.TPStorage.set) {
+        return window.TPStorage.set(key, value);
+      }
+      try {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        return true;
+      } catch (e) {
+        console.warn('safeSet error for ' + key, e);
+        return false;
+      }
+    }
+
+    // URL Param parsing
+    const urlParams = new URLSearchParams(window.location.search);
+    surveyId = (urlParams.get('id') || '').trim();
+    surveyName = (urlParams.get('name') || '').trim();
+
+    if (surveyName) {
+      const bc = document.getElementById('breadcrumbSurveyName');
+      if (bc) bc.innerText = surveyName;
+    }
+
+    // Session check with localStorage fallback
+    const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+    const isTpSubdir = window.location.pathname.includes('/trueprogress/');
+    if (isTpSubdir) {
+      const bDash = document.getElementById('breadcrumbDashboardLink');
+      if (bDash) bDash.href = 'dashboard.html';
+    }
+    if (!userSession) {
+      window.location.href = (isTpSubdir ? 'login.html' : '/login');
+    } else {
+      currentUser = JSON.parse(userSession);
+      function getInitials(name) {
+        if (!name) return 'AV';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      const pName = document.getElementById('profileName');
+      if (pName) pName.innerText = getInitials(currentUser.name);
+      const dName = document.getElementById('dropdownName');
+      if (dName) dName.innerText = currentUser.name || '';
+      const dPhone = document.getElementById('dropdownPhone');
+      if (dPhone) dPhone.innerText = currentUser.phoneNumber || 'N/A';
+      const dEmail = document.getElementById('dropdownEmail');
+      if (dEmail) dEmail.innerText = currentUser.email || 'N/A';
+
+      const isAdmin = currentUser && (currentUser.admin === "true" || currentUser.admin === true);
+      const dRole = document.getElementById('dropdownRole');
+      if (dRole) dRole.innerText = isAdmin ? "Admin" : "User";
+
+      const adminActions = document.getElementById('breadcrumbAdminActions');
+      if (adminActions && isAdmin) {
+        adminActions.style.display = 'flex';
+      }
+
+      // Access permission check: Admins ALWAYS have access to all surveys
+      if (!isAdmin) {
+        const hasSurveyConfig = currentUser.survey && Array.isArray(currentUser.survey);
+        const wildcardAccess = hasSurveyConfig && currentUser.survey.map(s => s.trim()).includes('*');
+        if (!wildcardAccess) {
+          if (hasSurveyConfig) {
+            const allowedSurveys = currentUser.survey.map(s => s.trim().toLowerCase());
+            const hasAccess = (surveyName && allowedSurveys.includes(surveyName.trim().toLowerCase())) ||
+                              (surveyId && allowedSurveys.includes(surveyId.trim().toLowerCase()));
+            if (!hasAccess) {
+              alert('You do not have permission to view this survey.');
+              window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
+            } else {
+              loadPageData();
+            }
+          } else {
+            alert('You do not have permission to view this survey.');
+            window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
+          }
+        } else {
+          loadPageData();
+        }
+      } else {
+        loadPageData();
+      }
+    }
+
+    async function loadPageData() {
+      await resolveSurveyInfo();
+      await fetchVideos();
+      renderActionRow();
+    }
+
+    // Auto-resolve survey ID and name if either is missing or mismatched
+    async function resolveSurveyInfo() {
+      try {
+        let surveysList = [];
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          surveysList = await window.TPDataLoader.fetchJson('surveys.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/surveys.json',
+            '/backup%20details%20of%20trueprogress/surveys.json',
+            'trueprogress/backup%20details%20of%20trueprogress/surveys.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/surveys.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                surveysList = await res.json();
+                break;
+              }
+            } catch (e) {}
+          }
+        }
+
+        const customSurveys = safeGet('custom_surveys', []);
+        const allSurveys = [...surveysList, ...customSurveys];
+
+        if (surveyId && !surveyName) {
+          const match = allSurveys.find(s => s.id === surveyId);
+          if (match && match.name) {
+            surveyName = match.name;
+          }
+        } else if (surveyName && !surveyId) {
+          const match = allSurveys.find(s => (s.name || '').trim().toLowerCase() === surveyName.toLowerCase());
+          if (match && match.id) {
+            surveyId = match.id;
+          }
+        } else if (surveyId && surveyName) {
+          const matchById = allSurveys.find(s => s.id === surveyId);
+          if (matchById && matchById.name) {
+            surveyName = matchById.name;
+          }
+        }
+
+        if (surveyName) {
+          const bc = document.getElementById('breadcrumbSurveyName');
+          if (bc) bc.innerText = surveyName;
+        }
+      } catch (err) {
+        console.warn('Could not auto-resolve survey info:', err);
+      }
+    }
+
+    async function fetchVideos() {
+      try {
+        let defaultVideos = [];
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          defaultVideos = await window.TPDataLoader.fetchJson('videos.json');
+        } else {
+          const candidates = [
+            'backup%20details%20of%20trueprogress/videos.json',
+            '/backup%20details%20of%20trueprogress/videos.json',
+            'trueprogress/backup%20details%20of%20trueprogress/videos.json',
+            '/trueprogress/backup%20details%20of%20trueprogress/videos.json'
+          ];
+          for (const u of candidates) {
+            try {
+              const res = await fetch(u);
+              if (res.ok) {
+                defaultVideos = await res.json();
+                break;
+              }
+            } catch (e) {}
+          }
+        }
+
+        // Load custom overrides from safe storage
+        const customVideos = safeGet('custom_videos', []);
+        const binDeletedVideos = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('video') : [];
+        const deletedVideos = safeGet('deleted_videos', []);
+        const allDeletedVideoIds = new Set([...deletedVideos, ...binDeletedVideos]);
+        const editedVideos = safeGet('edited_videos', []);
+
+        const sIdLower = (surveyId || '').toLowerCase().trim();
+        const sNameLower = (surveyName || '').toLowerCase().trim();
+
+        function matchesSurvey(v) {
+          if (!v) return false;
+          if (allDeletedVideoIds.has(v.id)) return false;
+          const vSurvey = String(v.survey || v.surveyId || '').trim().toLowerCase();
+          if (sIdLower && vSurvey === sIdLower) return true;
+          if (sNameLower && vSurvey === sNameLower) return true;
+          return false;
+        }
+
+        // Filter default videos belonging to this survey
+        let filtered = (defaultVideos || []).filter(matchesSurvey);
+
+        // Apply edits
+        filtered = filtered.map(v => {
+          const edited = editedVideos.find(e => e.id === v.id);
+          return edited ? { ...v, ...edited } : v;
+        });
+
+        // Add custom new ones (strictly filtering out deleted ones)
+        const customForSurvey = (customVideos || []).filter(matchesSurvey);
+        surveyVideos = [...filtered, ...customForSurvey];
+
+        // Anti-wipe protection: If this survey had videos in defaultVideos, do not let them disappear
+        if (surveyVideos.length === 0 && defaultVideos.length > 0) {
+          const baseSurveyVideos = (defaultVideos || []).filter(v => {
+            const vSurvey = String(v.survey || v.surveyId || '').trim().toLowerCase();
+            return (sIdLower && vSurvey === sIdLower) || (sNameLower && vSurvey === sNameLower);
+          });
+          if (baseSurveyVideos.length > 0) {
+            surveyVideos = baseSurveyVideos;
+            try { localStorage.removeItem('deleted_videos'); } catch(e) {}
+          }
+        }
+
+        renderTable();
+      } catch (e) {
+        console.error('Error fetching videos:', e);
+        const tbody = document.getElementById('videoTableBody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444; padding: 2rem;">Error loading videos list. Please refresh the page.</td></tr>`;
+        }
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('videoTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (surveyVideos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 2rem;">No videos found for this survey.</td></tr>`;
+        return;
+      }
+
+      surveyVideos.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.id = `video-row-${v.id}`;
+        
+        let displayDate = v.createdAt || 'N/A';
+        try {
+          if (typeof displayDate === 'number') {
+            const d = new Date(displayDate);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            displayDate = `${day}/${month}/${d.getFullYear()}`;
+          } else if (typeof displayDate === 'string' && displayDate !== 'N/A') {
+            const d = new Date(displayDate + (displayDate.includes('T') ? '' : 'T00:00:00'));
+            if (!isNaN(d.getTime())) {
+              const day = String(d.getDate()).padStart(2, '0');
+              const month = String(d.getMonth() + 1).padStart(2, '0');
+              displayDate = `${day}/${month}/${d.getFullYear()}`;
+            }
+          }
+        } catch(e) {}
+
+        const vStatus = (v.status || 'active').trim().toLowerCase();
+        tr.innerHTML = `
+          <td><input type="checkbox" value="${v.id}" class="video-row-checkbox" onchange="handleCheckboxChange()" /></td>
+          <td><strong>${escapeHtml(v.name || 'Film')}</strong></td>
+          <td><span class="status-badge ${vStatus}">${escapeHtml(vStatus)}</span></td>
+          <td>${displayDate}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      handleCheckboxChange();
+    }
+
+    // Toggle row selections and action buttons
+    function handleCheckboxChange() {
+      const checkboxes = document.querySelectorAll('.video-row-checkbox');
+      const checkedBoxes = Array.from(checkboxes).filter(c => c.checked);
+      
+      const watchBtn = document.getElementById('watchBtn');
+
+      // Highlight selected rows
+      checkboxes.forEach(c => {
+        const row = document.getElementById(`video-row-${c.value}`);
+        if (row) {
+          if (c.checked) {
+            row.classList.add('selected');
+          } else {
+            row.classList.remove('selected');
+          }
+        }
+      });
+
+      if (watchBtn) {
+        if (checkedBoxes.length > 0) {
+          watchBtn.classList.remove('disabled');
+          watchBtn.classList.add('active');
+          watchBtn.disabled = false;
+        } else {
+          watchBtn.classList.add('disabled');
+          watchBtn.classList.remove('active');
+          watchBtn.disabled = true;
+        }
+      }
+
+      renderActionRow(checkedBoxes.length);
+    }
+
+    function toggleSelectAll(selectAll) {
+      const checkboxes = document.querySelectorAll('.video-row-checkbox');
+      checkboxes.forEach(c => {
+        c.checked = selectAll.checked;
+      });
+      handleCheckboxChange();
+    }
+
+    // Render "Add a video" or "Edit"/"Delete" action controls above the table for Admin
+    function renderActionRow(checkedCount = 0) {
+      const actionContainer = document.getElementById('tableActionControls');
+      if (!actionContainer) return;
+      actionContainer.innerHTML = '';
+      
+      const isAdmin = currentUser && (currentUser.admin === "true" || currentUser.admin === true);
+      if (!isAdmin) {
+        actionContainer.style.display = "none";
+        return;
+      }
+      actionContainer.style.display = "flex";
+
+      if (checkedCount === 0) {
+        actionContainer.innerHTML = `<button class="btn-action-normal" onclick="openAddVideoModal()">Add a video</button>`;
+      } else if (checkedCount === 1) {
+        const selectedId = Array.from(document.querySelectorAll('.video-row-checkbox')).find(c => c.checked).value;
+        actionContainer.innerHTML = `
+          <button class="btn-action-normal" onclick="openEditVideoModal('${selectedId}')">Edit</button>
+          <button class="btn-action-delete" onclick="handleDeleteVideos()">Delete</button>
+        `;
+      } else {
+        actionContainer.innerHTML = `
+          <button class="btn-action-delete" onclick="handleDeleteVideos()">Delete</button>
+        `;
+      }
+    }
+
+    // Modal Control: Add/Edit Video
+    const videoDetailModal = document.getElementById('videoDetailModal');
+
+    function openAddVideoModal() {
+      document.getElementById('videoModalTitle').innerText = "Add a video";
+      document.getElementById('editVideoId').value = "";
+      document.getElementById('videoForm').reset();
+      document.getElementById('saveVideoBtn').innerText = "Create";
+      
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('videoDateInput').value = today;
+      videoDetailModal.classList.add('show');
+    }
+
+    function openEditVideoModal(id) {
+      const video = surveyVideos.find(v => v.id === id);
+      if (!video) return;
+
+      document.getElementById('videoModalTitle').innerText = "Edit video details";
+      document.getElementById('editVideoId').value = video.id;
+      document.getElementById('videoNameInput').value = video.name || 'Film';
+      document.getElementById('videoUrlInput').value = video.videoURL || '';
+      
+      let dateVal = video.createdAt || '';
+      try {
+        const d = new Date(dateVal);
+        if (!isNaN(d.getTime())) {
+          dateVal = d.toISOString().split('T')[0];
+        }
+      } catch(e) {}
+      document.getElementById('videoDateInput').value = dateVal;
+
+      const radios = document.getElementsByName('videoStatus');
+      const curVStatus = (video.status || 'active').trim().toLowerCase();
+      for (let r of radios) {
+        if (r.value.toLowerCase() === curVStatus) {
+          r.checked = true;
+        }
+      }
+
+      document.getElementById('saveVideoBtn').innerText = "Save";
+      videoDetailModal.classList.add('show');
+    }
+
+    function closeVideoModal() {
+      videoDetailModal.classList.remove('show');
+    }
+
+    function handleSaveVideo(event) {
+      event.preventDefault();
+      const isAdmin = currentUser && (currentUser.admin === "true" || currentUser.admin === true);
+      if (!isAdmin) {
+        alert('Permission denied.');
+        return false;
+      }
+      const id = document.getElementById('editVideoId').value;
+      const name = document.getElementById('videoNameInput').value;
+      const videoURL = document.getElementById('videoUrlInput').value;
+      const createdAt = document.getElementById('videoDateInput').value;
+      
+      const radios = document.getElementsByName('videoStatus');
+      let status = 'active';
+      for (let r of radios) {
+        if (r.checked) status = r.value;
+      }
+
+      if (id) {
+        // Edit
+        let edited = safeGet('edited_videos', []);
+        const idx = edited.findIndex(e => e.id === id);
+        const update = { id, name, videoURL, createdAt, status };
+        if (idx > -1) edited[idx] = update;
+        else edited.push(update);
+        safeSet('edited_videos', edited);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'edited_videos' } }));
+      } else {
+        // Create
+        const newVideo = {
+          id: 'vid-' + Math.random().toString(36).substring(2, 10),
+          survey: surveyId,
+          name,
+          videoURL,
+          createdAt,
+          status,
+          landmarks: []
+        };
+        let custom = safeGet('custom_videos', []);
+        custom.push(newVideo);
+        safeSet('custom_videos', custom);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'custom_videos' } }));
+      }
+
+      closeVideoModal();
+      fetchVideos();
+    }
+
+    function handleDeleteVideos() {
+      const isAdmin = currentUser && (currentUser.admin === "true" || currentUser.admin === true);
+      if (!isAdmin) {
+        alert('Permission denied.');
+        return;
+      }
+      const checkedBoxes = Array.from(document.querySelectorAll('.video-row-checkbox')).filter(c => c.checked);
+      if (checkedBoxes.length === 0) return;
+
+      if (confirm(`Are you sure you want to delete the selected ${checkedBoxes.length} video(s)?`)) {
+        let deleted = safeGet('deleted_videos', []);
+        let custom = safeGet('custom_videos', []);
+
+        checkedBoxes.forEach(cb => {
+          const id = cb.value;
+          const videoObj = surveyVideos.find(v => v.id === id);
+          const isCustom = id.startsWith('vid-');
+
+          if (window.TrueProgressBin && videoObj) {
+            window.TrueProgressBin.addItem({
+              type: 'video',
+              id: id,
+              name: videoObj.name || 'Film',
+              subtitle: `Survey: ${surveyName || videoObj.survey || 'Survey'} • Date: ${videoObj.createdAt || 'N/A'}`,
+              data: videoObj,
+              meta: { surveyId: surveyId, surveyName: surveyName, isCustom: isCustom }
+            });
+          }
+
+          if (isCustom) {
+            custom = custom.filter(v => v.id !== id);
+          }
+          if (!deleted.includes(id)) {
+            deleted.push(id);
+          }
+        });
+
+        safeSet('deleted_videos', deleted);
+        safeSet('custom_videos', custom);
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'deleted_videos' } }));
+        
+        if (window.TrueProgressBin) {
+          window.TrueProgressBin.showToast(`${checkedBoxes.length} video(s) moved to Recycle Bin`, 'info');
+        }
+
+        fetchVideos();
+      }
+    }
+
+    // ===== Recycle Bin Functionality =====
+    function openRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.add('show');
+        renderRecycleBin();
+      }
+    }
+
+    function closeRecycleBinModal() {
+      const modal = document.getElementById('recycleBinModal');
+      if (modal) {
+        modal.classList.remove('show');
+      }
+    }
+
+    async function renderRecycleBin() {
+      if (window.TrueProgressBin) {
+        window.TrueProgressBin.renderModal({
+          modalId: 'recycleBinModal',
+          onUpdate: async function () {
+            await fetchVideos();
+          }
+        });
+      }
+    }
+
+    async function handleRestoreAllBin() {
+      if (!window.TrueProgressBin) return;
+      const filter = window.TrueProgressBin.activeFilter;
+      const count = window.TrueProgressBin.getBinItems().length;
+      if (count === 0) return;
+      if (confirm('Are you sure you want to restore all items in the Recycle Bin?')) {
+        window.TrueProgressBin.restoreAll(filter);
+        await fetchVideos();
+        renderRecycleBin();
+      }
+    }
+
+    async function handleEmptyRecycleBin() {
+      if (!window.TrueProgressBin) return;
+      if (confirm('Are you sure you want to permanently delete all items in the Recycle Bin? This action cannot be undone.')) {
+        window.TrueProgressBin.emptyBin();
+        await fetchVideos();
+        renderRecycleBin();
+      }
+    }
+
+    // Cross-tab and real-time reactive synchronization
+    async function syncAndRefreshSurveyView() {
+      try {
+        await fetchVideos();
+      } catch (e) {
+        console.warn('Survey sync error:', e);
+      }
+    }
+
+    window.addEventListener('storage', async function (e) {
+      if (!e.key || [
+        'edited_videos',
+        'custom_videos',
+        'deleted_videos',
+        'edited_surveys',
+        'custom_surveys',
+        'tp_recycle_bin'
+      ].includes(e.key)) {
+        await syncAndRefreshSurveyView();
+      }
+    });
+
+    window.addEventListener('tp_data_changed', async function () {
+      await syncAndRefreshSurveyView();
+    });
+
+    window.addEventListener('tp_item_restored', async function () {
+      await syncAndRefreshSurveyView();
+    });
+
+    document.addEventListener('visibilitychange', async function () {
+      if (!document.hidden) {
+        await syncAndRefreshSurveyView();
+      }
+    });
+
+    window.addEventListener('focus', async function () {
+      await syncAndRefreshSurveyView();
+    });
+
+    // Go to Watch Page
+    function watchSelectedVideos() {
+      const checkedBoxes = Array.from(document.querySelectorAll('.video-row-checkbox')).filter(c => c.checked);
+      if (checkedBoxes.length === 0) return;
+
+      const videoIds = checkedBoxes.map(c => c.value).join(',');
+      const videoNamesList = checkedBoxes.map(cb => {
+        const found = surveyVideos.find(v => v.id === cb.value);
+        return found ? found.name : 'Film';
+      }).join(',');
+
+      // Navigate to video page
+      window.location.href = `video.html?id=${videoIds}&survey=${surveyId}&surveyName=${encodeURIComponent(surveyName)}&videoNames=${encodeURIComponent(videoNamesList)}`;
+    }
+
+    // Dropdown toggle logic
+    const profileMenuBtn = document.getElementById('profileMenuBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    profileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('pointerdown', (e) => {
+      if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
+        profileDropdown.classList.remove('show');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (confirm('Do you want to log out?')) {
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser');
+        window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'login.html' : '/login');
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Register Service Worker for offline capability & asset caching
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

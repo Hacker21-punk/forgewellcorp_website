@@ -10,7 +10,19 @@
       "destination": "/backup details of trueprogress/$1"
     },
     {
+      "source": "/trueprogress/backup%20details%20of%20trueprogress/(.*)",
+      "destination": "/trueprogress/backup details of trueprogress/$1"
+    },
+    {
+      "source": "/trueprogress/backup details of trueprogress/(.*)",
+      "destination": "/trueprogress/backup details of trueprogress/$1"
+    },
+    {
       "source": "/solutions/quantum-&-physics",
+      "destination": "/solutions/quantum-and-physics.html"
+    },
+    {
+      "source": "/solutions/quantum-&amp;-physics",
       "destination": "/solutions/quantum-and-physics.html"
     },
     {
@@ -22,11 +34,19 @@
       "destination": "/solutions/tactical-and-surveillance-solutions.html"
     },
     {
+      "source": "/solutions/tactical-&amp;-surveillance-solutions",
+      "destination": "/solutions/tactical-and-surveillance-solutions.html"
+    },
+    {
       "source": "/solutions/tactical-surveillance-solutions",
       "destination": "/solutions/tactical-and-surveillance-solutions.html"
     },
     {
       "source": "/solutions/test-&-measurement-solutions",
+      "destination": "/solutions/test-and-measurement-solutions.html"
+    },
+    {
+      "source": "/solutions/test-&amp;-measurement-solutions",
       "destination": "/solutions/test-and-measurement-solutions.html"
     },
     {
@@ -38,11 +58,19 @@
       "destination": "/solutions/machine-vision-and-monitoring-solutions.html"
     },
     {
+      "source": "/solutions/machine-vision-&amp;-monitoring-solutions",
+      "destination": "/solutions/machine-vision-and-monitoring-solutions.html"
+    },
+    {
       "source": "/solutions/machine-vision-monitoring-solutions",
       "destination": "/solutions/machine-vision-and-monitoring-solutions.html"
     },
     {
       "source": "/solutions/automation-&-access-control-systems",
+      "destination": "/solutions/automation-and-access-control-systems.html"
+    },
+    {
+      "source": "/solutions/automation-&amp;-access-control-systems",
       "destination": "/solutions/automation-and-access-control-systems.html"
     },
     {
@@ -62,6 +90,10 @@
       "destination": "/solutions/bim-and-3d-lidar-scanning.html"
     },
     {
+      "source": "/solutions/bim-&amp;-3d-lidar-scanning",
+      "destination": "/solutions/bim-and-3d-lidar-scanning.html"
+    },
+    {
       "source": "/solutions/bim-3d-lidar-scanning",
       "destination": "/solutions/bim-and-3d-lidar-scanning.html"
     },
@@ -78,7 +110,15 @@
       "destination": "/contact.html"
     },
     {
+      "source": "/about",
+      "destination": "/index.html"
+    },
+    {
       "source": "/solutions",
+      "destination": "/solutions/index.html"
+    },
+    {
+      "source": "/solutions/",
       "destination": "/solutions/index.html"
     },
     {
@@ -86,7 +126,15 @@
       "destination": "/trueprogress/login.html"
     },
     {
+      "source": "/login.html",
+      "destination": "/trueprogress/login.html"
+    },
+    {
       "source": "/reset-password",
+      "destination": "/trueprogress/reset-password.html"
+    },
+    {
+      "source": "/reset-password.html",
       "destination": "/trueprogress/reset-password.html"
     },
     {
@@ -94,12 +142,48 @@
       "destination": "/trueprogress/dashboard.html"
     },
     {
+      "source": "/dashboard.html",
+      "destination": "/trueprogress/dashboard.html"
+    },
+    {
       "source": "/survey",
+      "destination": "/trueprogress/survey.html"
+    },
+    {
+      "source": "/survey.html",
       "destination": "/trueprogress/survey.html"
     },
     {
       "source": "/video",
       "destination": "/trueprogress/video.html"
+    },
+    {
+      "source": "/video.html",
+      "destination": "/trueprogress/video.html"
+    },
+    {
+      "source": "/trueprogress/login",
+      "destination": "/trueprogress/login.html"
+    },
+    {
+      "source": "/trueprogress/login.html",
+      "destination": "/trueprogress/login.html"
+    },
+    {
+      "source": "/trueprogress/reset-password",
+      "destination": "/trueprogress/reset-password.html"
+    },
+    {
+      "source": "/trueprogress/reset-password.html",
+      "destination": "/trueprogress/reset-password.html"
+    },
+    {
+      "source": "/trueprogress/dashboard",
+      "destination": "/trueprogress/dashboard.html"
+    },
+    {
+      "source": "/trueprogress/dashboard.html",
+      "destination": "/trueprogress/dashboard.html"
     },
     {
       "source": "/trueprogress/survey",
@@ -118,12 +202,12 @@
       "destination": "/trueprogress/video.html"
     },
     {
-      "source": "/trueprogress/login",
-      "destination": "/trueprogress/login.html"
+      "source": "/trueprogress/index",
+      "destination": "/trueprogress/dashboard.html"
     },
     {
-      "source": "/trueprogress/reset-password",
-      "destination": "/trueprogress/reset-password.html"
+      "source": "/trueprogress/index.html",
+      "destination": "/trueprogress/dashboard.html"
     },
     {
       "source": "/trueprogress",
@@ -172,12 +256,12 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; img-src 'self' data: https://ik.imagekit.io https://img.youtube.com https://i.ytimg.com https://*.google.com https://*.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://*.google.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; media-src 'self' blob: https://forgewell.s3.ap-south-1.amazonaws.com https://*.amazonaws.com; frame-src 'self' https://www.youtube.com https://youtube.com https://www.google.com https://maps.google.com https://*.google.com; connect-src 'self' https://forgewell.s3.ap-south-1.amazonaws.com https://*.amazonaws.com https://*.google.com https://*.gstatic.com https://*.googleapis.com https://api.github.com https://gist.githubusercontent.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; block-all-mixed-content"
+          "value": "default-src 'self'; img-src 'self' data: blob: https://ik.imagekit.io https://img.youtube.com https://i.ytimg.com https://*.google.com https://*.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://*.google.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; media-src 'self' blob: https://forgewell.s3.ap-south-1.amazonaws.com https://*.amazonaws.com; frame-src 'self' https://www.youtube.com https://youtube.com https://www.google.com https://maps.google.com https://*.google.com; connect-src 'self' https://forgewell.s3.ap-south-1.amazonaws.com https://*.amazonaws.com https://*.google.com https://*.gstatic.com https://*.googleapis.com https://api.github.com https://gist.githubusercontent.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; block-all-mixed-content"
         }
       ]
     },
     {
-      "source": "/(index|login|reset-password|trueprogress|404|sw.js)",
+      "source": "/(index|login|reset-password|trueprogress|404|dashboard|survey|video|sw.js)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -186,7 +270,7 @@
       ]
     },
     {
-      "source": "/(styles.css|script.js)",
+      "source": "/(styles.css|script.js|theme.js)",
       "headers": [
         {
           "key": "Cache-Control",

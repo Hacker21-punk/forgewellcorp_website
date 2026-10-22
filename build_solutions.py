@@ -813,6 +813,8 @@ def process_file(source_path, title):
                 parent_li = a.find_parent("li")
                 if parent_li: parent_li.decompose()
                 else: a.decompose()
+            elif href == "/about":
+                a["href"] = "/#about"
         for old_mob in mobile_menu.find_all("button", class_="mobile-theme-btn"):
             p_li = old_mob.find_parent("li")
             if p_li: p_li.decompose()

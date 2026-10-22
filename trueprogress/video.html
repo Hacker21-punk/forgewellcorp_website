@@ -32,7 +32,7 @@
       <div class="dashboard-container">
         <!-- Top Header Row -->
         <header class="header-row">
-          <a href="https://forgewellcorp-website-dnhu.vercel.app/" class="logo-link">
+          <a href="https://www.forgewellcorp.com/" class="logo-link" title="Forgewell Corporation">
             <span class="logo-wrapper">
               <span class="logo-sizer">
                 <img
@@ -88,7 +88,7 @@
         <nav class="breadcrumb-nav" aria-label="Breadcrumb" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
           <ul class="breadcrumb-list">
             <li class="breadcrumb-item" style="cursor: pointer;">
-              <a href="/dashboard" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit;">
+              <a id="breadcrumbDashboardLink" href="/dashboard" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit;">
                 <svg aria-hidden="true" style="width: 1rem; height: 1rem; margin-right: 0.5rem;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
                 </svg>
@@ -469,7 +469,7 @@
     const videoNamesParam = urlParams.get('videoNames');
 
     if (!idParam) {
-      window.location.href = '/dashboard';
+      window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
     }
 
     activeVideoIds = idParam ? idParam.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -478,7 +478,7 @@
     const bcSurvey = document.getElementById('breadcrumbSurveyLink');
     if (bcSurvey) {
       bcSurvey.innerText = surveyName;
-      bcSurvey.href = surveyId ? `survey.html?id=${surveyId}&name=${encodeURIComponent(surveyName)}` : '/dashboard';
+      bcSurvey.href = surveyId ? `survey.html?id=${surveyId}&name=${encodeURIComponent(surveyName)}` : (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
     }
     
     const breadcrumbVideoText = activeVideoNames.join(' - ') || 'Video Player';
@@ -491,8 +491,13 @@
     }
 
     const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+    const isTpSubdir = window.location.pathname.includes('/trueprogress/');
+    if (isTpSubdir) {
+      const bDash = document.getElementById('breadcrumbDashboardLink');
+      if (bDash) bDash.href = 'dashboard.html';
+    }
     if (!userSession) {
-      window.location.href = 'login.html';
+      window.location.href = (isTpSubdir ? 'login.html' : '/login');
     } else {
       currentUser = JSON.parse(userSession);
       function getInitials(name) {
@@ -2344,7 +2349,7 @@
       if (confirm('Do you want to log out?')) {
         sessionStorage.clear();
         localStorage.removeItem('loggedInUser');
-        window.location.href = 'login.html';
+        window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'login.html' : '/login');
       }
     });
 

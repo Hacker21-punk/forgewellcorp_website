@@ -82,6 +82,9 @@
         localStorage.setItem(FIX_KEY, 'true');
       }
 
+      // Sanitize user assignments: ensure Amit Kumar does not carry invalid Bairabi assignments in cached stores
+      sanitizeUserAssignments();
+
       // Self-heal survey status for Bairabi Sarang Short Film (lghypa8h) to inactive across any legacy caches
       try {
         ['tp_canonical_surveys.json', 'tp_cached_surveys.json', 'edited_surveys'].forEach(function (key) {
@@ -120,6 +123,48 @@
     }
   }
 
+  function sanitizeUserAssignments() {
+    try {
+      const keys = ['tp_canonical_users.json', 'tp_cached_users.json', 'edited_users'];
+      keys.forEach(function (k) {
+        var raw = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (!raw) return;
+        try {
+          var arr = JSON.parse(raw);
+          if (Array.isArray(arr)) {
+            var modified = false;
+            arr.forEach(function (u) {
+              if (u && (u.email === 'amitkumarcvl20@gmail.com' || u.uid === 'ezNB5e1gOXXgEmSftaiaAoE8FiY2')) {
+                if (Array.isArray(u.survey)) {
+                  var origLen = u.survey.length;
+                  // Remove Bairabi Section if present
+                  u.survey = u.survey.filter(function (s) {
+                    var sClean = String(s).trim().toLowerCase();
+                    return sClean !== 'bairabi section';
+                  });
+                  // Ensure Bairabi Sarang Short Film is preserved
+                  var hasShortFilm = u.survey.some(function (s) {
+                    return String(s).trim().toLowerCase() === 'bairabi sarang short film';
+                  });
+                  if (!hasShortFilm) {
+                    u.survey.push('Bairabi Sarang Short Film');
+                  }
+                  if (u.survey.length !== origLen || !hasShortFilm) modified = true;
+                }
+              }
+            });
+            if (modified) {
+              try { localStorage.setItem(k, JSON.stringify(arr)); } catch (e) {}
+              try { sessionStorage.setItem(k, JSON.stringify(arr)); } catch (e) {}
+            }
+          }
+        } catch (e) {}
+      });
+    } catch (err) {
+      console.warn('User sanitization notice:', err);
+    }
+  }
+
   // Run immediate cleanup
   purgeCloudSync();
   healPoisonedStores();
@@ -151,8 +196,7 @@
       var data = null;
       for (var i = 0; i < candidates.length; i++) {
         try {
-          var fetchUrl = candidates[i] + (candidates[i].indexOf('?') === -1 ? '?_t=' + Date.now() : '&_t=' + Date.now());
-          var res = await fetch(fetchUrl, { cache: 'no-cache' });
+          var res = await fetch(candidates[i], { cache: 'no-cache' });
           if (res.ok) {
             data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
