@@ -55,22 +55,22 @@
 /* 2. DARK MODE OVERRIDES */
 [data-theme="dark"] {
   --theme-mode: 'dark';
-  --auth-bg: #080b11;
+  --auth-bg: #090d16;
   --auth-bg-gradient: 
-    radial-gradient(circle at 10% 20%, rgba(30, 27, 75, 0.5) 0%, rgba(8, 11, 17, 1) 90%),
-    radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.08) 0%, rgba(8, 11, 17, 1) 80%);
-  --auth-orb: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+    radial-gradient(circle at 10% 20%, rgba(30, 41, 59, 0.45) 0%, rgba(9, 13, 22, 1) 90%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, rgba(9, 13, 22, 1) 80%);
+  --auth-orb: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
 
-  --auth-card-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(8, 11, 17, 0.9) 100%);
+  --auth-card-bg: linear-gradient(135deg, rgba(17, 24, 39, 0.85) 0%, rgba(11, 15, 25, 0.95) 100%);
   --auth-card-border: rgba(255, 255, 255, 0.1);
   --auth-card-shadow: 
-    0 30px 60px -15px rgba(0, 0, 0, 0.65), 
-    0 0 50px rgba(99, 102, 241, 0.08),
+    0 30px 60px -15px rgba(0, 0, 0, 0.7), 
+    0 0 50px rgba(59, 130, 246, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
-  --auth-col-left-bg: linear-gradient(135deg, #0f172a 0%, #080b11 100%);
+  --auth-col-left-bg: linear-gradient(135deg, #111827 0%, #090d16 100%);
   --auth-col-left-border: rgba(255, 255, 255, 0.08);
-  --auth-col-glow: radial-gradient(circle, rgba(14, 165, 233, 0.18) 0%, transparent 70%);
+  --auth-col-glow: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
   --auth-illustration-filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.55));
 
   --auth-text-primary: #f8fafc;

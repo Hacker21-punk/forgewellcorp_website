@@ -1,10 +1,63 @@
 /**
- * Forgewell Corporation & TrueProgress Global Theme Manager
- * Supports Light & Dark mode with default set to Light mode.
- * Persists user choice in localStorage ('tp_theme').
+ * Forgewell Corporation & TrueProgress Global Theme & Safe Storage Manager
+ * Supports Light & Dark modes with persistent choice in localStorage ('tp_theme').
+ * Provides global window.TPStorage helper for data protection and recovery.
  */
 (function () {
   'use strict';
+
+  var memoryCache = {};
+
+  // Global safe storage helper to protect all data against quota errors, corrupted JSON, and private browsing limitations
+  window.TPStorage = {
+    get: function (key, fallback) {
+      try {
+        var raw = localStorage.getItem(key);
+        if (raw === null || raw === undefined) {
+          if (memoryCache.hasOwnProperty(key)) return memoryCache[key];
+          try {
+            var sRaw = sessionStorage.getItem(key);
+            if (sRaw !== null && sRaw !== undefined) return JSON.parse(sRaw);
+          } catch (e) {}
+          return fallback;
+        }
+        return JSON.parse(raw);
+      } catch (e) {
+        try {
+          var unparsed = localStorage.getItem(key);
+          if (unparsed !== null && unparsed !== undefined) return unparsed;
+        } catch (err) {}
+        return memoryCache.hasOwnProperty(key) ? memoryCache[key] : fallback;
+      }
+    },
+    set: function (key, val) {
+      try {
+        memoryCache[key] = val;
+        var serialized = typeof val === 'string' ? val : JSON.stringify(val);
+        localStorage.setItem(key, serialized);
+        try {
+          sessionStorage.setItem(key, serialized);
+        } catch (sErr) {}
+        return true;
+      } catch (e) {
+        console.warn('[TPStorage] localStorage write failed for key:', key, e);
+        try {
+          var serializedFallback = typeof val === 'string' ? val : JSON.stringify(val);
+          sessionStorage.setItem(key, serializedFallback);
+        } catch (sErr) {}
+        return false;
+      }
+    },
+    remove: function (key) {
+      delete memoryCache[key];
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {}
+      try {
+        sessionStorage.removeItem(key);
+      } catch (e) {}
+    }
+  };
 
   var STORAGE_KEY = 'tp_theme';
   var DEFAULT_THEME = 'light';
@@ -33,13 +86,14 @@
       try {
         localStorage.setItem(STORAGE_KEY, theme);
         localStorage.setItem('theme', theme);
+        sessionStorage.setItem(STORAGE_KEY, theme);
       } catch (e) {}
     }
 
     // Update meta theme-color if present
     var metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', theme === 'dark' ? '#0b111e' : '#ffffff');
+      metaThemeColor.setAttribute('content', theme === 'dark' ? '#090d16' : '#ffffff');
     }
 
     updateUI(theme);
@@ -61,10 +115,14 @@
       btn.setAttribute('title', label);
     });
 
-    // Update any dropdown text or indicator
+    // Update any dropdown text or indicator badge
     var dropdownText = document.getElementById('dropdownThemeText');
     if (dropdownText) {
-      dropdownText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+      dropdownText.textContent = 'Theme';
+    }
+    var dropdownBadge = document.getElementById('dropdownThemeBadge');
+    if (dropdownBadge) {
+      dropdownBadge.textContent = isDark ? 'Dark Mode' : 'Light Mode';
     }
   }
 
