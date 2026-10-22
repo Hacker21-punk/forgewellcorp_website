@@ -574,6 +574,7 @@
     const COLUMN_LABELS = {
       name: 'Name',
       department: 'Department',
+      project_count: 'Project Count',
       survey_length: 'Survey Length',
       video_count: 'Video Count',
       user_count: 'User Count',
@@ -943,6 +944,20 @@
       });
     }
 
+    function getUserProjects(user) {
+      if (!user) return [];
+      const raw = Array.isArray(user.survey)
+        ? user.survey
+        : (Array.isArray(user.assignedSurveys)
+          ? user.assignedSurveys
+          : (user.survey || user.assignedSurveys ? [user.survey || user.assignedSurveys] : []));
+      const hasWildcard = raw.some(s => s && String(s).trim() === '*');
+      if (hasWildcard) {
+        return surveysList.map(s => s.name || s.id).filter(Boolean);
+      }
+      return raw.filter(Boolean).map(s => String(s).trim());
+    }
+
     function isExcelColumnFiltered(colKey) {
       const viewState = excelFilterState[currentView];
       return Boolean(viewState && viewState[colKey] instanceof Set);
@@ -994,6 +1009,7 @@
             ${makeExcelHeaderTh('email', 'Email')}
             ${makeExcelHeaderTh('organization', 'Organization')}
             ${makeExcelHeaderTh('department', 'Department')}
+            ${makeExcelHeaderTh('project_count', 'Project Count')}
             ${makeExcelHeaderTh('state', 'State')}
             ${makeExcelHeaderTh('status', 'Status')}
             ${makeExcelHeaderTh('admin', 'Is Admin')}
@@ -1066,6 +1082,10 @@
           case 'email': return (item.email || '').trim() || '(Blanks)';
           case 'organization': return (item.organization || '').trim() || '(Blanks)';
           case 'department': return (item.department || '').trim() || '(Blanks)';
+          case 'project_count': {
+            const projects = getUserProjects(item);
+            return String(projects.length);
+          }
           case 'state': return (item.state || '').trim() || '(Blanks)';
           case 'status': return item.status !== 'Disable' ? 'Active' : 'Disabled';
           case 'admin': return (item.admin === 'true' || item.admin === true) ? 'Yes' : 'No';
@@ -1148,7 +1168,14 @@
           filteredUsers.sort((a, b) => {
             const valA = getNormalizedColumnValue(a, sortConfig.column, 'users');
             const valB = getNormalizedColumnValue(b, sortConfig.column, 'users');
-            const cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+            const numA = Number(valA);
+            const numB = Number(valB);
+            let cmp = 0;
+            if (!isNaN(numA) && !isNaN(numB) && valA !== '(Blanks)' && valB !== '(Blanks)') {
+              cmp = numA - numB;
+            } else {
+              cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+            }
             return sortConfig.direction === 'desc' ? -cmp : cmp;
           });
         } else {
@@ -1156,7 +1183,7 @@
         }
 
         if (filteredUsers.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #9ca3af; padding: 2rem;">No users match the current filter.</td></tr>`;
+          tableBody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #9ca3af; padding: 2rem;">No users match the current filter.</td></tr>`;
           updateFilterButtonStates();
           return;
         }
@@ -1172,12 +1199,22 @@
             ? `<span class="admin-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Yes</span>`
             : `<span class="admin-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">No</span>`;
 
+          const userProjects = getUserProjects(user);
+          const projectCount = userProjects.length;
+          let projectCountCell = `<td>0</td>`;
+          if (projectCount > 0) {
+            const projectsData = JSON.stringify(userProjects).replace(/"/g, '&quot;');
+            const safeUserName = escapeHtml(user.name || 'User').replace(/'/g, "\\'");
+            projectCountCell = `<td><span class="user-count-clickable" onclick="showProjectsPopover(event, '${safeUserName}', ${projectsData})" title="Click to view assigned projects">${projectCount}</span></td>`;
+          }
+
           row.innerHTML = `
             <td>${idx + 1}</td>
             <td>${escapeHtml(user.name || 'N/A')}</td>
             <td>${escapeHtml(user.email || 'N/A')}</td>
             <td>${escapeHtml(user.organization || 'N/A')}</td>
             <td>${escapeHtml(user.department || 'N/A')}</td>
+            ${projectCountCell}
             <td>${escapeHtml(user.state || 'N/A')}</td>
             <td>${statusBadge}</td>
             <td>${isAdminBadge}</td>
@@ -1334,7 +1371,7 @@
 
       currentExcelFilterPopoverColumn = colKey;
       const colLabel = COLUMN_LABELS[colKey] || colKey;
-      const isNumeric = (colKey === 'video_count' || colKey === 'user_count');
+      const isNumeric = (colKey === 'video_count' || colKey === 'user_count' || colKey === 'project_count');
       const isFiltered = isExcelColumnFiltered(colKey);
 
       // Collect distinct values from rows matching other active filters
@@ -1641,17 +1678,106 @@
       if (popover) {
         popover.style.display = 'none';
       }
+      closeProjectsPopover();
+    }
+
+    // Show Projects Popover (when clicking Project Count of a user)
+    function showProjectsPopover(event, userName, projects) {
+      event.stopPropagation();
+      let popover = document.getElementById('projectsPopover');
+      if (!popover) {
+        popover = document.createElement('div');
+        popover.id = 'projectsPopover';
+        popover.className = 'users-popover projects-popover';
+        document.body.appendChild(popover);
+      }
+
+      // Close other popovers
+      closeExcelFilterPopover();
+      const userPopover = document.getElementById('usersPopover');
+      if (userPopover) userPopover.style.display = 'none';
+
+      if (!Array.isArray(projects) || projects.length === 0) return;
+
+      let listHtml = '';
+      projects.forEach((projItem, idx) => {
+        const pName = typeof projItem === 'string' ? projItem : (projItem.name || 'Project');
+        const pLower = pName.trim().toLowerCase();
+        const matchingSurvey = surveysList.find(s => 
+          (s.name && s.name.trim().toLowerCase() === pLower) ||
+          (s.id && s.id.trim().toLowerCase() === pLower)
+        );
+
+        if (matchingSurvey) {
+          listHtml += `
+            <li class="users-popover-item" style="margin-bottom: 0.35rem; display: flex; align-items: flex-start; gap: 0.35rem;">
+              <span style="color: var(--text-tertiary); min-width: 1.4rem;">${idx + 1}.</span>
+              <a href="survey.html?id=${matchingSurvey.id}&name=${encodeURIComponent(matchingSurvey.name || pName)}" class="user-popover-link" title="Open ${escapeHtml(pName)}" style="color: var(--blue-600); text-decoration: none; font-weight: 500;">
+                ${escapeHtml(pName)}
+              </a>
+            </li>
+          `;
+        } else {
+          listHtml += `
+            <li class="users-popover-item" style="margin-bottom: 0.35rem; display: flex; align-items: flex-start; gap: 0.35rem;">
+              <span style="color: var(--text-tertiary); min-width: 1.4rem;">${idx + 1}.</span>
+              <span style="color: var(--text-primary); font-weight: 500;">${escapeHtml(pName)}</span>
+            </li>
+          `;
+        }
+      });
+
+      popover.innerHTML = `
+        <div class="users-popover-title" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+          <span>${escapeHtml(userName)}'s Projects (${projects.length})</span>
+          <button type="button" onclick="closeProjectsPopover()" style="background: none; border: none; cursor: pointer; color: var(--text-tertiary); font-size: 1.25rem; line-height: 1; padding: 0 4px;" title="Close">&times;</button>
+        </div>
+        <ul class="users-popover-list" style="margin-top: 0.5rem; max-height: 240px; overflow-y: auto;">
+          ${listHtml}
+        </ul>
+      `;
+
+      popover.style.display = 'block';
+
+      // Position the popover near the clicked cell on desktop, responsive boundary check
+      const rect = event.currentTarget ? event.currentTarget.getBoundingClientRect() : event.target.getBoundingClientRect();
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      let left = rect.left + scrollLeft - 60;
+      const popoverWidth = 280;
+      if (left + popoverWidth > window.innerWidth - 16) {
+        left = window.innerWidth - popoverWidth - 16;
+      }
+      if (left < 16) left = 16;
+
+      popover.style.left = `${left}px`;
+      popover.style.top = `${rect.bottom + scrollTop + 8}px`;
+
+      // Prevent closing when clicking inside popover
+      popover.onpointerdown = (e) => e.stopPropagation();
+      popover.onmousedown = (e) => e.stopPropagation();
+    }
+
+    function closeProjectsPopover() {
+      const popover = document.getElementById('projectsPopover');
+      if (popover) {
+        popover.style.display = 'none';
+      }
     }
 
     // Global listener to close popovers on pointerdown outside
     document.addEventListener('pointerdown', (e) => {
       const userPopover = document.getElementById('usersPopover');
+      const projPopover = document.getElementById('projectsPopover');
       const excelPopover = document.getElementById('excelFilterPopover');
       if (userPopover && userPopover.contains(e.target)) return;
+      if (projPopover && projPopover.contains(e.target)) return;
       if (excelPopover && excelPopover.contains(e.target)) return;
       if (e.target.closest && e.target.closest('.excel-filter-btn')) return;
       closeExcelFilterPopover();
       closeUsersPopover();
+      closeProjectsPopover();
     });
 
     // Modal Control: Create / Edit

@@ -1846,7 +1846,8 @@ a {
   border-bottom-color: var(--blue-600);
 }
 
-.users-popover {
+.users-popover,
+.projects-popover {
   position: absolute;
   background: var(--popover-bg);
   backdrop-filter: blur(24px);
@@ -2504,7 +2505,8 @@ a {
     touch-action: manipulation;
   }
 
-  .users-popover {
+  .users-popover,
+  .projects-popover {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
