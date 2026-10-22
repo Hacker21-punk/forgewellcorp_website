@@ -545,9 +545,9 @@
         const vStatus = (v.status || 'active').trim().toLowerCase();
         tr.innerHTML = `
           <td><input type="checkbox" value="${v.id}" class="video-row-checkbox" onchange="handleCheckboxChange()" /></td>
-          <td><strong>${escapeHtml(v.name || 'Film')}</strong></td>
+          <td><strong class="video-film-name" style="color: var(--blue-600); font-family: 'Outfit', sans-serif; font-size: 0.9375rem;">${escapeHtml(v.name || 'Film')}</strong></td>
           <td><span class="status-badge ${vStatus}">${escapeHtml(vStatus)}</span></td>
-          <td>${displayDate}</td>
+          <td><span class="date-badge">${displayDate}</span></td>
         `;
         tbody.appendChild(tr);
       });

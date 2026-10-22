@@ -1218,41 +1218,41 @@
           const row = document.createElement('tr');
           const isActive = user.status !== 'Disable';
           const statusBadge = isActive 
-            ? `<span class="status-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Active</span>`
-            : `<span class="status-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Disabled</span>`;
+            ? `<span class="status-badge active">Active</span>`
+            : `<span class="status-badge disabled">Disabled</span>`;
             
           const isAdminBadge = (user.admin === 'true' || user.admin === true)
-            ? `<span class="admin-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Yes</span>`
-            : `<span class="admin-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">No</span>`;
+            ? `<span class="admin-badge admin-yes">Yes</span>`
+            : `<span class="admin-badge admin-no">No</span>`;
 
           const userProjects = getUserProjects(user);
           const projectCount = userProjects.length;
-          let projectCountCell = `<td>0</td>`;
+          let projectCountCell = `<td><span class="video-count-badge">0</span></td>`;
           if (projectCount > 0) {
             const projectsData = JSON.stringify(userProjects).replace(/"/g, '&quot;');
             const safeUserName = escapeHtml(user.name || 'User').replace(/'/g, "\\'");
-            projectCountCell = `<td><span class="user-count-clickable" onclick="showProjectsPopover(event, '${safeUserName}', ${projectsData})" title="Click to view assigned projects">${projectCount}</span></td>`;
+            projectCountCell = `<td><span class="user-count-clickable" onclick="showProjectsPopover(event, '${safeUserName}', ${projectsData})" title="Click to view assigned projects">${projectCount} Projects</span></td>`;
           }
 
           row.innerHTML = `
-            <td>${idx + 1}</td>
-            <td>${escapeHtml(user.name || 'N/A')}</td>
+            <td><span class="sno-badge">${idx + 1}</span></td>
+            <td><strong>${escapeHtml(user.name || 'N/A')}</strong></td>
             <td>${escapeHtml(user.email || 'N/A')}</td>
-            <td>${escapeHtml(user.organization || 'N/A')}</td>
-            <td>${escapeHtml(user.department || 'N/A')}</td>
+            <td><span class="dept-badge">${escapeHtml(user.organization || 'N/A')}</span></td>
+            <td><span class="dept-badge">${escapeHtml(user.department || 'N/A')}</span></td>
             ${projectCountCell}
             <td>${escapeHtml(user.state || 'N/A')}</td>
             <td>${statusBadge}</td>
             <td>${isAdminBadge}</td>
             <td>
               <div class="action-btn-group">
-                <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #3b82f6;" title="Edit User">
+                <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" title="Edit User">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
                 </button>
-                <button class="action-icon-btn delete" onclick="handleDeleteUser('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #ef4444;" title="Delete User">
+                <button class="action-icon-btn delete" onclick="handleDeleteUser('${user.uid}')" title="Delete User">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1314,27 +1314,27 @@
         const row = document.createElement('tr');
         row.id = `survey-row-${survey.id}`;
         
-        const snoCell = `<td>${index + 1}</td>`;
+        const snoCell = `<td><span class="sno-badge">${index + 1}</span></td>`;
         const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name || '')}">${escapeHtml(survey.name || 'Survey')}</a></td>`;
-        const deptCell = `<td>${escapeHtml(survey.department || '')}</td>`;
-        const lengthCell = `<td>${escapeHtml(survey.survey_length || '')}</td>`;
+        const deptCell = `<td><span class="dept-badge">${escapeHtml(survey.department || '—')}</span></td>`;
+        const lengthCell = `<td>${survey.survey_length ? `<span class="survey-length-badge">${escapeHtml(survey.survey_length)}</span>` : ''}</td>`;
 
         // Video Count
         const matchingVideos = allVideos.filter(v => v.survey === survey.id);
         const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (survey.video_count !== undefined ? survey.video_count : (survey.total_surveys || 0));
-        const videoCell = `<td>${videoCount}</td>`;
+        const videoCell = `<td><span class="video-count-badge">${videoCount}</span></td>`;
 
         // User count with popover click event (dynamic from users.json)
         const dynamicUserNames = surveyUserMap[survey.id] || [];
-        let userCell = `<td>N/A</td>`;
+        let userCell = `<td><span class="user-count-empty">N/A</span></td>`;
         if (dynamicUserNames.length > 0) {
           const namesData = JSON.stringify(dynamicUserNames).replace(/"/g, '&quot;');
           userCell = `<td><span class="user-count-clickable" onclick="showUsersPopover(event, ${namesData})">${dynamicUserNames.length} Users</span></td>`;
         } else if (dynamicUserNames.length === 0 && allUsers.length > 0) {
-          userCell = `<td>0 Users</td>`;
+          userCell = `<td><span class="user-count-empty">0 Users</span></td>`;
         }
         
-        const dateCell = `<td>${formatSurveyDate(survey.createdAt)}</td>`;
+        const dateCell = `<td><span class="date-badge">${formatSurveyDate(survey.createdAt)}</span></td>`;
         const rawStatus = (survey.status || 'active').trim();
         const statusClass = rawStatus.toLowerCase();
         const statusCell = `<td><span class="status-badge ${statusClass}">${escapeHtml(statusClass)}</span></td>`;
