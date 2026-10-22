@@ -42,7 +42,8 @@
                 <img
                   class="logo-img"
                   alt="Trueprogress"
-                  src="assets/trueprogress_logo.png"
+                  src="/trueprogress/assets/trueprogress_logo.png"
+                  onerror="this.onerror=null;this.src='assets/trueprogress_logo.png';"
                 />
               </span>
             </span>
@@ -2006,12 +2007,15 @@
             { key: 'A', width: 4 },
             { key: 'B', width: 8 },
             { key: 'C', width: 34 },
-            { key: 'D', width: 14 },
-            { key: 'E', width: 15 },
-            { key: 'F', width: 14 },
-            { key: 'G', width: 16 },
-            { key: 'H', width: 4 },
-            { key: 'I', width: 42 }
+            { key: 'D', width: 34 },
+            { key: 'E', width: 12 },
+            { key: 'F', width: 28 },
+            { key: 'G', width: 14 },
+            { key: 'H', width: 15 },
+            { key: 'I', width: 14 },
+            { key: 'J', width: 16 },
+            { key: 'K', width: 4 },
+            { key: 'L', width: 42 }
           ];
 
           // Row 1 is empty
@@ -2024,11 +2028,14 @@
           const headers = {
             B: 'S.No.',
             C: 'Project Name',
-            D: 'No. of Surveys',
-            E: 'Survey Length',
-            F: 'Created On',
-            G: 'Survey Date',
-            I: 'YouTube URL'
+            D: 'Department',
+            E: 'User Count',
+            F: 'User Names',
+            G: 'No. of Surveys',
+            H: 'Survey Length',
+            I: 'Created On',
+            J: 'Survey Date',
+            L: 'YouTube URL'
           };
 
           const borderStyle = {
@@ -2050,7 +2057,13 @@
             cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
             cell.border = borderStyle;
           }
-          headerRow.getCell('H').border = borderStyle;
+          const headerCellK = headerRow.getCell('K');
+          headerCellK.border = borderStyle;
+          headerCellK.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE2EFD9' }
+          };
 
           let currentRowNum = 3;
 
@@ -2067,9 +2080,26 @@
             if (numRows > 1) {
               ws.mergeCells(startR, 2, endR, 2); // B (S.No.)
               ws.mergeCells(startR, 3, endR, 3); // C (Project Name)
-              ws.mergeCells(startR, 5, endR, 5); // E (Survey Length)
-              ws.mergeCells(startR, 6, endR, 6); // F (Created On)
+              ws.mergeCells(startR, 4, endR, 4); // D (Department)
+              ws.mergeCells(startR, 5, endR, 5); // E (User Count)
+              ws.mergeCells(startR, 6, endR, 6); // F (User Names)
+              ws.mergeCells(startR, 8, endR, 8); // H (Survey Length)
+              ws.mergeCells(startR, 9, endR, 9); // I (Created On)
             }
+
+            let matchingUsers = surveyUserMap[s.id] || [];
+            if (!matchingUsers.length && s.name) {
+              const sNameLower = s.name.trim().toLowerCase();
+              matchingUsers = (allUsers || []).filter(u => {
+                if (!u || !u.name || !Array.isArray(u.survey)) return false;
+                return u.survey.some(surv => {
+                  const str = String(surv).trim();
+                  return str === '*' || str.toLowerCase() === sNameLower;
+                });
+              });
+            }
+            const userCount = matchingUsers.length;
+            const userNamesText = matchingUsers.map((u, idx) => `${idx + 1}. - ${u.name || ''}`).join('\n');
 
             // Populate merged project columns
             const cellB = ws.getCell(startR, 2);
@@ -2079,56 +2109,71 @@
 
             const cellC = ws.getCell(startR, 3);
             cellC.value = s.name || '';
-            cellC.alignment = { horizontal: 'left', vertical: 'middle' };
+            cellC.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
             cellC.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
 
+            const cellD = ws.getCell(startR, 4);
+            cellD.value = s.department || '';
+            cellD.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+            cellD.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
             const cellE = ws.getCell(startR, 5);
-            cellE.value = formatExcelLength(s.survey_length);
+            cellE.value = userCount;
             cellE.alignment = { horizontal: 'center', vertical: 'middle' };
             cellE.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
 
             const cellF = ws.getCell(startR, 6);
-            cellF.value = formatExcelCreatedDate(s.createdAt);
-            cellF.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellF.value = userNamesText;
+            cellF.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
             cellF.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellH = ws.getCell(startR, 8);
+            cellH.value = formatExcelLength(s.survey_length);
+            cellH.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellH.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+
+            const cellI = ws.getCell(startR, 9);
+            cellI.value = formatExcelCreatedDate(s.createdAt);
+            cellI.alignment = { horizontal: 'center', vertical: 'middle' };
+            cellI.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
 
             for (let i = 0; i < numRows; i++) {
               const r = startR + i;
               const v = matchingVideos[i] || null;
 
-              // D: No. of Surveys (1, 2, 3...)
-              const cellD = ws.getCell(r, 4);
-              cellD.value = i + 1;
-              cellD.alignment = { horizontal: 'center', vertical: 'middle' };
-              cellD.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
-
-              // G: Survey Date
+              // G: No. of Surveys (1, 2, 3...)
               const cellG = ws.getCell(r, 7);
-              const videoDate = v ? (v.createdAt || v.surveyDate || '') : (s.createdAt || '');
-              cellG.value = formatExcelSurveyDate(videoDate);
+              cellG.value = i + 1;
               cellG.alignment = { horizontal: 'center', vertical: 'middle' };
               cellG.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
 
-              // H: Blank Separator
-              const cellH = ws.getCell(r, 8);
-              cellH.value = '';
+              // J: Survey Date
+              const cellJ = ws.getCell(r, 10);
+              const videoDate = v ? (v.createdAt || v.surveyDate || '') : (s.createdAt || '');
+              cellJ.value = formatExcelSurveyDate(videoDate);
+              cellJ.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellJ.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
 
-              // I: YouTube URL
-              const cellI = ws.getCell(r, 9);
+              // K: Blank Separator
+              const cellK = ws.getCell(r, 11);
+              cellK.value = '';
+
+              // L: YouTube URL
+              const cellL = ws.getCell(r, 12);
               const ytUrl = v ? (v.videoURL || '') : '';
-              cellI.value = ytUrl;
-              cellI.alignment = { horizontal: 'center', vertical: 'middle' };
-              cellI.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
+              cellL.value = ytUrl;
+              cellL.alignment = { horizontal: 'center', vertical: 'middle' };
+              cellL.font = { name: 'Calibri', size: 11, color: { argb: 'FF000000' } };
               if (ytUrl) {
-                cellI.fill = {
+                cellL.fill = {
                   type: 'pattern',
                   pattern: 'solid',
                   fgColor: { argb: 'FF92D050' }
                 };
               }
 
-              ws.getRow(r).height = 22;
-              for (let c = 2; c <= 9; c++) {
+              ws.getRow(r).height = numRows === 1 ? Math.max(22, (matchingUsers.length || 1) * 16) : 22;
+              for (let c = 2; c <= 12; c++) {
                 ws.getCell(r, c).border = borderStyle;
               }
             }
@@ -2231,7 +2276,7 @@
           const wb = XLSX.utils.book_new();
           const rows = [
             [], // Row 1 empty
-            ['', 'S.No.', 'Project Name', 'No. of Surveys', 'Survey Length', 'Created On', 'Survey Date', '', 'YouTube URL']
+            ['', 'S.No.', 'Project Name', 'Department', 'User Count', 'User Names', 'No. of Surveys', 'Survey Length', 'Created On', 'Survey Date', '', 'YouTube URL']
           ];
           const merges = [];
           let currentR = 2; // 0-indexed row 2 is 3rd row in sheet
@@ -2248,22 +2293,42 @@
             if (numRows > 1) {
               merges.push({ s: { r: startR, c: 1 }, e: { r: endR, c: 1 } }); // B
               merges.push({ s: { r: startR, c: 2 }, e: { r: endR, c: 2 } }); // C
+              merges.push({ s: { r: startR, c: 3 }, e: { r: endR, c: 3 } }); // D
               merges.push({ s: { r: startR, c: 4 }, e: { r: endR, c: 4 } }); // E
               merges.push({ s: { r: startR, c: 5 }, e: { r: endR, c: 5 } }); // F
+              merges.push({ s: { r: startR, c: 7 }, e: { r: endR, c: 7 } }); // H
+              merges.push({ s: { r: startR, c: 8 }, e: { r: endR, c: 8 } }); // I
             }
+
+            let matchingUsers = surveyUserMap[s.id] || [];
+            if (!matchingUsers.length && s.name) {
+              const sNameLower = s.name.trim().toLowerCase();
+              matchingUsers = (allUsers || []).filter(u => {
+                if (!u || !u.name || !Array.isArray(u.survey)) return false;
+                return u.survey.some(surv => {
+                  const str = String(surv).trim();
+                  return str === '*' || str.toLowerCase() === sNameLower;
+                });
+              });
+            }
+            const userCount = matchingUsers.length;
+            const userNamesText = matchingUsers.map((u, idx) => `${idx + 1}. - ${u.name || ''}`).join('\n');
 
             for (let i = 0; i < numRows; i++) {
               const v = matchingVideos[i] || null;
               const isFirst = i === 0;
               const sno = isFirst ? (pIdx + 1) : '';
               const pName = isFirst ? (s.name || '') : '';
+              const dept = isFirst ? (s.department || '') : '';
+              const uCount = isFirst ? userCount : '';
+              const uNames = isFirst ? userNamesText : '';
               const sNum = i + 1;
               const sLen = isFirst ? formatExcelLength(s.survey_length) : '';
               const cOn = isFirst ? formatExcelCreatedDate(s.createdAt) : '';
               const sDate = formatExcelSurveyDate(v ? (v.createdAt || v.surveyDate || '') : (s.createdAt || ''));
               const ytUrl = v ? (v.videoURL || '') : '';
 
-              rows.push(['', sno, pName, sNum, sLen, cOn, sDate, '', ytUrl]);
+              rows.push(['', sno, pName, dept, uCount, uNames, sNum, sLen, cOn, sDate, '', ytUrl]);
             }
             currentR = endR + 1;
           });
@@ -2271,15 +2336,18 @@
           const ws1 = XLSX.utils.aoa_to_sheet(rows);
           ws1['!merges'] = merges;
           ws1['!cols'] = [
-            { wch: 4 },
-            { wch: 8 },
-            { wch: 34 },
-            { wch: 14 },
-            { wch: 15 },
-            { wch: 14 },
-            { wch: 16 },
-            { wch: 4 },
-            { wch: 42 }
+            { wch: 4 },  // A
+            { wch: 8 },  // B
+            { wch: 34 }, // C
+            { wch: 34 }, // D
+            { wch: 12 }, // E
+            { wch: 28 }, // F
+            { wch: 14 }, // G
+            { wch: 15 }, // H
+            { wch: 14 }, // I
+            { wch: 16 }, // J
+            { wch: 4 },  // K
+            { wch: 42 }  // L
           ];
           XLSX.utils.book_append_sheet(wb, ws1, 'Sheet1');
 
@@ -2426,6 +2494,8 @@
               else if (c.includes('survey date') || c.includes('video date')) colMap.surveyDate = idx;
               else if (c.includes('url') || c.includes('youtube') || c.includes('link')) colMap.url = idx;
               else if (c.includes('dept') || c.includes('department')) colMap.dept = idx;
+              else if (c.includes('user name') || c.includes('users') || c.includes('assigned user')) colMap.userNames = idx;
+              else if (c.includes('user count')) colMap.userCount = idx;
             });
 
             let currentSurvey = null;
