@@ -1314,8 +1314,28 @@
         const row = document.createElement('tr');
         row.id = `survey-row-${survey.id}`;
         
+        const rawStatus = (survey.status || 'active').trim();
+        const statusClass = rawStatus.toLowerCase();
+        const isInactive = statusClass === 'inactive' || statusClass === 'disabled' || statusClass === 'disable';
+
         const snoCell = `<td><span class="sno-badge">${index + 1}</span></td>`;
-        const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name || '')}">${escapeHtml(survey.name || 'Survey')}</a></td>`;
+        
+        let nameCell = '';
+        if (!isUserAdmin() && isInactive) {
+          const safeName = escapeHtml(survey.name || 'Survey').replace(/'/g, "\\'");
+          nameCell = `<td>
+            <span class="survey-link-name is-inactive" onclick="showInactiveSurveyNotice(event, '${safeName}')" title="This survey is currently inactive and cannot be accessed">
+              ${escapeHtml(survey.name || 'Survey')}
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 5px; opacity: 0.75;" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+          </td>`;
+        } else {
+          nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name || '')}">${escapeHtml(survey.name || 'Survey')}</a></td>`;
+        }
+
         const deptCell = `<td><span class="dept-badge">${escapeHtml(survey.department || '—')}</span></td>`;
         const lengthCell = `<td>${survey.survey_length ? `<span class="survey-length-badge">${escapeHtml(survey.survey_length)}</span>` : ''}</td>`;
 
@@ -1335,8 +1355,6 @@
         }
         
         const dateCell = `<td><span class="date-badge">${formatSurveyDate(survey.createdAt)}</span></td>`;
-        const rawStatus = (survey.status || 'active').trim();
-        const statusClass = rawStatus.toLowerCase();
         const statusCell = `<td><span class="status-badge ${statusClass}">${escapeHtml(statusClass)}</span></td>`;
 
         let actionCell = '';
@@ -1372,6 +1390,14 @@
       });
 
       updateFilterButtonStates();
+    }
+
+    function showInactiveSurveyNotice(event, surveyName) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      alert('"' + (surveyName || 'This survey') + '" is currently marked as INACTIVE.\n\nAccess to this survey is restricted for non-admin users. Please contact your administrator to activate it.');
     }
 
     const renderUsersTable = renderSurveysTable;

@@ -1583,12 +1583,37 @@ a {
   transform: translateX(3px);
 }
 
+.survey-link-name.is-inactive {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  text-decoration: none;
+  opacity: 0.72;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.survey-link-name.is-inactive:hover {
+  opacity: 1;
+  color: var(--red-600);
+  text-decoration: none;
+  transform: none;
+}
+
 [data-theme="dark"] .survey-link-name {
   color: #60a5fa;
 }
 
 [data-theme="dark"] .survey-link-name:hover {
   color: #93c5fd;
+}
+
+[data-theme="dark"] .survey-link-name.is-inactive {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .survey-link-name.is-inactive:hover {
+  color: #f87171;
 }
 
 /* User table styles in modal */

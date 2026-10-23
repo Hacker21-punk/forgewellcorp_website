@@ -274,7 +274,12 @@
     let surveyId = null;
     let surveyName = '';
     let currentUser = null;
+    let isAdmin = false;
     let surveyVideos = [];
+
+    function isUserAdmin(u = currentUser) {
+      return Boolean(u && (u.admin === "true" || u.admin === true));
+    }
 
     // Safe storage guardians
     function safeGet(key, fallback = []) {
@@ -313,16 +318,19 @@
       if (bc) bc.innerText = surveyName;
     }
 
-    // Session check with localStorage fallback
-    const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
-    const isTpSubdir = window.location.pathname.includes('/trueprogress/');
-    if (isTpSubdir) {
-      const bDash = document.getElementById('breadcrumbDashboardLink');
-      if (bDash) bDash.href = 'dashboard.html';
-    }
-    if (!userSession) {
-      window.location.href = (isTpSubdir ? 'login.html' : '/login');
-    } else {
+    function initSurveyPage() {
+      // Session check with localStorage fallback
+      const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+      const isTpSubdir = window.location.pathname.includes('/trueprogress/');
+      if (isTpSubdir) {
+        const bDash = document.getElementById('breadcrumbDashboardLink');
+        if (bDash) bDash.href = 'dashboard.html';
+      }
+      if (!userSession) {
+        window.location.href = (isTpSubdir ? 'login.html' : '/login');
+        return;
+      }
+
       currentUser = JSON.parse(userSession);
       function getInitials(name) {
         if (!name) return 'AV';
@@ -339,7 +347,7 @@
       const dEmail = document.getElementById('dropdownEmail');
       if (dEmail) dEmail.innerText = currentUser.email || 'N/A';
 
-      const isAdmin = currentUser && (currentUser.admin === "true" || currentUser.admin === true);
+      isAdmin = isUserAdmin();
       const dRole = document.getElementById('dropdownRole');
       if (dRole) dRole.innerText = isAdmin ? "Admin" : "User";
 
@@ -359,26 +367,71 @@
                               (surveyId && allowedSurveys.includes(surveyId.trim().toLowerCase()));
             if (!hasAccess) {
               alert('You do not have permission to view this survey.');
-              window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
-            } else {
-              loadPageData();
+              window.location.href = (isTpSubdir ? 'dashboard.html' : '/dashboard');
+              return;
             }
           } else {
             alert('You do not have permission to view this survey.');
-            window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
+            window.location.href = (isTpSubdir ? 'dashboard.html' : '/dashboard');
+            return;
           }
-        } else {
-          loadPageData();
         }
-      } else {
-        loadPageData();
       }
+
+      loadPageData();
     }
+
+    initSurveyPage();
 
     async function loadPageData() {
       await resolveSurveyInfo();
+      // If non-admin, verify the survey is active
+      if (!isAdmin) {
+        const isInactive = await isCurrentSurveyInactive();
+        if (isInactive) {
+          alert('"' + (surveyName || 'This survey') + '" is currently marked as INACTIVE.\n\nAccess to this survey is restricted for non-admin users. Please contact your administrator.');
+          window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
+          return;
+        }
+      }
       await fetchVideos();
       renderActionRow();
+    }
+
+    async function isCurrentSurveyInactive() {
+      try {
+        let surveysList = [];
+        if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+          surveysList = await window.TPDataLoader.fetchJson('surveys.json');
+        }
+        if (!Array.isArray(surveysList) || surveysList.length === 0) {
+          surveysList = safeGet('tp_canonical_surveys.json', []) || safeGet('tp_cached_surveys.json', []) || [];
+        }
+        const customSurveys = safeGet('custom_surveys', []);
+        const editedSurveys = safeGet('edited_surveys', []);
+        const allSurveys = [...surveysList, ...customSurveys].map(s => {
+          const ed = editedSurveys.find(e => e.id === s.id);
+          return ed ? { ...s, ...ed } : s;
+        });
+
+        const sIdLower = (surveyId || '').toLowerCase().trim();
+        const sNameLower = (surveyName || '').toLowerCase().trim();
+
+        const match = allSurveys.find(s => {
+          if (!s) return false;
+          if (sIdLower && String(s.id).toLowerCase().trim() === sIdLower) return true;
+          if (sNameLower && String(s.name || '').toLowerCase().trim() === sNameLower) return true;
+          return false;
+        });
+
+        if (match) {
+          const st = String(match.status || 'active').trim().toLowerCase();
+          return st === 'inactive' || st === 'disabled' || st === 'disable';
+        }
+      } catch (e) {
+        console.warn('Survey active check warning:', e);
+      }
+      return false;
     }
 
     // Auto-resolve survey ID and name if either is missing or mismatched
@@ -543,9 +596,14 @@
         } catch(e) {}
 
         const vStatus = (v.status || 'active').trim().toLowerCase();
+        const isVidInactive = vStatus === 'inactive' || vStatus === 'disabled';
+        const checkboxHtml = (!isAdmin && isVidInactive)
+          ? `<input type="checkbox" disabled title="This video is inactive" class="video-row-checkbox disabled" style="opacity: 0.35; cursor: not-allowed;" />`
+          : `<input type="checkbox" value="${v.id}" class="video-row-checkbox" onchange="handleCheckboxChange()" />`;
+
         tr.innerHTML = `
-          <td><input type="checkbox" value="${v.id}" class="video-row-checkbox" onchange="handleCheckboxChange()" /></td>
-          <td><strong class="video-film-name" style="color: var(--blue-600); font-family: 'Outfit', sans-serif; font-size: 0.9375rem;">${escapeHtml(v.name || 'Film')}</strong></td>
+          <td>${checkboxHtml}</td>
+          <td><strong class="video-film-name" style="color: ${(!isAdmin && isVidInactive) ? 'var(--text-tertiary)' : 'var(--blue-600)'}; font-family: 'Outfit', sans-serif; font-size: 0.9375rem;">${escapeHtml(v.name || 'Film')}${(!isAdmin && isVidInactive) ? ' <span style="font-size: 0.75rem; font-weight: normal; color: var(--red-600); margin-left: 4px;">(Inactive)</span>' : ''}</strong></td>
           <td><span class="status-badge ${vStatus}">${escapeHtml(vStatus)}</span></td>
           <td><span class="date-badge">${displayDate}</span></td>
         `;

@@ -545,6 +545,60 @@
         document.getElementById('dropdownRole').innerText = "User";
       }
 
+      verifyAccessAndSetupPlayers();
+    }
+
+    async function verifyAccessAndSetupPlayers() {
+      if (!isUserAdmin()) {
+        try {
+          function safeStorageGet(key, def) {
+            if (window.TPStorage && typeof window.TPStorage.get === 'function') {
+              return window.TPStorage.get(key, def);
+            }
+            try {
+              const raw = localStorage.getItem(key);
+              return raw ? JSON.parse(raw) : def;
+            } catch (e) {
+              return def;
+            }
+          }
+
+          let surveysList = [];
+          if (window.TPDataLoader && typeof window.TPDataLoader.fetchJson === 'function') {
+            surveysList = await window.TPDataLoader.fetchJson('surveys.json');
+          } else {
+            surveysList = safeStorageGet('tp_canonical_surveys.json', []) || [];
+          }
+          const customSurveys = safeStorageGet('custom_surveys', []) || [];
+          const editedSurveys = safeStorageGet('edited_surveys', []) || [];
+          const allSurveys = [...surveysList, ...customSurveys].map(s => {
+            const ed = editedSurveys.find(e => e.id === s.id);
+            return ed ? { ...s, ...ed } : s;
+          });
+
+          const sIdLower = (surveyId || '').toLowerCase().trim();
+          const sNameLower = (surveyName || '').toLowerCase().trim();
+
+          const matched = allSurveys.find(s => {
+            if (!s) return false;
+            if (sIdLower && String(s.id).toLowerCase().trim() === sIdLower) return true;
+            if (sNameLower && String(s.name || '').toLowerCase().trim() === sNameLower) return true;
+            return false;
+          });
+
+          if (matched) {
+            const sStatus = String(matched.status || 'active').trim().toLowerCase();
+            if (sStatus === 'inactive' || sStatus === 'disabled' || sStatus === 'disable') {
+              alert('"' + (matched.name || 'This survey') + '" is currently marked as INACTIVE.\n\nAccess to this survey is restricted for non-admin users. Please contact your administrator.');
+              window.location.href = (isTpSubdir ? 'dashboard.html' : '/dashboard');
+              return;
+            }
+          }
+        } catch(e) {
+          console.warn('Video survey active check error:', e);
+        }
+      }
+
       setupComparativePlayers();
     }
 
