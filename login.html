@@ -122,8 +122,26 @@
   </div>
 
   <script>
-    // Automatically redirect if already logged in
-    const existingUser = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+    // Handle explicit logout parameter (prevents race conditions across Safari, iOS, and Android)
+    if (window.location.search.includes('logout=true')) {
+      try {
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser');
+        localStorage.removeItem('currentUser');
+        if (window.TPStorage && typeof window.TPStorage.remove === 'function') {
+          window.TPStorage.remove('loggedInUser');
+          window.TPStorage.remove('currentUser');
+        }
+        // Clean URL parameter without reloading
+        try {
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        } catch (e) {}
+      } catch (err) {}
+    }
+
+    // Automatically redirect if already logged in (only when valid user session exists and not logging out)
+    const existingUser = (!window.location.search.includes('logout=true')) ? (sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser')) : null;
     if (existingUser) {
       try {
         const parsed = JSON.parse(existingUser);
@@ -132,6 +150,19 @@
         }
       } catch (e) {}
     }
+
+    // Safari Back-Forward Cache (bfcache) Guard on Login Page
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) {
+        const u = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+        if (!u) {
+          const emailInput = document.getElementById('loginEmail');
+          const passInput = document.getElementById('loginPassword');
+          if (emailInput) emailInput.value = '';
+          if (passInput) passInput.value = '';
+        }
+      }
+    });
 
     async function handleLogin(event) {
       event.preventDefault();

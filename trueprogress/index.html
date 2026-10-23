@@ -14,8 +14,8 @@
   <script>
     (function() {
       try {
-        localStorage.setItem('tp_theme', 'light');
-        document.documentElement.setAttribute('data-theme', 'light');
+        var t = localStorage.getItem('tp_theme') || localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
       } catch (e) {}
     })();
   </script>
@@ -49,8 +49,26 @@
             </span>
           </a>
 
-          <!-- Header Right Actions: Profile Menu -->
+          <!-- Header Right Actions: Theme Toggle & Profile Menu -->
           <div class="header-right-actions">
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle Light / Dark Mode" title="Toggle Theme">
+              <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </button>
+
             <!-- Profile Menu Container -->
             <div class="profile-menu-container">
               <div class="profile-btn-wrapper" id="profileMenuBtn">
@@ -73,9 +91,17 @@
                   <span class="detail-value" id="dropdownEmail">N/A</span>
                 </div>
 
+                <!-- Dropdown Theme Toggle Action -->
+                <button class="profile-dropdown-action-btn" id="dropdownThemeToggleBtn" type="button">
+                  <span style="display:flex; align-items:center; gap:8px;">
+                    <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line></svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <span id="dropdownThemeText">Theme</span>
+                  </span>
+                  <span class="theme-indicator-badge" id="dropdownThemeBadge">Light Mode</span>
+                </button>
 
-
-                <button class="profile-dropdown-logout-btn" id="logoutBtn">
+                <button class="profile-dropdown-logout-btn" id="logoutBtn" type="button" onclick="openLogoutModal(event)">
                   Logout
                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -491,6 +517,27 @@
       <div class="modal-footer" style="justify-content: flex-end; gap: 0.75rem;">
         <button type="button" class="btn-modal-cancel" onclick="closeUploadProjectModal()">Cancel</button>
         <button type="button" class="btn-modal-submit" id="submitUploadProjectBtn" onclick="processSurveyProjectUpload()" style="background-color: #14124c; border-color: #14124c;">Import Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Logout Confirmation (Cross-Platform & Safari macOS Optimized) -->
+  <div class="modal-overlay" id="logoutModal" onclick="if(event.target===this)closeLogoutModal()">
+    <div class="modal-container" style="max-width: 420px; width: 92%; text-align: center;">
+      <div class="modal-body" style="padding: 1.75rem 1.5rem 1.25rem;">
+        <div style="width: 52px; height: 52px; margin: 0 auto 1rem; border-radius: 50%; background: rgba(239, 68, 68, 0.12); display: flex; align-items: center; justify-content: center; color: #ef4444;">
+          <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif;">Log Out</h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5;">Are you sure you want to log out of TrueProgress?</p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+          <button type="button" class="btn-modal-cancel" onclick="closeLogoutModal()" style="flex: 1; padding: 0.65rem 1rem;">Cancel</button>
+          <button type="button" id="confirmLogoutBtn" onclick="executeLogout()" style="flex: 1; padding: 0.65rem 1rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);">Log Out</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1192,41 +1239,41 @@
           const row = document.createElement('tr');
           const isActive = user.status !== 'Disable';
           const statusBadge = isActive 
-            ? `<span class="status-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Active</span>`
-            : `<span class="status-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Disabled</span>`;
+            ? `<span class="status-badge active">Active</span>`
+            : `<span class="status-badge disabled">Disabled</span>`;
             
           const isAdminBadge = (user.admin === 'true' || user.admin === true)
-            ? `<span class="admin-badge" style="background-color: #10b981; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">Yes</span>`
-            : `<span class="admin-badge" style="background-color: #ef4444; color: #ffffff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; display: inline-block;">No</span>`;
+            ? `<span class="admin-badge admin-yes">Yes</span>`
+            : `<span class="admin-badge admin-no">No</span>`;
 
           const userProjects = getUserProjects(user);
           const projectCount = userProjects.length;
-          let projectCountCell = `<td>0</td>`;
+          let projectCountCell = `<td><span class="video-count-badge">0</span></td>`;
           if (projectCount > 0) {
             const projectsData = JSON.stringify(userProjects).replace(/"/g, '&quot;');
             const safeUserName = escapeHtml(user.name || 'User').replace(/'/g, "\\'");
-            projectCountCell = `<td><span class="user-count-clickable" onclick="showProjectsPopover(event, '${safeUserName}', ${projectsData})" title="Click to view assigned projects">${projectCount}</span></td>`;
+            projectCountCell = `<td><span class="user-count-clickable" onclick="showProjectsPopover(event, '${safeUserName}', ${projectsData})" title="Click to view assigned projects">${projectCount} Projects</span></td>`;
           }
 
           row.innerHTML = `
-            <td>${idx + 1}</td>
-            <td>${escapeHtml(user.name || 'N/A')}</td>
+            <td><span class="sno-badge">${idx + 1}</span></td>
+            <td><strong>${escapeHtml(user.name || 'N/A')}</strong></td>
             <td>${escapeHtml(user.email || 'N/A')}</td>
-            <td>${escapeHtml(user.organization || 'N/A')}</td>
-            <td>${escapeHtml(user.department || 'N/A')}</td>
+            <td><span class="dept-badge">${escapeHtml(user.organization || 'N/A')}</span></td>
+            <td><span class="dept-badge">${escapeHtml(user.department || 'N/A')}</span></td>
             ${projectCountCell}
             <td>${escapeHtml(user.state || 'N/A')}</td>
             <td>${statusBadge}</td>
             <td>${isAdminBadge}</td>
             <td>
               <div class="action-btn-group">
-                <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #3b82f6;" title="Edit User">
+                <button class="action-icon-btn edit" onclick="openEditUserModal('${user.uid}')" title="Edit User">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
                 </button>
-                <button class="action-icon-btn delete" onclick="handleDeleteUser('${user.uid}')" style="background: none; border: none; cursor: pointer; color: #ef4444;" title="Delete User">
+                <button class="action-icon-btn delete" onclick="handleDeleteUser('${user.uid}')" title="Delete User">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1288,29 +1335,47 @@
         const row = document.createElement('tr');
         row.id = `survey-row-${survey.id}`;
         
-        const snoCell = `<td>${index + 1}</td>`;
-        const nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name || '')}">${escapeHtml(survey.name || 'Survey')}</a></td>`;
-        const deptCell = `<td>${escapeHtml(survey.department || '')}</td>`;
-        const lengthCell = `<td>${escapeHtml(survey.survey_length || '')}</td>`;
+        const rawStatus = (survey.status || 'active').trim();
+        const statusClass = rawStatus.toLowerCase();
+        const isInactive = statusClass === 'inactive' || statusClass === 'disabled' || statusClass === 'disable';
+
+        const snoCell = `<td><span class="sno-badge">${index + 1}</span></td>`;
+        
+        let nameCell = '';
+        if (!isUserAdmin() && isInactive) {
+          const safeName = escapeHtml(survey.name || 'Survey').replace(/'/g, "\\'");
+          nameCell = `<td>
+            <span class="survey-link-name is-inactive" onclick="showInactiveSurveyNotice(event, '${safeName}')" title="This survey is currently inactive and cannot be accessed">
+              ${escapeHtml(survey.name || 'Survey')}
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 5px; opacity: 0.75;" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+          </td>`;
+        } else {
+          nameCell = `<td><a class="survey-link-name" href="survey.html?id=${survey.id}&name=${encodeURIComponent(survey.name || '')}">${escapeHtml(survey.name || 'Survey')}</a></td>`;
+        }
+
+        const deptCell = `<td><span class="dept-badge">${escapeHtml(survey.department || '—')}</span></td>`;
+        const lengthCell = `<td>${survey.survey_length ? `<span class="survey-length-badge">${escapeHtml(survey.survey_length)}</span>` : ''}</td>`;
 
         // Video Count
         const matchingVideos = allVideos.filter(v => v.survey === survey.id);
         const videoCount = matchingVideos.length > 0 ? matchingVideos.length : (survey.video_count !== undefined ? survey.video_count : (survey.total_surveys || 0));
-        const videoCell = `<td>${videoCount}</td>`;
+        const videoCell = `<td><span class="video-count-badge">${videoCount}</span></td>`;
 
         // User count with popover click event (dynamic from users.json)
         const dynamicUserNames = surveyUserMap[survey.id] || [];
-        let userCell = `<td>N/A</td>`;
+        let userCell = `<td><span class="user-count-empty">N/A</span></td>`;
         if (dynamicUserNames.length > 0) {
           const namesData = JSON.stringify(dynamicUserNames).replace(/"/g, '&quot;');
           userCell = `<td><span class="user-count-clickable" onclick="showUsersPopover(event, ${namesData})">${dynamicUserNames.length} Users</span></td>`;
         } else if (dynamicUserNames.length === 0 && allUsers.length > 0) {
-          userCell = `<td>0 Users</td>`;
+          userCell = `<td><span class="user-count-empty">0 Users</span></td>`;
         }
         
-        const dateCell = `<td>${formatSurveyDate(survey.createdAt)}</td>`;
-        const rawStatus = (survey.status || 'active').trim();
-        const statusClass = rawStatus.toLowerCase();
+        const dateCell = `<td><span class="date-badge">${formatSurveyDate(survey.createdAt)}</span></td>`;
         const statusCell = `<td><span class="status-badge ${statusClass}">${escapeHtml(statusClass)}</span></td>`;
 
         let actionCell = '';
@@ -1346,6 +1411,14 @@
       });
 
       updateFilterButtonStates();
+    }
+
+    function showInactiveSurveyNotice(event, surveyName) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      alert('"' + (surveyName || 'This survey') + '" is currently marked as INACTIVE.\n\nAccess to this survey is restricted for non-admin users. Please contact your administrator to activate it.');
     }
 
     const renderUsersTable = renderSurveysTable;
@@ -2947,12 +3020,60 @@
       }
     });
 
-    // Handle logout button click
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      if (confirm('Do you want to log out?')) {
+    // Robust cross-browser logout handlers (Mac Safari, iOS Safari, Chrome, Edge, Firefox)
+    function openLogoutModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const dropdown = document.getElementById('profileDropdown');
+      if (dropdown) dropdown.classList.remove('show');
+      const modal = document.getElementById('logoutModal');
+      if (modal) {
+        modal.classList.add('show');
+      } else {
+        if (confirm('Do you want to log out?')) {
+          executeLogout();
+        }
+      }
+    }
+
+    function closeLogoutModal() {
+      const modal = document.getElementById('logoutModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function executeLogout() {
+      try {
         sessionStorage.clear();
         localStorage.removeItem('loggedInUser');
-        window.location.href = 'login.html';
+        localStorage.removeItem('currentUser');
+        if (window.TPStorage && typeof window.TPStorage.remove === 'function') {
+          window.TPStorage.remove('loggedInUser');
+          window.TPStorage.remove('currentUser');
+        }
+      } catch (e) {
+        console.warn('Logout cleanup warning:', e);
+      }
+      const isTp = window.location.pathname.includes('/trueprogress/');
+      const targetUrl = (isTp ? 'login.html' : '/login') + '?logout=true';
+      window.location.replace(targetUrl);
+    }
+
+    const logoutBtnEl = document.getElementById('logoutBtn');
+    if (logoutBtnEl) {
+      logoutBtnEl.onclick = openLogoutModal;
+      logoutBtnEl.addEventListener('touchend', openLogoutModal);
+    }
+
+    // Safari Back-Forward Cache (bfcache) Guard
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) {
+        const userSession = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+        if (!userSession) {
+          const isTp = window.location.pathname.includes('/trueprogress/');
+          window.location.replace((isTp ? 'login.html' : '/login') + '?logout=true');
+        }
       }
     });
 
