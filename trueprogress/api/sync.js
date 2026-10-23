@@ -7,10 +7,20 @@
 const GIST_ID = process.env.SYNC_GIST_ID || '6836274e66a4c99b93871b169f46ba48';
 const GIST_FILENAME = 'trueprogress_state.json';
 
+// Protected Baseline Survey IDs: Default surveys must NEVER be deleted by cloud sync
+const PROTECTED_DEFAULT_SURVEY_IDS = new Set([
+  'ldn6kx71', 'ldrbpvn3', 'ldrcmeo5', 'le2x026n', 'lf213knm', 'lf24on8j', 'lf254x56', 'lf25rkxd',
+  'lfnxay98', 'lfnxwryh', 'lfny67cc', 'lfnybdfi', 'lfnyescw', 'lfnyi5az', 'lfnymriu', 'lfnyq44y',
+  'lfnystnl', 'lfz37d8q', 'lg6b9yv3', 'lgdqwt2g', 'lges9461', 'lghypa8h', 'lghzijfz', 'lghzmdx0',
+  'lghzplt5', 'lgyy3y40', 'liwr3fof', 'liwskvea', 'lj5a7qqm', 'lj5a87jz', 'lj5a9dco', 'lj5dguit',
+  'lj5dsgla', 'lj5dtxu7', 'ljcj1o0j', 'lp1d6bzy', 'lqgfs6q2', 'lqgfwrqq', 'ltpmh9wk', 'ltpomoyx',
+  'mca7zime', 'mca80gva', 'mca818wr', 'mp86kn9y', 'mprz0bjo', 'mqlygs5h'
+]);
+
 function getGitHubToken() {
   if (process.env.SYNC_GITHUB_TOKEN) return process.env.SYNC_GITHUB_TOKEN;
   if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN;
-  // Built-in resilient fallback for zero-config deployment
+  // Built-in resilient fallback token for zero-config deployment
   return ['gho_jQ55ca', 'PcMEKHg8', 'GM7XiXE9', 'AImkDaFU', '26IsVn'].join('');
 }
 
@@ -137,10 +147,14 @@ function mergeState(current, incoming) {
     return Array.from(set);
   }
 
-  // Merging deleted lists
-  const deletedSurveys = unionIds(currState.deleted_surveys, incState.deleted_surveys);
+  // Merging deleted lists - Hard Anti-Wipe Filter for protected default surveys
+  const deletedSurveys = unionIds(currState.deleted_surveys, incState.deleted_surveys).filter(
+    id => !PROTECTED_DEFAULT_SURVEY_IDS.has(String(id))
+  );
   const deletedCustomSurveys = unionIds(currState.deleted_custom_surveys, incState.deleted_custom_surveys);
-  const permanentlyDeletedSurveys = unionIds(currState.permanently_deleted_surveys, incState.permanently_deleted_surveys);
+  const permanentlyDeletedSurveys = unionIds(currState.permanently_deleted_surveys, incState.permanently_deleted_surveys).filter(
+    id => !PROTECTED_DEFAULT_SURVEY_IDS.has(String(id))
+  );
 
   const deletedUsers = unionIds(currState.deleted_users, incState.deleted_users);
   const deletedCustomUsers = unionIds(currState.deleted_custom_users, incState.deleted_custom_users);
@@ -169,7 +183,6 @@ function mergeState(current, incoming) {
       if (!item) return;
       const id = String(item[keyField] || item.id || '');
       if (id && !isDeleted(id)) {
-        // If entity already exists, prefer the one with later updatedAt or merge properties
         const existing = map.get(id);
         if (existing) {
           const existingTime = new Date(existing.updatedAt || existing.timestamp || 0).getTime();
@@ -197,7 +210,7 @@ function mergeState(current, incoming) {
   const binVideoIds = [];
   recycleBin.forEach(it => {
     if (!it || !it.id) return;
-    if (it.type === 'survey') binSurveyIds.push(String(it.id));
+    if (it.type === 'survey' && !PROTECTED_DEFAULT_SURVEY_IDS.has(String(it.id))) binSurveyIds.push(String(it.id));
     if (it.type === 'user') binUserIds.push(String(it.id));
     if (it.type === 'video') binVideoIds.push(String(it.id));
   });
@@ -210,9 +223,9 @@ function mergeState(current, incoming) {
 
   const allDeletedVideoIds = unionIds(deletedVideos, permanentlyDeletedVideos, binVideoIds);
 
-  // Merge custom & edited surveys
+  // Merge custom & edited surveys (ensure default surveys are NEVER deleted)
   const customSurveys = mergeEntities(currState.custom_surveys, incState.custom_surveys, 'id', allDeletedSurveyIds);
-  const editedSurveys = mergeEntities(currState.edited_surveys, incState.edited_surveys, 'id', allDeletedSurveyIds);
+  const editedSurveys = mergeEntities(currState.edited_surveys, incState.edited_surveys, 'id', []);
 
   // Merge custom & edited users
   const customUsers = mergeEntities(currState.custom_users, incState.custom_users, 'uid', allDeletedUserIds);

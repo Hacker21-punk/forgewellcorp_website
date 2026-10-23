@@ -2,6 +2,14 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/sync",
+      "destination": "/api/sync.js"
+    },
+    {
+      "source": "/trueprogress/api/sync",
+      "destination": "/api/sync.js"
+    },
+    {
       "source": "/backup%20details%20of%20trueprogress/(.*)",
       "destination": "/backup details of trueprogress/$1"
     },
@@ -266,6 +274,15 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)(surveys|videos|users).json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     },

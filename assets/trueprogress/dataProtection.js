@@ -1,51 +1,14 @@
 /**
  * TrueProgress Universal Data Protection & Integrity Guard
  * 
- * 1. Permanently removes all legacy cloud sync artifacts, listeners, and UI elements.
- * 2. Self-heals poisoned/corrupted localStorage deletion keys caused by legacy sync loops.
- * 3. Provides a multi-tier resilient data fetch engine across all deployment paths and devices.
- * 4. Hard anti-wipe guarantee: Surveys, videos, and users will never disappear after any update or network drop.
+ * 1. Self-heals poisoned/corrupted localStorage deletion keys caused by legacy sync loops.
+ * 2. Provides a multi-tier resilient data fetch engine across all deployment paths and devices.
+ * 3. Hard anti-wipe guarantee: Surveys, videos, and users will never disappear after any update or network drop.
  */
 (function (window) {
   'use strict';
 
-  // --- STEP 1: Purge All Cloud Sync Remnants ---
-  function purgeCloudSync() {
-    try {
-      const syncKeys = [
-        'tp_cloud_synced',
-        'tp_cloud_sync_cache',
-        'tp_cloud_sync_state',
-        'tp_last_cloud_pull',
-        'tp_cloud_sync_pending',
-        'tp_cloud_sync_ts',
-        'tp_cloud_sync_gist_id'
-      ];
-      syncKeys.forEach(function (k) {
-        try { localStorage.removeItem(k); } catch (e) {}
-        try { sessionStorage.removeItem(k); } catch (e) {}
-      });
-
-      // Remove UI elements if still present
-      const badge = document.getElementById('tpCloudSyncBadge') || document.getElementById('cloudSyncBadge');
-      if (badge && badge.parentNode) {
-        badge.parentNode.removeChild(badge);
-      }
-      const syncStyles = document.getElementById('tp-cloud-sync-styles');
-      if (syncStyles && syncStyles.parentNode) {
-        syncStyles.parentNode.removeChild(syncStyles);
-      }
-      // Also query by class
-      const allBadges = document.querySelectorAll('.cloud-sync-badge');
-      allBadges.forEach(function (el) {
-        if (el && el.parentNode) el.parentNode.removeChild(el);
-      });
-    } catch (err) {
-      console.warn('Cloud sync cleanup notice:', err);
-    }
-  }
-
-  // --- STEP 2: Self-Heal Poisoned Deletion Stores ---
+  // --- STEP 1: Self-Heal Poisoned Deletion Stores ---
   function healPoisonedStores() {
     try {
       const FIX_KEY = 'tp_v2026_data_intact_fix';
@@ -131,18 +94,10 @@
     }
   }
 
-  // Run immediate cleanup
-  purgeCloudSync();
+  // Run self-healing
   healPoisonedStores();
 
-  // Also run on DOM ready to catch any late injections
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', purgeCloudSync);
-  } else {
-    purgeCloudSync();
-  }
-
-  // --- STEP 3: Multi-Path Resilient Data Fetch Engine ---
+  // --- STEP 2: Multi-Path Resilient Data Fetch Engine ---
   var TPDataLoader = {
     /**
      * Resiliently fetch a JSON data file across multiple possible URLs.
@@ -162,7 +117,9 @@
       var data = null;
       for (var i = 0; i < candidates.length; i++) {
         try {
-          var res = await fetch(candidates[i], { cache: 'no-cache' });
+          var sep = candidates[i].indexOf('?') === -1 ? '?' : '&';
+          var urlWithBuster = candidates[i] + sep + '_t=' + Date.now();
+          var res = await fetch(urlWithBuster, { cache: 'no-cache' });
           if (res.ok) {
             data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
