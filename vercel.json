@@ -19,11 +19,11 @@
     },
     {
       "source": "/trueprogress/backup%20details%20of%20trueprogress/(.*)",
-      "destination": "/trueprogress/backup details of trueprogress/$1"
+      "destination": "/backup details of trueprogress/$1"
     },
     {
       "source": "/trueprogress/backup details of trueprogress/(.*)",
-      "destination": "/trueprogress/backup details of trueprogress/$1"
+      "destination": "/backup details of trueprogress/$1"
     },
     {
       "source": "/solutions/quantum-&-physics",
