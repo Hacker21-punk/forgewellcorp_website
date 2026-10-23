@@ -85,7 +85,7 @@
       // Sanitize user assignments: ensure Amit Kumar does not carry invalid Bairabi assignments in cached stores
       sanitizeUserAssignments();
 
-      // Self-heal survey status for Bairabi Sarang Short Film (lghypa8h) to inactive across any legacy caches
+      // Self-heal survey status for Bairabi Sarang Short Film (lghypa8h) and Bairabi Section (lf213knm) to inactive across any legacy caches
       try {
         ['tp_canonical_surveys.json', 'tp_cached_surveys.json', 'edited_surveys'].forEach(function (key) {
           var raw = localStorage.getItem(key);
@@ -94,7 +94,7 @@
             if (Array.isArray(parsed)) {
               var mod = false;
               parsed.forEach(function (s) {
-                if (s && s.id === 'lghypa8h' && s.status === 'active') {
+                if (s && (s.id === 'lghypa8h' || s.id === 'lf213knm') && s.status === 'active') {
                   s.status = 'inactive';
                   mod = true;
                 }
@@ -108,7 +108,7 @@
             if (Array.isArray(sParsed)) {
               var sMod = false;
               sParsed.forEach(function (s) {
-                if (s && s.id === 'lghypa8h' && s.status === 'active') {
+                if (s && (s.id === 'lghypa8h' || s.id === 'lf213knm') && s.status === 'active') {
                   s.status = 'inactive';
                   sMod = true;
                 }

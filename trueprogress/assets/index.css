@@ -3043,11 +3043,15 @@ a {
     right: 0 !important;
     bottom: 0 !important;
     padding: 0.5rem;
-    display: flex !important;
+    display: none !important;
     align-items: center !important;
     justify-content: center !important;
     z-index: 99999 !important;
     background: rgba(0, 0, 0, 0.55) !important;
+  }
+
+  .modal-overlay.show {
+    display: flex !important;
   }
   
   .modal-container {
@@ -3156,6 +3160,9 @@ a {
   .modal-overlay {
     padding: 0;
     align-items: flex-end;
+  }
+  .modal-overlay:not(.show) {
+    display: none !important;
   }
 
   .comparative-controls-dock {
