@@ -2808,12 +2808,17 @@ a {
     font-size: 0.85rem;
   }
 
-  #breadcrumbAdminActions {
+  body.is-admin #breadcrumbAdminActions {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.5rem !important;
     width: 100% !important;
     margin-top: 0.25rem;
+  }
+
+  body:not(.is-admin) #breadcrumbAdminActions,
+  body.is-user #breadcrumbAdminActions {
+    display: none !important;
   }
 
   .btn-breadcrumb-action {
@@ -3468,55 +3473,36 @@ a {
 }
 
 /* ==========================================================================
-   TrueProgress Cloud Synchronization Status Pill
+   Admin-Only Protection & Gating
+   Guaranteed never to display admin buttons, containers, or tools to non-admins
+   on any device, viewport, or window size.
    ========================================================================== */
-.cloud-sync-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 9999px;
-  background: var(--surface-card, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--surface-border, rgba(255, 255, 255, 0.1));
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary, #94a3b8);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-  user-select: none;
-  flex-shrink: 0;
+body:not(.is-admin) #breadcrumbAdminActions,
+body:not(.is-admin) #adminControls,
+body:not(.is-admin) #adminUserControls,
+body:not(.is-admin) #actionHeader,
+body:not(.is-admin) .admin-only,
+body.is-user #breadcrumbAdminActions,
+body.is-user #adminControls,
+body.is-user #adminUserControls,
+body.is-user #actionHeader,
+body.is-user .admin-only,
+#breadcrumbAdminActions.hidden-for-user,
+#breadcrumbAdminActions[style*="display: none"] {
+  display: none !important;
 }
 
-.cloud-sync-status .sync-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+body.is-admin #breadcrumbAdminActions {
+  display: flex;
 }
 
-.cloud-sync-status.status-syncing .sync-dot {
-  background: #f59e0b;
-  box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
-  animation: pulse-sync 1.2s infinite ease-in-out;
-}
-
-.cloud-sync-status.status-offline .sync-dot {
-  background: #64748b;
-  box-shadow: none;
-}
-
-@keyframes pulse-sync {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-
-@media (max-width: 640px) {
-  .cloud-sync-status {
-    padding: 0.3rem 0.5rem;
-  }
-  .cloud-sync-status .sync-text {
-    display: none;
-  }
+/* ==========================================================================
+   TrueProgress Cloud Synchronization (Hidden from UI; active in background)
+   ========================================================================== */
+.cloud-sync-status,
+#cloudSyncStatus,
+#tpCloudSyncBadge {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }

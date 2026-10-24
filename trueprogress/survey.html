@@ -45,12 +45,6 @@
 
           <!-- Header Right Actions: Theme Toggle & Profile Menu -->
           <div class="header-right-actions">
-            <!-- Cloud Sync Status Pill -->
-            <div class="cloud-sync-status" id="cloudSyncStatus" title="Cloud Sync Active">
-              <span class="sync-dot"></span>
-              <span class="sync-text">Cloud Synced</span>
-            </div>
-
             <!-- Theme Toggle Button -->
             <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle Light / Dark Mode" title="Toggle Theme">
               <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -132,7 +126,7 @@
               <span id="breadcrumbSurveyName" style="color: #374151;">Survey</span>
             </li>
           </ul>
-          <div id="breadcrumbAdminActions" style="display: none; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <div id="breadcrumbAdminActions" class="admin-only" style="display: none; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
             <button class="btn-breadcrumb-action" id="recycleBinBtn" type="button" onclick="openRecycleBinModal()">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -380,8 +374,14 @@
       if (dRole) dRole.innerText = isAdmin ? "Admin" : "User";
 
       const adminActions = document.getElementById('breadcrumbAdminActions');
-      if (adminActions && isAdmin) {
-        adminActions.style.display = 'flex';
+      if (isAdmin) {
+        document.body.classList.add('is-admin');
+        document.body.classList.remove('is-user');
+        if (adminActions) adminActions.style.display = 'flex';
+      } else {
+        document.body.classList.remove('is-admin');
+        document.body.classList.add('is-user');
+        if (adminActions) adminActions.style.display = 'none';
       }
 
       // Access permission check: Admins ALWAYS have access to all surveys

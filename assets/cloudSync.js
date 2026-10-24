@@ -99,25 +99,12 @@
 
   var TPCloudSync = {
     updateBadge: function (status, label) {
+      // Cloud Sync runs 100% in the background without UI badge display
       var badge = document.getElementById('cloudSyncStatus') || document.getElementById('tpCloudSyncBadge');
-      if (!badge) return;
-
-      var dot = badge.querySelector('.sync-dot');
-      var text = badge.querySelector('.sync-text');
-
-      badge.classList.remove('status-synced', 'status-syncing', 'status-offline');
-      badge.classList.add('status-' + status);
-
-      if (dot) {
-        if (status === 'synced') dot.style.background = '#10b981';
-        else if (status === 'syncing') dot.style.background = '#f59e0b';
-        else dot.style.background = '#64748b';
+      if (badge) {
+        badge.style.display = 'none';
+        badge.style.visibility = 'hidden';
       }
-
-      if (text) {
-        text.textContent = label;
-      }
-      badge.title = 'Cloud Sync: ' + label;
     },
 
     getLocalState: function () {

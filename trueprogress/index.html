@@ -52,12 +52,6 @@
 
           <!-- Header Right Actions: Theme Toggle & Profile Menu -->
           <div class="header-right-actions">
-            <!-- Cloud Sync Status Pill -->
-            <div class="cloud-sync-status" id="cloudSyncStatus" title="Cloud Sync Active">
-              <span class="sync-dot"></span>
-              <span class="sync-text">Cloud Synced</span>
-            </div>
-
             <!-- Theme Toggle Button -->
             <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Toggle Light / Dark Mode" title="Toggle Theme">
               <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -132,7 +126,7 @@
             </li>
           </ul>
           <!-- Admin actions beside breadcrumbs -->
-          <div id="breadcrumbAdminActions" style="display: none; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <div id="breadcrumbAdminActions" class="admin-only" style="display: none; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
             <button class="btn-breadcrumb-action" id="allUsersBtn">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -171,12 +165,12 @@
         </nav>
 
         <!-- Create Survey Button (Visible only to Admin) -->
-        <div id="adminControls" style="display: none;">
+        <div id="adminControls" class="admin-only" style="display: none;">
           <button class="btn-create-survey" id="openCreateSurveyModalBtn">Create a survey</button>
         </div>
 
         <!-- Create User Button (Visible only to Admin when on users view) -->
-        <div id="adminUserControls" style="display: none;">
+        <div id="adminUserControls" class="admin-only" style="display: none;">
           <button class="btn-create-survey" id="openCreateUserModalBtn">Create a User</button>
         </div>
 
@@ -588,14 +582,19 @@
       }
     }
 
-    function navigateToView(view) {
-      currentView = view;
-      renderBreadcrumbs();
-
+    function applyUserRoleUI() {
+      const isAdm = isUserAdmin();
       const adminControls = document.getElementById('adminControls');
       const adminUserControls = document.getElementById('adminUserControls');
-      
-      if (isUserAdmin()) {
+      const bAdmin = document.getElementById('breadcrumbAdminActions');
+      const actHdr = document.getElementById('actionHeader');
+      const dRole = document.getElementById('dropdownRole');
+
+      if (isAdm) {
+        document.body.classList.add('is-admin');
+        document.body.classList.remove('is-user');
+        if (dRole) dRole.innerText = "Admin";
+        if (bAdmin) bAdmin.style.display = "flex";
         if (currentView === 'surveys') {
           if (adminControls) adminControls.style.display = 'block';
           if (adminUserControls) adminUserControls.style.display = 'none';
@@ -603,11 +602,22 @@
           if (adminControls) adminControls.style.display = 'none';
           if (adminUserControls) adminUserControls.style.display = 'block';
         }
+        if (actHdr) actHdr.style.display = "table-cell";
       } else {
-        if (adminControls) adminControls.style.display = 'none';
-        if (adminUserControls) adminUserControls.style.display = 'none';
+        document.body.classList.remove('is-admin');
+        document.body.classList.add('is-user');
+        if (dRole) dRole.innerText = "User";
+        if (bAdmin) bAdmin.style.display = "none";
+        if (adminControls) adminControls.style.display = "none";
+        if (adminUserControls) adminUserControls.style.display = "none";
+        if (actHdr) actHdr.style.display = "none";
       }
+    }
 
+    function navigateToView(view) {
+      currentView = view;
+      renderBreadcrumbs();
+      applyUserRoleUI();
       renderSurveysTable();
     }
 
@@ -696,14 +706,7 @@
       document.getElementById('dropdownPhone').innerText = currentUser.phoneNumber || 'N/A';
       document.getElementById('dropdownEmail').innerText = currentUser.email || 'N/A';
 
-      if (isUserAdmin()) {
-        document.getElementById('dropdownRole').innerText = "Admin";
-        document.getElementById('breadcrumbAdminActions').style.display = "flex";
-        document.getElementById('adminControls').style.display = "block";
-        document.getElementById('actionHeader').style.display = "table-cell";
-      } else {
-        document.getElementById('dropdownRole').innerText = "User";
-      }
+      applyUserRoleUI();
 
       // Initialize App
       initializeApp();
@@ -2962,11 +2965,13 @@
     // Cross-tab and real-time reactive synchronization for survey/user/video status and updates
     async function syncAndRefreshView() {
       try {
+        applyUserRoleUI();
         await fetchSurveys();
         await fetchVideos();
         await fetchUsers();
         buildSurveyUserMap();
         populateSurveyCheckboxes();
+        applyUserRoleUI();
         if (currentView === 'users') {
           renderUsersTable();
         } else {
