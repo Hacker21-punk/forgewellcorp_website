@@ -4,11 +4,11 @@
  * Provides bulletproof, loss-free cross-device data persistence across all laptops,
  * desktops, and mobile devices (iOS / Android / Windows / Mac / Linux).
  * 
- * Backed by dual-transport architecture:
- * 1. Primary: Serverless Endpoint (/api/sync)
- * 2. Fallback: Direct GitHub Cloud Gist API (Token-authenticated)
- * 
- * Guarantee: Default baseline surveys can NEVER be wiped.
+ * Features:
+ * 1. Synchronizes survey edits, additions, deletions, and Recycle Bin states.
+ * 2. Guaranteed instant propagation: deletions made by Admins immediately reflect on User dashboards.
+ * 3. Restoration-aware: restored items cleanly un-delete across all connected devices.
+ * 4. Dual-transport resilience: /api/sync Serverless + GitHub Cloud Gist API fallback.
  */
 (function (window) {
   'use strict';
@@ -82,6 +82,21 @@
     } catch (e) {}
   }
 
+  function unionIds() {
+    var set = new Set();
+    for (var i = 0; i < arguments.length; i++) {
+      var arr = arguments[i];
+      if (Array.isArray(arr)) {
+        arr.forEach(function (item) {
+          if (item === null || item === undefined) return;
+          var id = typeof item === 'object' ? String(item.uid || item.id || '') : String(item);
+          if (id && id !== '[object Object]') set.add(id);
+        });
+      }
+    }
+    return Array.from(set);
+  }
+
   var TPCloudSync = {
     updateBadge: function (status, label) {
       var badge = document.getElementById('cloudSyncStatus') || document.getElementById('tpCloudSyncBadge');
@@ -109,7 +124,6 @@
       var editedSurveys = safeStorageGet('edited_surveys', []);
       var nowIso = new Date().toISOString();
 
-      // Ensure every edited survey has an updatedAt timestamp
       var sanitizedEditedSurveys = (Array.isArray(editedSurveys) ? editedSurveys : []).map(function (s) {
         if (!s.updatedAt) {
           return Object.assign({}, s, { updatedAt: nowIso });
@@ -120,11 +134,26 @@
       return {
         edited_surveys: sanitizedEditedSurveys,
         custom_surveys: safeStorageGet('custom_surveys', []),
+        deleted_surveys: safeStorageGet('deleted_surveys', []),
+        deleted_custom_surveys: safeStorageGet('deleted_custom_surveys', []),
+        permanently_deleted_surveys: safeStorageGet('permanently_deleted_surveys', []),
+        tp_recycle_bin: safeStorageGet('tp_recycle_bin', []),
+        tp_restored_items: safeStorageGet('tp_restored_items', []),
+
         edited_users: safeStorageGet('edited_users', []),
         custom_users: safeStorageGet('custom_users', []),
+        deleted_users: safeStorageGet('deleted_users', []),
+        deleted_custom_users: safeStorageGet('deleted_custom_users', []),
+        permanently_deleted_users: safeStorageGet('permanently_deleted_users', []),
+
         edited_videos: safeStorageGet('edited_videos', []),
         custom_videos: safeStorageGet('custom_videos', []),
-        custom_landmarks: collectLandmarks()
+        deleted_videos: safeStorageGet('deleted_videos', []),
+        permanently_deleted_videos: safeStorageGet('permanently_deleted_videos', []),
+
+        custom_landmarks: collectLandmarks(),
+        deleted_landmarks: safeStorageGet('deleted_landmarks', []),
+        permanently_deleted_landmarks: safeStorageGet('permanently_deleted_landmarks', [])
       };
     },
 
@@ -191,17 +220,113 @@
         var local = this.getLocalState();
         var hasLocalChanges = false;
 
-        // Intelligent merge for edited_surveys
+        // 1. Merge restored items tracking
+        var localRestored = local.tp_restored_items || [];
+        var remoteRestored = remoteState.tp_restored_items || [];
+        var restoredMap = new Map();
+        localRestored.concat(remoteRestored).forEach(function (r) {
+          if (!r || !r.id) return;
+          var key = (r.type || 'survey') + '_' + String(r.id);
+          var ex = restoredMap.get(key);
+          if (!ex || new Date(r.restoredAt || 0).getTime() >= new Date(ex.restoredAt || 0).getTime()) {
+            restoredMap.set(key, r);
+          }
+        });
+        var mergedRestored = Array.from(restoredMap.values());
+        if (JSON.stringify(localRestored) !== JSON.stringify(mergedRestored)) {
+          safeStorageSet('tp_restored_items', mergedRestored);
+          hasLocalChanges = true;
+        }
+
+        // 2. Merge permanently deleted items
+        var permSurveys = unionIds(local.permanently_deleted_surveys, remoteState.permanently_deleted_surveys);
+        var permSurveysSet = new Set(permSurveys.map(String));
+        if (JSON.stringify(local.permanently_deleted_surveys) !== JSON.stringify(permSurveys)) {
+          safeStorageSet('permanently_deleted_surveys', permSurveys);
+          hasLocalChanges = true;
+        }
+
+        var permUsers = unionIds(local.permanently_deleted_users, remoteState.permanently_deleted_users);
+        if (JSON.stringify(local.permanently_deleted_users) !== JSON.stringify(permUsers)) {
+          safeStorageSet('permanently_deleted_users', permUsers);
+          hasLocalChanges = true;
+        }
+
+        var permVideos = unionIds(local.permanently_deleted_videos, remoteState.permanently_deleted_videos);
+        if (JSON.stringify(local.permanently_deleted_videos) !== JSON.stringify(permVideos)) {
+          safeStorageSet('permanently_deleted_videos', permVideos);
+          hasLocalChanges = true;
+        }
+
+        // 3. Merge Recycle Bin items
+        var localBin = local.tp_recycle_bin || [];
+        var remoteBin = remoteState.tp_recycle_bin || [];
+        var binMap = new Map();
+
+        localBin.concat(remoteBin).forEach(function (item) {
+          if (!item || !item.id) return;
+          var strId = String(item.id);
+          var type = item.type || 'survey';
+          var key = type + '_' + strId;
+
+          // If permanently deleted, skip
+          if (permSurveysSet.has(strId)) return;
+
+          // If restored with newer timestamp than deletedAt, skip
+          var restoredRecord = restoredMap.get(key);
+          if (restoredRecord) {
+            var restoredTime = new Date(restoredRecord.restoredAt || 0).getTime();
+            var deletedTime = new Date(item.deletedAt || 0).getTime();
+            if (restoredTime > deletedTime) return;
+          }
+
+          var existing = binMap.get(key);
+          if (!existing || new Date(item.deletedAt || 0).getTime() >= new Date(existing.deletedAt || 0).getTime()) {
+            binMap.set(key, item);
+          }
+        });
+
+        var finalBin = Array.from(binMap.values());
+        if (JSON.stringify(localBin) !== JSON.stringify(finalBin)) {
+          safeStorageSet('tp_recycle_bin', finalBin);
+          hasLocalChanges = true;
+        }
+
+        // 4. Compute active deleted survey IDs
+        var binSurveyIds = [];
+        finalBin.forEach(function (it) {
+          if (it && it.type === 'survey' && it.id) binSurveyIds.push(String(it.id));
+        });
+
+        var rawDeletedSurveys = unionIds(local.deleted_surveys, remoteState.deleted_surveys, binSurveyIds, permSurveys);
+        var finalDeletedSurveys = rawDeletedSurveys.filter(function (id) {
+          var strId = String(id);
+          if (permSurveysSet.has(strId)) return true;
+          if (binSurveyIds.includes(strId)) return true;
+          var restored = restoredMap.get('survey_' + strId);
+          if (restored && new Date(restored.restoredAt || 0).getTime() > 0) return false;
+          return true;
+        });
+
+        var deletedSurveySet = new Set(finalDeletedSurveys.map(String));
+        if (JSON.stringify(local.deleted_surveys) !== JSON.stringify(finalDeletedSurveys)) {
+          safeStorageSet('deleted_surveys', finalDeletedSurveys);
+          hasLocalChanges = true;
+        }
+
+        // 5. Intelligent merge for edited_surveys (EXCLUDING anything currently deleted)
         var localEditedSurveys = local.edited_surveys || [];
         var remoteEditedSurveys = remoteState.edited_surveys || [];
         var mergedEditedSurveysMap = new Map();
 
         localEditedSurveys.forEach(function (item) {
-          if (item && item.id) mergedEditedSurveysMap.set(String(item.id), item);
+          if (item && item.id && !deletedSurveySet.has(String(item.id))) {
+            mergedEditedSurveysMap.set(String(item.id), item);
+          }
         });
 
         remoteEditedSurveys.forEach(function (remoteItem) {
-          if (!remoteItem || !remoteItem.id) return;
+          if (!remoteItem || !remoteItem.id || deletedSurveySet.has(String(remoteItem.id))) return;
           var id = String(remoteItem.id);
           var localItem = mergedEditedSurveysMap.get(id);
 
@@ -212,7 +337,6 @@
             var tLocal = new Date(localItem.updatedAt || 0).getTime();
             var tRemote = new Date(remoteItem.updatedAt || 0).getTime();
             if (tRemote >= tLocal) {
-              // Remote is newer or equal
               if (JSON.stringify(localItem) !== JSON.stringify(remoteItem)) {
                 mergedEditedSurveysMap.set(id, Object.assign({}, localItem, remoteItem));
                 hasLocalChanges = true;
@@ -222,33 +346,57 @@
         });
 
         var finalEditedSurveys = Array.from(mergedEditedSurveysMap.values());
-        if (hasLocalChanges) {
+        if (hasLocalChanges || localEditedSurveys.length !== finalEditedSurveys.length) {
           safeStorageSet('edited_surveys', finalEditedSurveys);
         }
 
-        // Intelligent merge for custom_surveys
+        // 6. Intelligent merge for custom_surveys (EXCLUDING anything currently deleted)
         var localCustomSurveys = local.custom_surveys || [];
         var remoteCustomSurveys = remoteState.custom_surveys || [];
         var customSurveysMap = new Map();
-        localCustomSurveys.forEach(function (s) { if (s && s.id) customSurveysMap.set(String(s.id), s); });
+        localCustomSurveys.forEach(function (s) {
+          if (s && s.id && !deletedSurveySet.has(String(s.id))) customSurveysMap.set(String(s.id), s);
+        });
         remoteCustomSurveys.forEach(function (s) {
-          if (!s || !s.id) return;
+          if (!s || !s.id || deletedSurveySet.has(String(s.id))) return;
           if (!customSurveysMap.has(String(s.id))) {
             customSurveysMap.set(String(s.id), s);
             hasLocalChanges = true;
           }
         });
-        if (hasLocalChanges) {
-          safeStorageSet('custom_surveys', Array.from(customSurveysMap.values()));
+        var finalCustomSurveys = Array.from(customSurveysMap.values());
+        if (hasLocalChanges || localCustomSurveys.length !== finalCustomSurveys.length) {
+          safeStorageSet('custom_surveys', finalCustomSurveys);
         }
 
-        // Intelligent merge for edited_users
+        // 7. Intelligent merge for deleted_users and users
+        var binUserIds = [];
+        finalBin.forEach(function (it) {
+          if (it && it.type === 'user' && it.id) binUserIds.push(String(it.id));
+        });
+        var rawDeletedUsers = unionIds(local.deleted_users, remoteState.deleted_users, binUserIds, permUsers);
+        var finalDeletedUsers = rawDeletedUsers.filter(function (id) {
+          var strId = String(id);
+          if (permUsers.includes(strId)) return true;
+          if (binUserIds.includes(strId)) return true;
+          var restored = restoredMap.get('user_' + strId);
+          if (restored && new Date(restored.restoredAt || 0).getTime() > 0) return false;
+          return true;
+        });
+        var deletedUserSet = new Set(finalDeletedUsers.map(String));
+        if (JSON.stringify(local.deleted_users) !== JSON.stringify(finalDeletedUsers)) {
+          safeStorageSet('deleted_users', finalDeletedUsers);
+          hasLocalChanges = true;
+        }
+
         var localEditedUsers = local.edited_users || [];
         var remoteEditedUsers = remoteState.edited_users || [];
         var editedUsersMap = new Map();
-        localEditedUsers.forEach(function (u) { if (u && u.uid) editedUsersMap.set(String(u.uid), u); });
+        localEditedUsers.forEach(function (u) {
+          if (u && u.uid && !deletedUserSet.has(String(u.uid))) editedUsersMap.set(String(u.uid), u);
+        });
         remoteEditedUsers.forEach(function (ru) {
-          if (!ru || !ru.uid) return;
+          if (!ru || !ru.uid || deletedUserSet.has(String(ru.uid))) return;
           var uid = String(ru.uid);
           var lu = editedUsersMap.get(uid);
           if (!lu) {
@@ -263,33 +411,57 @@
             }
           }
         });
-        if (hasLocalChanges) {
-          safeStorageSet('edited_users', Array.from(editedUsersMap.values()));
+        var finalEditedUsers = Array.from(editedUsersMap.values());
+        if (hasLocalChanges || localEditedUsers.length !== finalEditedUsers.length) {
+          safeStorageSet('edited_users', finalEditedUsers);
         }
 
-        // Intelligent merge for custom_users
         var localCustomUsers = local.custom_users || [];
         var remoteCustomUsers = remoteState.custom_users || [];
         var customUsersMap = new Map();
-        localCustomUsers.forEach(function (u) { if (u && u.uid) customUsersMap.set(String(u.uid), u); });
+        localCustomUsers.forEach(function (u) {
+          if (u && u.uid && !deletedUserSet.has(String(u.uid))) customUsersMap.set(String(u.uid), u);
+        });
         remoteCustomUsers.forEach(function (u) {
-          if (!u || !u.uid) return;
+          if (!u || !u.uid || deletedUserSet.has(String(u.uid))) return;
           if (!customUsersMap.has(String(u.uid))) {
             customUsersMap.set(String(u.uid), u);
             hasLocalChanges = true;
           }
         });
-        if (hasLocalChanges) {
-          safeStorageSet('custom_users', Array.from(customUsersMap.values()));
+        var finalCustomUsers = Array.from(customUsersMap.values());
+        if (hasLocalChanges || localCustomUsers.length !== finalCustomUsers.length) {
+          safeStorageSet('custom_users', finalCustomUsers);
         }
 
-        // Intelligent merge for edited_videos
+        // 8. Merge videos
+        var binVideoIds = [];
+        finalBin.forEach(function (it) {
+          if (it && it.type === 'video' && it.id) binVideoIds.push(String(it.id));
+        });
+        var rawDeletedVideos = unionIds(local.deleted_videos, remoteState.deleted_videos, binVideoIds, permVideos);
+        var finalDeletedVideos = rawDeletedVideos.filter(function (id) {
+          var strId = String(id);
+          if (permVideos.includes(strId)) return true;
+          if (binVideoIds.includes(strId)) return true;
+          var restored = restoredMap.get('video_' + strId);
+          if (restored && new Date(restored.restoredAt || 0).getTime() > 0) return false;
+          return true;
+        });
+        var deletedVideoSet = new Set(finalDeletedVideos.map(String));
+        if (JSON.stringify(local.deleted_videos) !== JSON.stringify(finalDeletedVideos)) {
+          safeStorageSet('deleted_videos', finalDeletedVideos);
+          hasLocalChanges = true;
+        }
+
         var localEditedVideos = local.edited_videos || [];
         var remoteEditedVideos = remoteState.edited_videos || [];
         var editedVideosMap = new Map();
-        localEditedVideos.forEach(function (v) { if (v && v.id) editedVideosMap.set(String(v.id), v); });
+        localEditedVideos.forEach(function (v) {
+          if (v && v.id && !deletedVideoSet.has(String(v.id))) editedVideosMap.set(String(v.id), v);
+        });
         remoteEditedVideos.forEach(function (rv) {
-          if (!rv || !rv.id) return;
+          if (!rv || !rv.id || deletedVideoSet.has(String(rv.id))) return;
           var vid = String(rv.id);
           var lv = editedVideosMap.get(vid);
           if (!lv) {
@@ -304,24 +476,27 @@
             }
           }
         });
-        if (hasLocalChanges) {
-          safeStorageSet('edited_videos', Array.from(editedVideosMap.values()));
+        var finalEditedVideos = Array.from(editedVideosMap.values());
+        if (hasLocalChanges || localEditedVideos.length !== finalEditedVideos.length) {
+          safeStorageSet('edited_videos', finalEditedVideos);
         }
 
-        // Intelligent merge for custom_videos
         var localCustomVideos = local.custom_videos || [];
         var remoteCustomVideos = remoteState.custom_videos || [];
         var customVideosMap = new Map();
-        localCustomVideos.forEach(function (v) { if (v && v.id) customVideosMap.set(String(v.id), v); });
+        localCustomVideos.forEach(function (v) {
+          if (v && v.id && !deletedVideoSet.has(String(v.id))) customVideosMap.set(String(v.id), v);
+        });
         remoteCustomVideos.forEach(function (v) {
-          if (!v || !v.id) return;
+          if (!v || !v.id || deletedVideoSet.has(String(v.id))) return;
           if (!customVideosMap.has(String(v.id))) {
             customVideosMap.set(String(v.id), v);
             hasLocalChanges = true;
           }
         });
-        if (hasLocalChanges) {
-          safeStorageSet('custom_videos', Array.from(customVideosMap.values()));
+        var finalCustomVideos = Array.from(customVideosMap.values());
+        if (hasLocalChanges || localCustomVideos.length !== finalCustomVideos.length) {
+          safeStorageSet('custom_videos', finalCustomVideos);
         }
 
         // Apply remote landmarks
@@ -442,6 +617,15 @@
         if (e && e.detail && e.detail.source === 'cloud_sync') {
           return; // Ignore internal events to prevent loops
         }
+        TPCloudSync.schedulePush();
+      });
+
+      // Synchronize whenever bin or restoration updates occur
+      window.addEventListener('tp_bin_updated', function () {
+        TPCloudSync.schedulePush();
+      });
+
+      window.addEventListener('tp_item_restored', function () {
         TPCloudSync.schedulePush();
       });
 

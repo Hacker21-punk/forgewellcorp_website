@@ -7,16 +7,6 @@
 const GIST_ID = process.env.SYNC_GIST_ID || '6836274e66a4c99b93871b169f46ba48';
 const GIST_FILENAME = 'trueprogress_state.json';
 
-// Protected Baseline Survey IDs: Default surveys must NEVER be deleted by cloud sync
-const PROTECTED_DEFAULT_SURVEY_IDS = new Set([
-  'ldn6kx71', 'ldrbpvn3', 'ldrcmeo5', 'le2x026n', 'lf213knm', 'lf24on8j', 'lf254x56', 'lf25rkxd',
-  'lfnxay98', 'lfnxwryh', 'lfny67cc', 'lfnybdfi', 'lfnyescw', 'lfnyi5az', 'lfnymriu', 'lfnyq44y',
-  'lfnystnl', 'lfz37d8q', 'lg6b9yv3', 'lgdqwt2g', 'lges9461', 'lghypa8h', 'lghzijfz', 'lghzmdx0',
-  'lghzplt5', 'lgyy3y40', 'liwr3fof', 'liwskvea', 'lj5a7qqm', 'lj5a87jz', 'lj5a9dco', 'lj5dguit',
-  'lj5dsgla', 'lj5dtxu7', 'ljcj1o0j', 'lp1d6bzy', 'lqgfs6q2', 'lqgfwrqq', 'ltpmh9wk', 'ltpomoyx',
-  'mca7zime', 'mca80gva', 'mca818wr', 'mp86kn9y', 'mprz0bjo', 'mqlygs5h'
-]);
-
 function getGitHubToken() {
   if (process.env.SYNC_GITHUB_TOKEN) return process.env.SYNC_GITHUB_TOKEN;
   if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN;
@@ -46,7 +36,8 @@ let memoryState = {
     custom_landmarks: {},
     deleted_landmarks: [],
     permanently_deleted_landmarks: [],
-    tp_recycle_bin: []
+    tp_recycle_bin: [],
+    tp_restored_items: []
   }
 };
 
@@ -147,26 +138,105 @@ function mergeState(current, incoming) {
     return Array.from(set);
   }
 
-  // Merging deleted lists - Hard Anti-Wipe Filter for protected default surveys
-  const deletedSurveys = unionIds(currState.deleted_surveys, incState.deleted_surveys).filter(
-    id => !PROTECTED_DEFAULT_SURVEY_IDS.has(String(id))
-  );
+  // 1. Merge restored items tracking
+  function mergeRestored(currArr, incArr) {
+    const map = new Map();
+    (Array.isArray(currArr) ? currArr : []).concat(Array.isArray(incArr) ? incArr : []).forEach(item => {
+      if (!item || !item.id) return;
+      const key = (item.type || 'survey') + '_' + String(item.id);
+      const existing = map.get(key);
+      if (!existing || new Date(item.restoredAt || 0).getTime() >= new Date(existing.restoredAt || 0).getTime()) {
+        map.set(key, item);
+      }
+    });
+    return Array.from(map.values());
+  }
+
+  const restoredItems = mergeRestored(currState.tp_restored_items, incState.tp_restored_items);
+  const restoredMap = new Map();
+  restoredItems.forEach(r => {
+    restoredMap.set((r.type || 'survey') + '_' + String(r.id), new Date(r.restoredAt || 0).getTime());
+  });
+
+  // 2. Merging permanently deleted lists
+  const permSurveys = unionIds(currState.permanently_deleted_surveys, incState.permanently_deleted_surveys);
+  const permUsers = unionIds(currState.permanently_deleted_users, incState.permanently_deleted_users);
+  const permVideos = unionIds(currState.permanently_deleted_videos, incState.permanently_deleted_videos);
+  const permLandmarks = unionIds(currState.permanently_deleted_landmarks, incState.permanently_deleted_landmarks);
+
+  const permSurveysSet = new Set(permSurveys);
+  const permUsersSet = new Set(permUsers);
+  const permVideosSet = new Set(permVideos);
+
+  // 3. Merge Recycle Bin items
+  function mergeRecycleBin(currBin, incBin, permSet) {
+    const map = new Map();
+    (Array.isArray(currBin) ? currBin : []).concat(Array.isArray(incBin) ? incBin : []).forEach(item => {
+      if (!item || !item.id) return;
+      const strId = String(item.id);
+      const type = item.type || 'survey';
+      const key = type + '_' + strId;
+
+      // If permanently deleted, do not keep in active recycle bin
+      if (permSet.has(strId)) return;
+
+      // If restored with newer timestamp than deletedAt, omit from bin
+      const restoredTime = restoredMap.get(key) || 0;
+      const deletedTime = new Date(item.deletedAt || 0).getTime();
+      if (restoredTime > deletedTime) return;
+
+      // Prefer the newer record
+      const existing = map.get(key);
+      if (!existing || deletedTime >= new Date(existing.deletedAt || 0).getTime()) {
+        map.set(key, item);
+      }
+    });
+    return Array.from(map.values());
+  }
+
+  const recycleBin = mergeRecycleBin(currState.tp_recycle_bin, incState.tp_recycle_bin, permSurveysSet);
+
+  // Collect all IDs currently in recycle bin
+  const binSurveyIds = [];
+  const binUserIds = [];
+  const binVideoIds = [];
+  recycleBin.forEach(it => {
+    if (it.type === 'survey') binSurveyIds.push(String(it.id));
+    if (it.type === 'user') binUserIds.push(String(it.id));
+    if (it.type === 'video') binVideoIds.push(String(it.id));
+  });
+
+  // 4. Merge deleted arrays, respecting restorations
+  function mergeDeletedIds(type, currArr, incArr, binIds, permIds) {
+    const raw = unionIds(currArr, incArr, binIds, permIds);
+    return raw.filter(id => {
+      const strId = String(id);
+      // If permanently deleted, always deleted
+      if (permIds.includes(strId)) return true;
+      // If in active bin, it is deleted
+      if (binIds.includes(strId)) return true;
+      // If restored with newer timestamp, exclude from deleted
+      const restoredTime = restoredMap.get(type + '_' + strId) || 0;
+      if (restoredTime > 0) return false;
+      return true;
+    });
+  }
+
   const deletedCustomSurveys = unionIds(currState.deleted_custom_surveys, incState.deleted_custom_surveys);
-  const permanentlyDeletedSurveys = unionIds(currState.permanently_deleted_surveys, incState.permanently_deleted_surveys).filter(
-    id => !PROTECTED_DEFAULT_SURVEY_IDS.has(String(id))
-  );
-
-  const deletedUsers = unionIds(currState.deleted_users, incState.deleted_users);
   const deletedCustomUsers = unionIds(currState.deleted_custom_users, incState.deleted_custom_users);
-  const permanentlyDeletedUsers = unionIds(currState.permanently_deleted_users, incState.permanently_deleted_users);
 
-  const deletedVideos = unionIds(currState.deleted_videos, incState.deleted_videos);
-  const permanentlyDeletedVideos = unionIds(currState.permanently_deleted_videos, incState.permanently_deleted_videos);
+  let allDeletedSurveyIds = mergeDeletedIds('survey', currState.deleted_surveys, incState.deleted_surveys, binSurveyIds, permSurveys);
+  // Anti-Wipe circuit breaker: if more than 40 surveys deleted at once, protect baseline
+  if (allDeletedSurveyIds.length >= 40) {
+    console.warn('[Sync API] Catastrophic wipe prevention triggered on surveys.');
+    allDeletedSurveyIds = allDeletedSurveyIds.slice(0, 10);
+  }
 
-  const deletedLandmarks = unionIds(currState.deleted_landmarks, incState.deleted_landmarks);
-  const permanentlyDeletedLandmarks = unionIds(currState.permanently_deleted_landmarks, incState.permanently_deleted_landmarks);
+  const allDeletedUserIds = mergeDeletedIds('user', currState.deleted_users, incState.deleted_users, binUserIds, permUsers);
+  const allDeletedVideoIds = mergeDeletedIds('video', currState.deleted_videos, incState.deleted_videos, binVideoIds, permVideos);
+  const deletedLandmarks = unionIds(currState.deleted_landmarks, incState.deleted_landmarks, permLandmarks);
 
-  // Merge entities by primary key, excluding anything that was deleted
+  // 5. Merge entities by primary key, excluding anything that is deleted
   function mergeEntities(currArr, incArr, keyField, deletedList) {
     const map = new Map();
     const isDeleted = (id) => deletedList.includes(String(id));
@@ -201,31 +271,9 @@ function mergeState(current, incoming) {
     return Array.from(map.values());
   }
 
-  // Merge Recycle Bin items by binId or id
-  const recycleBin = mergeEntities(currState.tp_recycle_bin, incState.tp_recycle_bin, 'binId', []);
-
-  // Collect all IDs currently in recycle bin
-  const binSurveyIds = [];
-  const binUserIds = [];
-  const binVideoIds = [];
-  recycleBin.forEach(it => {
-    if (!it || !it.id) return;
-    if (it.type === 'survey' && !PROTECTED_DEFAULT_SURVEY_IDS.has(String(it.id))) binSurveyIds.push(String(it.id));
-    if (it.type === 'user') binUserIds.push(String(it.id));
-    if (it.type === 'video') binVideoIds.push(String(it.id));
-  });
-
-  const customSurveyDeletedIds = (Array.isArray(deletedCustomSurveys) ? deletedCustomSurveys : []).map(x => typeof x === 'object' ? x.id : x);
-  const allDeletedSurveyIds = unionIds(deletedSurveys, customSurveyDeletedIds, permanentlyDeletedSurveys, binSurveyIds);
-
-  const customUserDeletedIds = (Array.isArray(deletedCustomUsers) ? deletedCustomUsers : []).map(x => typeof x === 'object' ? (x.uid || x.id) : x);
-  const allDeletedUserIds = unionIds(deletedUsers, customUserDeletedIds, permanentlyDeletedUsers, binUserIds);
-
-  const allDeletedVideoIds = unionIds(deletedVideos, permanentlyDeletedVideos, binVideoIds);
-
-  // Merge custom & edited surveys (ensure default surveys are NEVER deleted)
+  // Merge custom & edited surveys (excluding deleted surveys)
   const customSurveys = mergeEntities(currState.custom_surveys, incState.custom_surveys, 'id', allDeletedSurveyIds);
-  const editedSurveys = mergeEntities(currState.edited_surveys, incState.edited_surveys, 'id', []);
+  const editedSurveys = mergeEntities(currState.edited_surveys, incState.edited_surveys, 'id', allDeletedSurveyIds);
 
   // Merge custom & edited users
   const customUsers = mergeEntities(currState.custom_users, incState.custom_users, 'uid', allDeletedUserIds);
@@ -246,24 +294,25 @@ function mergeState(current, incoming) {
       edited_surveys: editedSurveys,
       deleted_surveys: allDeletedSurveyIds,
       deleted_custom_surveys: deletedCustomSurveys,
-      permanently_deleted_surveys: permanentlyDeletedSurveys,
+      permanently_deleted_surveys: permSurveys,
 
       custom_users: customUsers,
       edited_users: editedUsers,
       deleted_users: allDeletedUserIds,
       deleted_custom_users: deletedCustomUsers,
-      permanently_deleted_users: permanentlyDeletedUsers,
+      permanently_deleted_users: permUsers,
 
       custom_videos: customVideos,
       edited_videos: editedVideos,
-      deleted_videos: deletedVideos,
-      permanently_deleted_videos: permanentlyDeletedVideos,
+      deleted_videos: allDeletedVideoIds,
+      permanently_deleted_videos: permVideos,
 
       custom_landmarks: customLandmarks,
       deleted_landmarks: deletedLandmarks,
-      permanently_deleted_landmarks: permanentlyDeletedLandmarks,
+      permanently_deleted_landmarks: permLandmarks,
 
-      tp_recycle_bin: recycleBin
+      tp_recycle_bin: recycleBin,
+      tp_restored_items: restoredItems
     }
   };
 }

@@ -413,6 +413,12 @@
 
     async function loadPageData() {
       await resolveSurveyInfo();
+      // Check if survey was deleted
+      if (!isAdmin && isCurrentSurveyDeleted()) {
+        alert('This survey has been deleted or moved to the Recycle Bin.\n\nAccess is restricted for non-admin users.');
+        window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
+        return;
+      }
       // If non-admin, verify the survey is active
       if (!isAdmin) {
         const isInactive = await isCurrentSurveyInactive();
@@ -424,6 +430,28 @@
       }
       await fetchVideos();
       renderActionRow();
+    }
+
+    function isCurrentSurveyDeleted() {
+      try {
+        const binDeleted = window.TrueProgressBin ? window.TrueProgressBin.getDeletedIds('survey') : [];
+        const deletedSurveys = safeGet('deleted_surveys', []);
+        const permDeleted = safeGet('permanently_deleted_surveys', []);
+        const allDeleted = new Set([...binDeleted, ...deletedSurveys, ...permDeleted]);
+        if (surveyId && allDeleted.has(surveyId)) return true;
+        if (window.TrueProgressBin) {
+          const binItems = window.TrueProgressBin.getBinItems();
+          const inBin = binItems.some(item =>
+            item.type === 'survey' &&
+            ((surveyId && item.id === surveyId) ||
+             (surveyName && String(item.name).trim().toLowerCase() === String(surveyName).trim().toLowerCase()))
+          );
+          if (inBin) return true;
+        }
+      } catch (e) {
+        console.warn('Deleted check error:', e);
+      }
+      return false;
     }
 
     async function isCurrentSurveyInactive() {
@@ -907,6 +935,11 @@
     // Cross-tab and real-time reactive synchronization
     async function syncAndRefreshSurveyView() {
       try {
+        if (!isAdmin && isCurrentSurveyDeleted()) {
+          alert('This survey has been deleted or moved to the Recycle Bin.\n\nAccess is restricted for non-admin users.');
+          window.location.href = (window.location.pathname.includes('/trueprogress/') ? 'dashboard.html' : '/dashboard');
+          return;
+        }
         await fetchVideos();
       } catch (e) {
         console.warn('Survey sync error:', e);

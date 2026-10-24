@@ -81,7 +81,11 @@
 
     saveBinItems: function (items) {
       localStorage.setItem(STORAGE_BIN, JSON.stringify(items || []));
+      try {
+        sessionStorage.setItem(STORAGE_BIN, JSON.stringify(items || []));
+      } catch (e) {}
       window.dispatchEvent(new CustomEvent('tp_bin_updated', { detail: { items: items } }));
+      window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'tp_recycle_bin' } }));
     },
 
     /**
@@ -206,6 +210,13 @@
         items.unshift(record);
       }
       this.saveBinItems(items);
+
+      // Clear any prior restoration record for this item
+      try {
+        var restored = safeJsonParse(localStorage.getItem('tp_restored_items'), []);
+        restored = restored.filter(function (r) { return !(String(r.id) === String(params.id) && r.type === params.type); });
+        localStorage.setItem('tp_restored_items', JSON.stringify(restored));
+      } catch (e) {}
 
       // --- Atomically purge item from active datasets and record in deletion keys ---
       var id = params.id;
@@ -436,8 +447,19 @@
         items.splice(targetIdx, 1);
         this.saveBinItems(items);
 
+        // Record restoration timestamp so cloud sync propagates the undelete
+        try {
+          var restoredList = safeJsonParse(localStorage.getItem('tp_restored_items'), []);
+          var rIdx = restoredList.findIndex(function (r) { return String(r.id) === String(id) && r.type === type; });
+          var rRecord = { id: String(id), type: type, restoredAt: new Date().toISOString() };
+          if (rIdx > -1) restoredList[rIdx] = rRecord;
+          else restoredList.push(rRecord);
+          localStorage.setItem('tp_restored_items', JSON.stringify(restoredList));
+        } catch (e) {}
+
         this.showToast('"' + item.name + '" (' + this.getTypeDisplayName(type) + ') restored successfully.', 'success');
         window.dispatchEvent(new CustomEvent('tp_item_restored', { detail: item }));
+        window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'tp_recycle_bin', action: 'restore', item: item } }));
         return item;
       } catch (err) {
         console.error('Error during item restoration:', err);
@@ -549,6 +571,15 @@
 
       items.splice(idx, 1);
       this.saveBinItems(items);
+
+      // Clean from tp_restored_items if present
+      try {
+        var restoredPerm = safeJsonParse(localStorage.getItem('tp_restored_items'), []);
+        restoredPerm = restoredPerm.filter(function (r) { return !(String(r.id) === String(id) && r.type === item.type); });
+        localStorage.setItem('tp_restored_items', JSON.stringify(restoredPerm));
+      } catch (e) {}
+
+      window.dispatchEvent(new CustomEvent('tp_data_changed', { detail: { key: 'permanently_deleted_' + item.type, action: 'permanent_delete', item: item } }));
       this.showToast('Item permanently deleted.', 'info');
       return true;
     },
