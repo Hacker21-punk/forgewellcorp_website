@@ -2447,11 +2447,16 @@
       profileDropdown.classList.toggle('show');
     });
 
-    document.addEventListener('pointerdown', (e) => {
-      if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
-        profileDropdown.classList.remove('show');
+    // Close dropdown on click outside
+    const handleOutsideProfileClick = (e) => {
+      if (profileDropdown && profileDropdown.classList.contains('show')) {
+        if (!profileDropdown.contains(e.target) && !profileMenuBtn.contains(e.target)) {
+          profileDropdown.classList.remove('show');
+        }
       }
-    });
+    };
+    document.addEventListener('pointerdown', handleOutsideProfileClick);
+    document.addEventListener('click', handleOutsideProfileClick);
 
     // Robust cross-browser logout handlers (Mac Safari, iOS Safari, Chrome, Edge, Firefox)
     function openLogoutModal(event) {
