@@ -343,9 +343,12 @@
               <label class="form-label">Department</label>
               <input type="text" id="userDeptInput" class="form-input" placeholder="Department" required />
             </div>
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
               <label class="form-label">State</label>
-              <input type="text" id="userStateInput" class="form-input" placeholder="State" required />
+              <div class="state-autocomplete-wrapper" style="position: relative;">
+                <input type="text" id="userStateInput" class="form-input" placeholder="State" autocomplete="off" required />
+                <div id="stateSuggestionsDropdown" class="state-autocomplete-dropdown" style="display: none;"></div>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Email Address</label>
@@ -719,6 +722,7 @@
       buildSurveyUserMap();
       populateSurveyCheckboxes();
       renderSurveysTable();
+      setupStateAutocomplete();
 
       // Check query params for user deep-linking
       const params = new URLSearchParams(window.location.search);
@@ -1972,6 +1976,7 @@
       buildSurveyUserMap();
       populateSurveyCheckboxes();
       renderSurveysTable();
+      setupStateAutocomplete();
     }
 
     async function handleDeleteSurvey(id) {
@@ -3222,6 +3227,8 @@
       document.getElementById('userOrgInput').value = user.organization || '';
       document.getElementById('userDeptInput').value = user.department || '';
       document.getElementById('userStateInput').value = user.state || '';
+      const stateDropdownEl = document.getElementById('stateSuggestionsDropdown');
+      if (stateDropdownEl) stateDropdownEl.style.display = 'none';
       document.getElementById('userEmailInput').value = user.email || '';
       document.getElementById('userPasswordInput').value = user.password || '';
       document.getElementById('userPhoneInput').value = user.phoneNumber || '';
@@ -3279,6 +3286,8 @@
       document.getElementById('userOrgInput').value = '';
       document.getElementById('userDeptInput').value = '';
       document.getElementById('userStateInput').value = '';
+      const stateDropdownEl = document.getElementById('stateSuggestionsDropdown');
+      if (stateDropdownEl) stateDropdownEl.style.display = 'none';
       document.getElementById('userEmailInput').value = '';
       document.getElementById('userPasswordInput').value = '';
       document.getElementById('userPhoneInput').value = '';
@@ -3306,6 +3315,8 @@
     }
 
     function closeUserModal() {
+      const stateDropdownEl = document.getElementById('stateSuggestionsDropdown');
+      if (stateDropdownEl) stateDropdownEl.style.display = 'none';
       if (userModal) userModal.classList.remove('show');
       // Clean query parameter
       try {
@@ -3326,6 +3337,205 @@
         }
       });
     }
+
+    // Indian States & Union Territories (Auto-population & Autocomplete)
+    const INDIAN_STATES = [
+      { name: "Andaman and Nicobar Islands", type: "UT", aliases: ["Andaman", "Nicobar"] },
+      { name: "Andhra Pradesh", type: "State", aliases: ["AP"] },
+      { name: "Arunachal Pradesh", type: "State" },
+      { name: "Assam", type: "State" },
+      { name: "Bihar", type: "State" },
+      { name: "Chandigarh", type: "UT" },
+      { name: "Chhattisgarh", type: "State", aliases: ["CG"] },
+      { name: "Dadra and Nagar Haveli and Daman and Diu", type: "UT", aliases: ["Daman and Diu", "Dadra and Nagar Haveli", "DNH", "Daman", "Diu"] },
+      { name: "Delhi", type: "UT", aliases: ["New Delhi", "NCT of Delhi", "DL"] },
+      { name: "Goa", type: "State" },
+      { name: "Gujarat", type: "State", aliases: ["GJ"] },
+      { name: "Haryana", type: "State", aliases: ["HR"] },
+      { name: "Himachal Pradesh", type: "State", aliases: ["HP"] },
+      { name: "Jammu and Kashmir", type: "UT", aliases: ["J&K", "Kashmir", "Jammu"] },
+      { name: "Jharkhand", type: "State", aliases: ["JH"] },
+      { name: "Karnataka", type: "State", aliases: ["KA"] },
+      { name: "Kerala", type: "State", aliases: ["KL"] },
+      { name: "Ladakh", type: "UT" },
+      { name: "Lakshadweep", type: "UT" },
+      { name: "Madhya Pradesh", type: "State", aliases: ["MP"] },
+      { name: "Maharashtra", type: "State", aliases: ["MH"] },
+      { name: "Manipur", type: "State", aliases: ["MN"] },
+      { name: "Meghalaya", type: "State", aliases: ["ML"] },
+      { name: "Mizoram", type: "State", aliases: ["MZ"] },
+      { name: "Nagaland", type: "State", aliases: ["NL"] },
+      { name: "Odisha", type: "State", aliases: ["Orissa", "OD"] },
+      { name: "Puducherry", type: "UT", aliases: ["Pondicherry", "PY"] },
+      { name: "Punjab", type: "State", aliases: ["PB"] },
+      { name: "Rajasthan", type: "State", aliases: ["RJ"] },
+      { name: "Sikkim", type: "State", aliases: ["SK"] },
+      { name: "Tamil Nadu", type: "State", aliases: ["TN"] },
+      { name: "Telangana", type: "State", aliases: ["TS", "TG"] },
+      { name: "Tripura", type: "State", aliases: ["TR"] },
+      { name: "Uttar Pradesh", type: "State", aliases: ["UP"] },
+      { name: "Uttarakhand", type: "State", aliases: ["Uttaranchal", "UK"] },
+      { name: "West Bengal", type: "State", aliases: ["WB"] }
+    ];
+
+    function setupStateAutocomplete() {
+      const input = document.getElementById('userStateInput');
+      const dropdown = document.getElementById('stateSuggestionsDropdown');
+      if (!input || !dropdown) return;
+
+      let activeIndex = -1;
+      let currentMatches = [];
+
+      function escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function highlightMatch(text, query) {
+        if (!query) return escapeHtml(text);
+        const q = escapeRegex(query);
+        const regex = new RegExp(`(${q})`, 'gi');
+        return escapeHtml(text).replace(regex, '<mark class="state-highlight">$1</mark>');
+      }
+
+      function selectState(name) {
+        input.value = name;
+        dropdown.style.display = 'none';
+        activeIndex = -1;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      function renderDropdown(matches, query) {
+        currentMatches = matches;
+        activeIndex = -1;
+        dropdown.innerHTML = '';
+
+        if (!matches || matches.length === 0) {
+          dropdown.innerHTML = '<div class="state-autocomplete-empty">No matching state found</div>';
+          dropdown.style.display = 'block';
+          return;
+        }
+
+        matches.forEach((item, index) => {
+          const div = document.createElement('div');
+          div.className = 'state-autocomplete-item';
+          div.dataset.value = item.name;
+          div.dataset.index = index;
+
+          const nameSpan = document.createElement('span');
+          nameSpan.innerHTML = highlightMatch(item.name, query);
+
+          const badgeSpan = document.createElement('span');
+          badgeSpan.className = 'state-type-badge';
+          badgeSpan.textContent = item.type;
+
+          div.appendChild(nameSpan);
+          div.appendChild(badgeSpan);
+
+          div.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            selectState(item.name);
+          });
+
+          dropdown.appendChild(div);
+        });
+
+        dropdown.style.display = 'block';
+      }
+
+      function filterStates(query) {
+        const q = (query || '').trim().toLowerCase();
+        if (!q) {
+          return INDIAN_STATES.slice();
+        }
+
+        const exactPrefix = [];
+        const contains = [];
+
+        INDIAN_STATES.forEach(item => {
+          const lowerName = item.name.toLowerCase();
+          const aliasMatch = item.aliases && item.aliases.some(a => a.toLowerCase().includes(q));
+
+          if (lowerName.startsWith(q)) {
+            exactPrefix.push(item);
+          } else if (lowerName.includes(q) || aliasMatch) {
+            contains.push(item);
+          }
+        });
+
+        return exactPrefix.concat(contains);
+      }
+
+      function updateActiveItem() {
+        const items = dropdown.querySelectorAll('.state-autocomplete-item');
+        items.forEach((el, idx) => {
+          if (idx === activeIndex) {
+            el.classList.add('active');
+            el.scrollIntoView({ block: 'nearest' });
+          } else {
+            el.classList.remove('active');
+          }
+        });
+      }
+
+      input.addEventListener('focus', () => {
+        const matches = filterStates(input.value);
+        renderDropdown(matches, input.value.trim());
+      });
+
+      input.addEventListener('click', () => {
+        const matches = filterStates(input.value);
+        renderDropdown(matches, input.value.trim());
+      });
+
+      input.addEventListener('input', () => {
+        const matches = filterStates(input.value);
+        renderDropdown(matches, input.value.trim());
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (dropdown.style.display === 'none') {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            const matches = filterStates(input.value);
+            renderDropdown(matches, input.value.trim());
+            return;
+          }
+          return;
+        }
+
+        const items = dropdown.querySelectorAll('.state-autocomplete-item');
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (items.length > 0) {
+            activeIndex = (activeIndex + 1) % items.length;
+            updateActiveItem();
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (items.length > 0) {
+            activeIndex = (activeIndex - 1 + items.length) % items.length;
+            updateActiveItem();
+          }
+        } else if (e.key === 'Enter') {
+          if (activeIndex >= 0 && activeIndex < currentMatches.length) {
+            e.preventDefault();
+            selectState(currentMatches[activeIndex].name);
+          }
+        } else if (e.key === 'Escape') {
+          dropdown.style.display = 'none';
+        }
+      });
+
+      // Close dropdown when pointer interacts outside input or dropdown
+      document.addEventListener('pointerdown', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    }
+
+    // Initialize state autocomplete immediately
+    setupStateAutocomplete();
 
     async function handleSaveUser(event) {
       event.preventDefault();

@@ -3505,3 +3505,112 @@ body.is-admin #breadcrumbAdminActions {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+/* ==========================================================================
+   State Autocomplete Dropdown (Indian States & UTs Auto-population)
+   ========================================================================== */
+.state-autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.state-autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--surface-border, #cbd5e1);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  z-index: 1200;
+  padding: 4px 0;
+  overscroll-behavior: contain;
+}
+
+.state-autocomplete-item {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8125rem;
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  transition: background-color var(--transition-fast, 0.15s), color var(--transition-fast, 0.15s);
+  user-select: none;
+}
+
+.state-autocomplete-item:hover,
+.state-autocomplete-item.active {
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+}
+
+.state-autocomplete-item mark.state-highlight {
+  background: transparent;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.state-type-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: var(--surface-100, #f1f5f9);
+  color: var(--text-secondary, #64748b);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.state-autocomplete-item:hover .state-type-badge,
+.state-autocomplete-item.active .state-type-badge {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+}
+
+.state-autocomplete-empty {
+  padding: 0.75rem 0.85rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #94a3b8);
+  font-style: italic;
+  text-align: center;
+}
+
+[data-theme="dark"] .state-autocomplete-dropdown {
+  background: var(--surface-card, #1e293b);
+  border-color: var(--surface-border, #334155);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .state-autocomplete-item {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .state-autocomplete-item:hover,
+[data-theme="dark"] .state-autocomplete-item.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .state-autocomplete-item mark.state-highlight {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .state-type-badge {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .state-autocomplete-item:hover .state-type-badge,
+[data-theme="dark"] .state-autocomplete-item.active .state-type-badge {
+  background: rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .state-autocomplete-empty {
+  color: #64748b;
+}
