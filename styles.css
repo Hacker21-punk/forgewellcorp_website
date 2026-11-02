@@ -1172,12 +1172,13 @@ p { color: var(--text-dim); line-height: 1.8; }
 }
 .partner-grid img {
   max-width: 180px;
-  max-height: 90px;
+  max-height: 80px;
   width: auto;
   height: auto;
   object-fit: contain;
   transition: transform var(--tr);
   display: block;
+  mix-blend-mode: multiply;
 }
 .partner-grid span:hover img {
   transform: scale(1.1);
